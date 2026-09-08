@@ -127,13 +127,25 @@ export default function BuyerView() {
 
       setCommitStatus(`Successfully set reference price for ${classId}.`);
     } catch (err: any) {
-      const errMsg = err.message || "Failed to set reference price";
-      if (errMsg.toLowerCase().includes("expired") || errMsg.toLowerCase().includes("reconnect")) {
+      console.error("[MFNGuard] Caught error in handleSetReference:", err);
+      let errMsg = "Failed to set reference price";
+      if (typeof err === 'string') {
+        errMsg = err;
+      } else if (err && typeof err.message === 'string') {
+        errMsg = err.message;
+      } else if (err) {
+        try { errMsg = JSON.stringify(err); } catch(e) {}
+      }
+
+      console.log("[MFNGuard] Parsed errMsg:", errMsg);
+
+      const lowerMsg = errMsg.toLowerCase();
+      if (lowerMsg.includes("expired") || lowerMsg.includes("reconnect")) {
         disconnect();
         setError("Wallet session expired. Please click 'Connect Lace Wallet' at the top right to reconnect, then try again.");
-      } else if (errMsg.includes("182")) {
+      } else if (lowerMsg.includes("182")) {
         setError("Wallet still syncing — please wait a moment and try again.");
-      } else if (errMsg.toLowerCase().includes("already pending")) {
+      } else if (lowerMsg.includes("already pending")) {
         setError("Blockchain Confirmation Pending: Your previous transaction is still being mined. Please wait a moment before setting a new reference price.");
       } else {
         setError(errMsg);
@@ -187,12 +199,27 @@ export default function BuyerView() {
       });
       
     } catch (err: any) {
-      const errMsg = err.message || "Unknown error";
-      if (errMsg.includes("182")) {
+      // FORCE log to console for debugging even in prod build
+      console.error("[MFNGuard] Caught error in handleRunComplianceCheck:", err);
+      
+      // Safely extract string message
+      let errMsg = "Unknown error";
+      if (typeof err === 'string') {
+        errMsg = err;
+      } else if (err && typeof err.message === 'string') {
+        errMsg = err.message;
+      } else if (err) {
+        try { errMsg = JSON.stringify(err); } catch(e) {}
+      }
+
+      console.log("[MFNGuard] Parsed errMsg:", errMsg);
+
+      const lowerMsg = errMsg.toLowerCase();
+      if (lowerMsg.includes("182")) {
         setError("Zero-Knowledge Proof Error: Wallet still syncing — please wait a moment and try again.");
-      } else if (errMsg.toLowerCase().includes("already pending")) {
+      } else if (lowerMsg.includes("already pending")) {
         setError("Blockchain Confirmation Pending: Your previous transaction is still being mined on the testnet. Please wait ~15-30 seconds for it to confirm before requesting another check.");
-      } else if (errMsg.toLowerCase().includes("expired") || errMsg.toLowerCase().includes("reconnect")) {
+      } else if (lowerMsg.includes("expired") || lowerMsg.includes("reconnect")) {
         disconnect();
         setError("Zero-Knowledge Proof Error: Wallet session expired. Please click 'Connect Lace Wallet' at the top right to reconnect, then try again.");
       } else {
