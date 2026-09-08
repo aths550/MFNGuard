@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useWallet } from "./WalletContext";
 import { useSharedData } from "./SharedDataContext";
+import { decryptPayload } from "../lib/crypto";
 
 // Helper to convert hex string to Uint8Array
 const hexToUint8Array = (hex: string) => {
@@ -24,7 +25,7 @@ const stringToUint8Array = (str: string) => {
 
 export default function BuyerView() {
   const { connectedAddress, mfnguardAPI, disconnect, isSyncing } = useWallet();
-  const { addBuyerData, supplierPrices, supplierSalts } = useSharedData();
+  const { addBuyerData, supplierPrices, supplierSalts, importSupplierData } = useSharedData();
   const [classId, setClassId] = useState("");
   const [price, setPrice] = useState("");
   
@@ -38,6 +39,40 @@ export default function BuyerView() {
   const [isChecking, setIsChecking] = useState(false);
   const [checkResult, setCheckResult] = useState<{compliant: boolean, discrepancy: number} | null>(null);
   const [error, setError] = useState<string | null>(null);
+  
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const [importPassphrase, setImportPassphrase] = useState<string>("");
+  const [isImporting, setIsImporting] = useState<boolean>(false);
+  const [importSuccess, setImportSuccess] = useState<string | null>(null);
+
+  const handleImportBundle = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!importFile || !importPassphrase) return;
+    setIsImporting(true);
+    setError(null);
+    setImportSuccess(null);
+    
+    try {
+      const text = await importFile.text();
+      const payload = JSON.parse(text);
+      const decryptedStr = await decryptPayload(payload, importPassphrase);
+      const data = JSON.parse(decryptedStr);
+      
+      const parsedPrices = data.prices.map((p: string) => BigInt(p));
+      const parsedSalts = data.salts.map((s: number[]) => new Uint8Array(s));
+      
+      importSupplierData(data.classId, parsedPrices, parsedSalts);
+      setImportFile(null);
+      setImportPassphrase("");
+      setClassId(data.classId); // Conveniently prefill the class ID
+      setImportSuccess(`Successfully imported witnesses for ${data.classId}`);
+    } catch (err: any) {
+      if (process.env.NODE_ENV === 'development') console.error(err);
+      setError(`Import Error: Failed to decrypt or parse bundle. Check passphrase.`);
+    } finally {
+      setIsImporting(false);
+    }
+  };
 
   const handleSetReference = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -221,7 +256,7 @@ export default function BuyerView() {
                   </svg>
                 </div>
                 <h3 className="text-lg font-medium mb-2">Ready to Verify?</h3>
-                <p className="text-sm text-slate-400 mb-6 max-w-xs">Ensure the supplier has shared their data in this browser session before running this check.</p>
+                <p className="text-sm text-slate-400 mb-6 max-w-xs">Ensure you have imported the supplier's witness bundle before running this check.</p>
                 
                 {error && (
                   <div className="w-full text-red-400 text-sm p-3 mb-6 bg-red-400/10 rounded-xl border border-red-400/20 text-left">
@@ -281,6 +316,52 @@ export default function BuyerView() {
                 </div>
               </div>
             )}
+          </div>
+
+          {/* Import Witness Bundle Section */}
+          <div className="mt-8 bg-slate-900/50 p-6 rounded-2xl border border-slate-800">
+            <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
+              <svg className="w-5 h-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+              </svg>
+              Import Witness Bundle
+            </h3>
+            
+            <form onSubmit={handleImportBundle} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-1.5">Encrypted Bundle (.json)</label>
+                <input 
+                  type="file" 
+                  accept=".json"
+                  onChange={e => setImportFile(e.target.files?.[0] || null)}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-slate-400 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-emerald-500/10 file:text-emerald-400 hover:file:bg-emerald-500/20"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-1.5">Shared Passphrase</label>
+                <input 
+                  type="password"
+                  value={importPassphrase}
+                  onChange={e => setImportPassphrase(e.target.value)}
+                  placeholder="Enter decryption passphrase"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                />
+              </div>
+              
+              {importSuccess && (
+                <div className="text-emerald-400 text-sm p-3 bg-emerald-400/10 rounded-xl border border-emerald-400/20">
+                  {importSuccess}
+                </div>
+              )}
+              
+              <button 
+                type="submit" 
+                disabled={isImporting || !importFile || !importPassphrase}
+                className="w-full text-sm bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 py-2.5 px-3 rounded-lg transition-colors disabled:opacity-50 mt-2"
+              >
+                {isImporting ? "Decrypting..." : "Import Witnesses"}
+              </button>
+            </form>
           </div>
         </div>
       </div>

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useWallet } from "./WalletContext";
 import { useSharedData } from "./SharedDataContext";
+import { encryptPayload } from "../lib/crypto";
 import { ledger } from "../../../contract/src/index";
 
 interface Slot {
@@ -45,7 +46,8 @@ export default function SupplierView() {
   const [isCommitting, setIsCommitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  const [isSendingToProofServer, setIsSendingToProofServer] = useState(false);
+  const [passphrase, setPassphrase] = useState<string>("");
+  const [isExporting, setIsExporting] = useState<boolean>(false);
   const [serverStatus, setServerStatus] = useState<string | null>(null);
 
   const handleCommit = async (e: React.FormEvent) => {
@@ -120,33 +122,48 @@ export default function SupplierView() {
     }
   };
 
-  const handleShareLocal = async () => {
-    if (slots.length === 0) return;
-    setIsSendingToProofServer(true);
+  const handleExportBundle = async () => {
+    if (slots.length === 0 || !passphrase) return;
+    setIsExporting(true);
     setServerStatus(null);
     setError(null);
     
     try {
-      const targetClass = slots[0].classId;
-      const targetSlots = slots.filter(s => s.classId === targetClass);
+      const targetClass = slots[0].classId; // Assuming we export for the first class we worked on
       
-      const MAX_UINT64 = BigInt("18446744073709551615");
-      let currentPrices = existingSupplierPrices[targetClass] ? [...existingSupplierPrices[targetClass]] : Array(5).fill(MAX_UINT64);
-      let currentSalts = existingSupplierSalts[targetClass] ? [...existingSupplierSalts[targetClass]] : Array(5).fill(null).map(() => new Uint8Array(32));
-      
-      for (const slot of targetSlots) {
-        if (slot.slotIndex !== undefined) {
-          currentPrices[slot.slotIndex] = BigInt(slot.price);
-          currentSalts[slot.slotIndex] = hexToUint8Array(slot.salt);
-        }
-      }
-      
-      addSupplierData(targetClass, currentPrices, currentSalts);
-      setServerStatus("Success: Supplier data saved to local secure context for Buyer execution.");
+      // We export the entire array of prices and salts for the target class from the SharedDataContext
+      // since the context now handles local persistence and updates correctly.
+      const pricesToExport = existingSupplierPrices[targetClass] || [];
+      const saltsToExport = existingSupplierSalts[targetClass] || [];
+
+      // Serialize data for export
+      const exportData = {
+        classId: targetClass,
+        prices: pricesToExport.map(p => p.toString()),
+        salts: saltsToExport.map(s => Array.from(s))
+      };
+
+      const plaintext = JSON.stringify(exportData);
+      const encryptedPayload = await encryptPayload(plaintext, passphrase);
+
+      // Trigger file download
+      const blob = new Blob([JSON.stringify(encryptedPayload, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `mfnguard-witness-${targetClass.substring(0, 8)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      setServerStatus("Success: Witness bundle encrypted and exported.");
+      setPassphrase(""); // Clear passphrase after use
     } catch (err: any) {
-      setError(`Local Error: ${err.message}`);
+      if (process.env.NODE_ENV === 'development') console.error(err);
+      setError(`Encryption Error: ${err.message}`);
     } finally {
-      setIsSendingToProofServer(false);
+      setIsExporting(false);
     }
   };
 
@@ -227,17 +244,28 @@ export default function SupplierView() {
         {/* Local Session Data */}
         <div>
           <div className="flex justify-between items-end mb-4">
-            <h3 className="text-lg font-medium">Session Commitments</h3>
-            {slots.length > 0 && (
-              <button 
-                onClick={handleShareLocal}
-                disabled={isSendingToProofServer}
-                className="text-sm bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 py-1.5 px-3 rounded-lg transition-colors disabled:opacity-50"
-              >
-                {isSendingToProofServer ? "Processing..." : "Share Locally with Buyer"}
-              </button>
-            )}
+            <h3 className="text-lg font-medium">Export Witnesses</h3>
           </div>
+          
+          {slots.length > 0 && (
+            <div className="bg-slate-900/50 p-4 rounded-xl border border-slate-800 mb-6 space-y-3">
+              <label className="block text-sm font-medium text-slate-300">Shared Passphrase (for Export)</label>
+              <input 
+                type="password"
+                value={passphrase}
+                onChange={e => setPassphrase(e.target.value)}
+                placeholder="Enter passphrase to encrypt"
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+              />
+              <button 
+                onClick={handleExportBundle}
+                disabled={isExporting || !passphrase}
+                className="w-full text-sm bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 py-2.5 px-3 rounded-lg transition-colors disabled:opacity-50"
+              >
+                {isExporting ? "Encrypting..." : "Export Witness Bundle"}
+              </button>
+            </div>
+          )}
           
           {serverStatus && (
             <div className="mb-4 text-emerald-400 text-sm p-3 bg-emerald-400/10 rounded-xl border border-emerald-400/20">
@@ -267,7 +295,7 @@ export default function SupplierView() {
           </div>
           
           <div className="mt-6 text-xs text-slate-500 bg-slate-900/50 p-4 rounded-xl border border-slate-800/50">
-            <span className="font-semibold text-slate-400">Security Note:</span> Your raw prices and salts are stored exclusively in this browser tab's memory. They will be permanently lost if you refresh the page.
+            <span className="font-semibold text-slate-400">Persistence Note:</span> Your witnesses are persisted securely in localStorage. Export them as an encrypted bundle to share with the Buyer out-of-band.
           </div>
         </div>
       </div>

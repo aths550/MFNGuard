@@ -29,6 +29,19 @@
 - **Proof Server** running at `http://127.0.0.1:6300` (compact-runtime proof generation)
 - **Node.js 18+**
 
+## Cross-Party Data Exchange (Export / Import)
+
+This MVP uses an **Encrypted Payload File** (Option A) to securely transmit witness data from the Supplier to the Buyer without a backend server.
+
+- **Export (Supplier):** Witness data (prices, salts) is encrypted locally using `AES-256-GCM` keyed with a PBKDF2-derived key from a user-provided passphrase. The ciphertext is exported as a `.json` file.
+- **Import (Buyer):** The Buyer imports the file and provides the shared passphrase to decrypt the payload locally.
+- **Persistence:** Decrypted witnesses are stored in the browser's `localStorage` so they survive page refreshes, solving the reused Class ID fragility.
+
+### ⚠️ Security Limitations & Gaps (Honest Disclosure)
+
+1. **Passphrase Exchange Gap:** This tool currently relies on a shared passphrase to derive the encryption key, but it **does not provide a secure mechanism to exchange that passphrase.** The passphrase must be exchanged out-of-band by the users themselves (e.g., verbally or via Signal). For production, this should be replaced with asymmetric encryption (Buyer's public key → ECDH → AES key) to remove the shared-passphrase problem entirely.
+2. **At-Rest `localStorage` Encryption:** To minimize friction during a demo, the decrypted witnesses are persisted to `localStorage` using a static/client-side key scheme. **localStorage encryption in this version protects against casual inspection only — it does not protect against any script with execution access to the page, since the key material is also recoverable client-side.** Real at-rest protection would require re-prompting the user for their passphrase on every page reload to derive the decryption key.
+
 ## Frontend .env.local Template
 
 ```
