@@ -136,9 +136,7 @@ export default function SupplierView() {
       } else if (err) {
         try { errMsg = JSON.stringify(err); } catch(e) {}
       }
-
-      console.log("[MFNGuard] Parsed errMsg:", errMsg);
-
+      if (process.env.NODE_ENV === 'development') console.log("[MFNGuard] Parsed errMsg:", errMsg);
       const lowerMsg = errMsg.toLowerCase();
       if (lowerMsg.includes("expired") || lowerMsg.includes("reconnect")) {
         disconnect();

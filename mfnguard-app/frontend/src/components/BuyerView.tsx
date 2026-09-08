@@ -156,9 +156,7 @@ export default function BuyerView() {
       } else if (err) {
         try { errMsg = JSON.stringify(err); } catch(e) {}
       }
-
-      console.log("[MFNGuard] Parsed errMsg:", errMsg);
-
+      if (process.env.NODE_ENV === 'development') console.log("[MFNGuard] Parsed errMsg:", errMsg);
       const lowerMsg = errMsg.toLowerCase();
       if (lowerMsg.includes("expired") || lowerMsg.includes("reconnect")) {
         disconnect();
@@ -241,9 +239,7 @@ export default function BuyerView() {
       } else if (err) {
         try { errMsg = JSON.stringify(err); } catch(e) {}
       }
-
-      console.log("[MFNGuard] Parsed errMsg:", errMsg);
-
+      if (process.env.NODE_ENV === 'development') console.log("[MFNGuard] Parsed errMsg:", errMsg);
       const lowerMsg = errMsg.toLowerCase();
       if (lowerMsg.includes("182")) {
         setError("Zero-Knowledge Proof Error: Wallet still syncing — please wait a moment and try again.");
