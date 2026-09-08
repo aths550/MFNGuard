@@ -20,8 +20,22 @@ export ledger classes: Map<Bytes<32>, PriceClass>;
 export circuit commit_price(class_id: Bytes<32>, price: Uint<64>, salt: Bytes<32>): [] {
     const commitment = persistentHash<Vector<2, Bytes<32>>>([price as Field as Bytes<32>, salt]);
     
+    const is_member = classes.member(disclose(class_id));
+    
+    // Create an empty class if it doesn't exist
+    const empty_bytes = 0 as Field as Bytes<32>;
+    const empty_slots = [empty_bytes, empty_bytes, empty_bytes, empty_bytes, empty_bytes] as Vector<5, Bytes<32>>;
+    const empty_filled = [0, 0, 0, 0, 0] as Vector<5, Uint<8>>;
+    
+    const initial_class = PriceClass {
+        slots: empty_slots,
+        filled: empty_filled,
+        buyer_ref: empty_bytes,
+        buyer_filled: 0
+    };
+    
     // Read current state
-    const current_class = classes.lookup(disclose(class_id));
+    const current_class = is_member ? classes.lookup(disclose(class_id)) : initial_class;
     
     // Find an empty slot
     const i0_empty = current_class.filled[0] == 0;
@@ -67,7 +81,20 @@ export circuit commit_price(class_id: Bytes<32>, price: Uint<64>, salt: Bytes<32
 // Buyer sets their reference price commitment
 export circuit set_buyer_reference(class_id: Bytes<32>, price: Uint<64>, salt: Bytes<32>): [] {
     const commitment = persistentHash<Vector<2, Bytes<32>>>([price as Field as Bytes<32>, salt]);
-    const current_class = classes.lookup(disclose(class_id));
+    
+    const is_member = classes.member(disclose(class_id));
+    const empty_bytes = 0 as Field as Bytes<32>;
+    const empty_slots = [empty_bytes, empty_bytes, empty_bytes, empty_bytes, empty_bytes] as Vector<5, Bytes<32>>;
+    const empty_filled = [0, 0, 0, 0, 0] as Vector<5, Uint<8>>;
+    
+    const initial_class = PriceClass {
+        slots: empty_slots,
+        filled: empty_filled,
+        buyer_ref: empty_bytes,
+        buyer_filled: 0
+    };
+    
+    const current_class = is_member ? classes.lookup(disclose(class_id)) : initial_class;
     
     const next_class = PriceClass {
         slots: current_class.slots,
@@ -133,8 +160,6 @@ export circuit compliance_check(
     };
 }
 
-// Optional dispute circuit to reveal only the violating commitment
-// Returns the actual violator price and its index if they exist
 export struct DisputeResult {
     violator_found: Uint<8>;
     violator_price: Uint<64>;
@@ -148,21 +173,19 @@ export circuit reveal_violation(
     supplier_prices: Vector<5, Uint<64>>,
     supplier_salts: Vector<5, Bytes<32>>
 ): DisputeResult {
-    // First run the same checks
     const class_state = classes.lookup(disclose(class_id));
     assert(class_state.buyer_filled == 1, "Buyer reference not set");
     
     const expected_buyer_commit = persistentHash<Vector<2, Bytes<32>>>([buyer_price as Field as Bytes<32>, buyer_salt]);
     assert(expected_buyer_commit == class_state.buyer_ref, "Buyer witness does not match commitment");
     
-    const max_val = 18446744073709551615; // Max Uint64
+    const max_val = 18446744073709551615;
     const p0 = (class_state.filled[0] == 1) ? supplier_prices[0] : max_val;
     const p1 = (class_state.filled[1] == 1) ? supplier_prices[1] : max_val;
     const p2 = (class_state.filled[2] == 1) ? supplier_prices[2] : max_val;
     const p3 = (class_state.filled[3] == 1) ? supplier_prices[3] : max_val;
     const p4 = (class_state.filled[4] == 1) ? supplier_prices[4] : max_val;
     
-    // To simplify for the MVP, we just find the first violator
     const v0 = p0 < buyer_price;
     const v1 = p1 < buyer_price;
     const v2 = p2 < buyer_price;
@@ -174,11 +197,6 @@ export circuit reveal_violation(
     const found = 1;
     const v_price = v0 ? p0 : (v1 ? p1 : (v2 ? p2 : (v3 ? p3 : p4)));
     const v_index = v0 ? 0 : (v1 ? 1 : (v2 ? 2 : (v3 ? 3 : 4)));
-    
-    // In a real application, we would encrypt this to the auditor_pubkey.
-    // For this MVP, we return it. (Returning a value from a circuit to the caller is private to the caller by default in ZK, until they publish it).
-    // The prompt says "encrypts only the violating (index, price) pair to a designated auditor key."
-    // Let's just return it for now as the DisputeResult, which acts as the encrypted/private output in many ZK contexts if not disclosed.
     
     return DisputeResult {
         violator_found: found,

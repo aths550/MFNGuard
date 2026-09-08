@@ -1,0 +1,91 @@
+{
+  "compiler-version": "0.31.1",
+  "language-version": "0.23.0",
+  "runtime-version": "0.16.0",
+  "circuits": [
+    {
+      "name": "test",
+      "pure": false,
+      "proof": true,
+      "arguments": [
+        {
+          "name": "class_id",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        },
+        {
+          "name": "c",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+        ]
+      }
+    }
+  ],
+  "witnesses": [
+  ],
+  "contracts": [
+  ],
+  "ledger": [
+    {
+      "name": "classes",
+      "index": 0,
+      "exported": true,
+      "storage": "Map",
+      "key": {
+        "type-name": "Bytes",
+        "length": 32
+      },
+      "value": {
+        "type-name": "Struct",
+        "name": "PriceClass",
+        "elements": [
+          {
+            "name": "slots",
+            "type": {
+              "type-name": "Vector",
+              "length": 5,
+              "type": {
+                "type-name": "Bytes",
+                "length": 32
+              }
+            }
+          },
+          {
+            "name": "filled",
+            "type": {
+              "type-name": "Vector",
+              "length": 5,
+              "type": {
+                "type-name": "Uint",
+                "maxval": 255
+              }
+            }
+          },
+          {
+            "name": "buyer_ref",
+            "type": {
+              "type-name": "Bytes",
+              "length": 32
+            }
+          },
+          {
+            "name": "buyer_filled",
+            "type": {
+              "type-name": "Uint",
+              "maxval": 255
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

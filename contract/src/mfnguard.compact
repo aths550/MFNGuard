@@ -1,0 +1,16 @@
+pragma language_version >= 0.14.0;
+
+import CompactStandardLibrary;
+
+export ledger classes: Map<Uint<32>, PriceClass>;
+
+struct PriceClass {
+    slots: Vector<5, Uint<256>>;
+    filled: Vector<5, bool>;
+    buyer_ref: Uint<256>;
+    buyer_filled: bool;
+}
+
+export circuit test(vec: Vector<5, Uint<256>>, b: bool): [] {
+    let a: Uint<256> = vec[0];
+}

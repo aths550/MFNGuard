@@ -59,11 +59,11 @@ For the web interface, install the official Lace wallet extension on [Chrome Sto
 After installing, set up the Midnight wallet:
 
 1. Create a **new wallet** — Midnight will appear as a network option
-2. Set **Network** to **Preprod**
+2. Set **Network** to **Preview**
 3. Set **Proof server** to **Local (http://localhost:6300)** — this must point to your local proof server started via Docker
 4. Click **Enter Wallet**
-5. Fund your wallet with tNIGHT tokens from the [Preprod Faucet](https://midnight-tmnight-preprod.nethermind.dev/)
-6. Go to **Tokens** in the wallet, click **Generate tDUST**, and confirm the transaction — tDUST tokens are required to pay transaction fees on preprod
+5. Fund your wallet with tNIGHT tokens from the [Preview Faucet](https://midnight-tmnight-preview.nethermind.dev/)
+6. Go to **Tokens** in the wallet, click **Generate tDUST**, and confirm the transaction — tDUST tokens are required to pay transaction fees on preview
 
 ## Setup Instructions
 
@@ -135,9 +135,6 @@ This uses `midnightntwrk/proof-server:8.0.3` on `http://127.0.0.1:6300`.
 ### Run the CLI
 
 ```bash
-# For preprod network
-npm run preprod-remote
-
 # For preview network
 npm run preview-remote
 ```
@@ -154,7 +151,7 @@ Expected output is similar to:
 
 ```
 Your wallet seed is: [64-character hex string]
-Using unshielded address: mn_addr_preprod1hdvtst70zfgd8wvh7l8ppp7mcrxnjn56wc5hlxpwflz3fxdykaesrw0ln4 waiting for funds...
+Using unshielded address: mn_addr_preview1hdvtst70zfgd8wvh7l8ppp7mcrxnjn56wc5hlxpwflz3fxdykaesrw0ln4 waiting for funds...
 ```
 
 #### Fund Your Wallet
@@ -162,7 +159,7 @@ Using unshielded address: mn_addr_preprod1hdvtst70zfgd8wvh7l8ppp7mcrxnjn56wc5hlx
 Before deploying contracts, you need testnet tokens.
 
 1. Copy your wallet address from the output above
-2. Visit the [faucet](https://midnight-tmnight-preprod.nethermind.dev/)
+2. Visit the [faucet](https://midnight-tmnight-preview.nethermind.dev/)
 3. Paste your address and request funds
 4. Wait for the CLI to detect the funds (takes 2-3 minutes)
 
@@ -217,13 +214,10 @@ docker ps
 
 ### Start the Web Interface
 
-The UI can run against preprod or preview networks:
+The UI can run against the preview network:
 
 ```bash
 cd bboard-ui
-
-# For preprod network
-npm run build:start
 
 # For preview network
 npm run build:start:preview
@@ -242,7 +236,7 @@ The UI will be available at:
 
 ## Useful Links
 
-- Get Testnet tNIGHT on [Preprod Faucet](https://midnight-tmnight-preprod.nethermind.dev/) or [Preview Faucet](https://midnight-tmnight-preview.nethermind.dev/)
+- Get Testnet tNIGHT on the [Preview Faucet](https://midnight-tmnight-preview.nethermind.dev/)
 - [Midnight Documentation](https://docs.midnight.network/examples/dapps/bboard) - Complete developer guide
 - [Compatibility Matrix](https://docs.midnight.network/relnotes/support-matrix) - Current supported Midnight component versions
 - [Compact Language Guide](https://docs.midnight.network/compact/writing) - Smart contract language reference

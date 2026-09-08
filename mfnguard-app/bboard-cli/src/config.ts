@@ -37,9 +37,9 @@ export class StandaloneConfig implements Config {
   getEnvironment(logger: Logger): TestEnvironment {
     return getTestEnvironment(logger) as TestEnvironment;
   }
-  privateStateStoreName = 'bboard-private-state';
+  privateStateStoreName = 'mfnguard-private-state';
   logDir = path.resolve(currentDir, '..', 'logs', 'standalone', `${new Date().toISOString()}.log`);
-  zkConfigPath = path.resolve(currentDir, '..', '..', 'contract', 'src', 'managed', 'bboard');
+  zkConfigPath = path.resolve(currentDir, '..', '..', 'contract', 'src', 'managed', 'mfnguard');
   generateDust = false;
 }
 
@@ -48,9 +48,9 @@ export class PreviewRemoteConfig implements Config {
     setNetworkId('preview');
     return new PreviewTestEnvironment(logger);
   }
-  privateStateStoreName = 'bboard-private-state';
+  privateStateStoreName = 'mfnguard-private-state';
   logDir = path.resolve(currentDir, '..', 'logs', 'preview-remote', `${new Date().toISOString()}.log`);
-  zkConfigPath = path.resolve(currentDir, '..', '..', 'contract', 'src', 'managed', 'bboard');
+  zkConfigPath = path.resolve(currentDir, '..', '..', 'contract', 'src', 'managed', 'mfnguard');
   generateDust = true;
 }
 
@@ -59,9 +59,9 @@ export class PreprodRemoteConfig implements Config {
     setNetworkId('preprod');
     return new PreprodTestEnvironment(logger);
   }
-  privateStateStoreName = 'bboard-private-state';
+  privateStateStoreName = 'mfnguard-private-state';
   logDir = path.resolve(currentDir, '..', 'logs', 'preprod-remote', `${new Date().toISOString()}.log`);
-  zkConfigPath = path.resolve(currentDir, '..', '..', 'contract', 'src', 'managed', 'bboard');
+  zkConfigPath = path.resolve(currentDir, '..', '..', 'contract', 'src', 'managed', 'mfnguard');
   generateDust = true;
 }
 
@@ -70,12 +70,8 @@ export class PreviewTestEnvironment extends RemoteTestEnvironment {
     super(logger);
   }
 
-  private getProofServerUrl(): string {
-    const container = this.proofServerContainer as { getUrl(): string } | undefined;
-    if (!container) {
-      throw new Error('Proof server container is not available.');
-    }
-    return container.getUrl();
+  start = async (): Promise<EnvironmentConfiguration> => {
+    return this.getEnvironmentConfiguration();
   }
 
   getEnvironmentConfiguration(): EnvironmentConfiguration {
@@ -87,8 +83,12 @@ export class PreviewTestEnvironment extends RemoteTestEnvironment {
       node: 'https://rpc.preview.midnight.network',
       nodeWS: 'wss://rpc.preview.midnight.network',
       faucet: 'https://midnight-tmnight-preview.nethermind.dev/',
-      proofServer: this.getProofServerUrl(),
+      proofServer: 'http://127.0.0.1:6300',
     };
+  }
+
+  shutdown = async (): Promise<void> => {
+    // nothing to do
   }
 }
 
@@ -97,12 +97,8 @@ export class PreprodTestEnvironment extends RemoteTestEnvironment {
     super(logger);
   }
 
-  private getProofServerUrl(): string {
-    const container = this.proofServerContainer as { getUrl(): string } | undefined;
-    if (!container) {
-      throw new Error('Proof server container is not available.');
-    }
-    return container.getUrl();
+  start = async (): Promise<EnvironmentConfiguration> => {
+    return this.getEnvironmentConfiguration();
   }
 
   getEnvironmentConfiguration(): EnvironmentConfiguration {
@@ -114,7 +110,11 @@ export class PreprodTestEnvironment extends RemoteTestEnvironment {
       node: 'https://rpc.preprod.midnight.network',
       nodeWS: 'wss://rpc.preprod.midnight.network',
       faucet: 'https://midnight-tmnight-preprod.nethermind.dev/',
-      proofServer: this.getProofServerUrl(),
+      proofServer: 'http://127.0.0.1:6300',
     };
+  }
+
+  shutdown = async (): Promise<void> => {
+    // nothing to do
   }
 }

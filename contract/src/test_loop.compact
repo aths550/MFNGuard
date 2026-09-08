@@ -1,0 +1,26 @@
+pragma language_version 0.23;
+
+import CompactStandardLibrary;
+
+export struct PriceClass {
+    slots: Vector<5, Bytes<32>>;
+    filled: Vector<5, Uint<8>>;
+    buyer_ref: Bytes<32>;
+    buyer_filled: Uint<8>;
+}
+
+export ledger classes: Map<Bytes<32>, PriceClass>;
+
+export circuit test(class_id: Bytes<32>, c: Bytes<32>): [] {
+    const cls = classes.lookup(disclose(class_id));
+    const next_slots = [
+        c, c, c, c, c
+    ] as Vector<5, Bytes<32>>;
+    const next_class = PriceClass {
+        slots: next_slots,
+        filled: cls.filled,
+        buyer_ref: cls.buyer_ref,
+        buyer_filled: cls.buyer_filled
+    };
+    classes.insert(disclose(class_id), disclose(next_class));
+}
