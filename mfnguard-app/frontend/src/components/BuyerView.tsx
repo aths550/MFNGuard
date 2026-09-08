@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useWallet } from "./WalletContext";
 import { useSharedData } from "./SharedDataContext";
 import { decryptPayload } from "../lib/crypto";
@@ -29,6 +29,10 @@ export default function BuyerView() {
   const [classId, setClassId] = useState("");
   const [price, setPrice] = useState("");
   
+  // Transaction locks to prevent double-click race conditions
+  const isCommittingRef = useRef(false);
+  const isCheckingRef = useRef(false);
+
   // Auto-generate 32-byte salt as hex
   const generateSalt = () => Array.from({ length: 32 }, () => Math.floor(Math.random() * 256).toString(16).padStart(2, '0')).join('');
   const [salt, setSalt] = useState(generateSalt());
@@ -95,7 +99,7 @@ export default function BuyerView() {
 
   const handleSetReference = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isCommitting || isSyncing) return;
+    if (isCommitting || isSyncing || isCommittingRef.current) return;
     if (!connectedAddress || !mfnguardAPI) {
       setError("Please connect your wallet first and ensure contract API is initialized.");
       return;
@@ -103,6 +107,8 @@ export default function BuyerView() {
     
     setError(null);
     setCommitStatus(null);
+    
+    isCommittingRef.current = true;
     setIsCommitting(true);
     
     try {
@@ -132,16 +138,18 @@ export default function BuyerView() {
       }
     } finally {
       setIsCommitting(false);
+      isCommittingRef.current = false;
     }
   };
 
   const handleRunComplianceCheck = async () => {
-    if (isChecking || isSyncing) return;
+    if (isChecking || isSyncing || isCheckingRef.current) return;
     if (!classId || !price || !salt || !mfnguardAPI) {
       setError("Please set the reference price details first.");
       return;
     }
 
+    isCheckingRef.current = true;
     setIsChecking(true);
     setCheckResult(null);
     setError(null);
@@ -188,6 +196,7 @@ export default function BuyerView() {
       }
     } finally {
       setIsChecking(false);
+      isCheckingRef.current = false;
     }
   };
 
