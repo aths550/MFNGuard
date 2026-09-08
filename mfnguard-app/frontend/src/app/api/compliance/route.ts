@@ -1,5 +1,18 @@
 /**
- * TRUST ASSUMPTION: 
+ * ============================================================================
+ * DEPRECATED / ORPHANED — DO NOT USE IN PRODUCTION
+ * ============================================================================
+ * This server-side route was created during early prototyping before the
+ * real client-side ZK proving flow was implemented. It accepts plaintext
+ * private data (prices, salts) via HTTP POST and returns a hardcoded mock
+ * response. It is NOT called by any frontend component.
+ *
+ * It should be removed entirely before any production deployment, or
+ * replaced with a real MPC/co-proving backend if server-side proof
+ * generation is ever needed.
+ * ============================================================================
+ *
+ * ORIGINAL TRUST ASSUMPTION: 
  * This proof server acts as a trusted third party for the duration of this request.
  * It briefly holds the plaintext price and salt inputs from both the buyer and the supplier
  * in memory in order to generate the zero-knowledge proof. 

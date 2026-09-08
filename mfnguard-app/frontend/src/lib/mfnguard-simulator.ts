@@ -1,3 +1,15 @@
+/**
+ * ============================================================================
+ * DEPRECATED / ORPHANED — DO NOT USE IN PRODUCTION
+ * ============================================================================
+ * This simulator was copied from the contract test suite during early
+ * prototyping. It runs circuits in-memory using impureCircuits without
+ * generating real ZK proofs or submitting transactions to the ledger.
+ *
+ * It is NOT imported or called by any frontend component.
+ * It should be removed before production deployment.
+ * ============================================================================
+ */
 import {
   type CircuitContext,
   QueryContext,

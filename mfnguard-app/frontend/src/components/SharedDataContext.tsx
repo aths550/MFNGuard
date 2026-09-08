@@ -43,14 +43,16 @@ export function SharedDataProvider({ children }: { children: React.ReactNode }) 
   const [buyerSalt, setBuyerSalt] = useState<Record<string, Uint8Array>>({});
 
   const addSupplierData = (classId: string, prices: bigint[], salts: Uint8Array[]) => {
-    console.log(`[SharedDataContext] addSupplierData called for classId: '${classId}'`);
-    console.log(`[SharedDataContext] Storing prices:`, prices);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[SharedDataContext] addSupplierData called for classId: '${classId}'`);
+      console.log(`[SharedDataContext] Storing prices:`, prices);
+    }
     setSupplierPrices(prev => ({ ...prev, [classId]: prices }));
     setSupplierSalts(prev => ({ ...prev, [classId]: salts }));
   };
 
   const addBuyerData = (classId: string, price: bigint, salt: Uint8Array) => {
-    console.log(`[SharedDataContext] addBuyerData called for classId: '${classId}'`);
+    if (process.env.NODE_ENV === 'development') console.log(`[SharedDataContext] addBuyerData called for classId: '${classId}'`);
     setBuyerPrice(prev => ({ ...prev, [classId]: price }));
     setBuyerSalt(prev => ({ ...prev, [classId]: salt }));
   };

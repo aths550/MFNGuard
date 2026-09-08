@@ -114,11 +114,13 @@ export class MFNGuardAPI implements DeployedMFNGuardAPI {
     this.logger?.trace({ transactionAdded: { circuit: 'compliance_check', txHash: txData.public.txHash } });
 
     // Explicitly log the txData object to the browser console for empirical verification
-    console.log("==================== MFNGuard txData Verification ====================");
-    console.log("Full txData object:", txData);
-    console.log("txData.public:", txData.public);
-    console.log("txData.private:", (txData as any).private);
-    console.log("======================================================================");
+    if (process.env.NODE_ENV === 'development') {
+      console.log("==================== MFNGuard txData Verification ====================");
+      console.log("Full txData object:", txData);
+      console.log("txData.public:", txData.public);
+      console.log("txData.private:", (txData as any).private);
+      console.log("======================================================================");
+    }
 
     return (txData as any).private?.result || (txData as any).result;
   }

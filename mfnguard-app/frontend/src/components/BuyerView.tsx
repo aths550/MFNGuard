@@ -52,7 +52,7 @@ export default function BuyerView() {
     setIsCommitting(true);
     
     try {
-      console.log(`[Local Action] Setting buyer reference price ${price} to class ${classId} with salt ${salt}`);
+      if (process.env.NODE_ENV === 'development') console.log(`[Local Action] Setting buyer reference price ${price} to class ${classId} with salt ${salt}`);
       
       const priceBigInt = BigInt(price);
       if (priceBigInt < 0n) {
@@ -93,8 +93,10 @@ export default function BuyerView() {
     setError(null);
     
     try {
-      console.log(`[BuyerView] Looking up supplier data for classId: '${classId}'`);
-      console.log(`[BuyerView] Current full supplierPrices store:`, supplierPrices);
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[BuyerView] Looking up supplier data for classId: '${classId}'`);
+        console.log(`[BuyerView] Current full supplierPrices store:`, supplierPrices);
+      }
       
       const sPrices = supplierPrices[classId];
       const sSalts = supplierSalts[classId];

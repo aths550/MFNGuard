@@ -46,6 +46,11 @@ export default function DisputeView() {
 
       const classIdBytes = stringToUint8Array(classId);
 
+      // TODO: SECURITY — auditorKey is currently NOT passed to reveal_violation().
+      // The Compact circuit does not accept an auditor key parameter and has no caller-authorization.
+      // For production, the circuit must be extended to require an auditor public key/signature,
+      // or the reveal output must be encrypted to the auditor's key inside the circuit.
+      // Currently, any caller holding witness data can reveal the violator's price.
       const result = await mfnguardAPI.reveal_violation(
         classIdBytes,
         bPrice,
@@ -167,7 +172,8 @@ export default function DisputeView() {
                         <span className="font-mono text-emerald-400">{disputeResult.violator_price}</span>
                       </div>
                       <p className="text-xs text-slate-400 mt-4">
-                        This data has been securely decrypted locally for the provided auditor public key.
+                        {/* TODO: This claim is currently aspirational — auditor key gating is not yet implemented in the contract circuit. See TODO above. */}
+                        This data was revealed locally using the witnesses held in this browser session. Auditor-key-gated decryption is planned for production.
                       </p>
                     </div>
                   ) : (

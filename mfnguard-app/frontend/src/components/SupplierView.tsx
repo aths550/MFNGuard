@@ -60,7 +60,7 @@ export default function SupplierView() {
     setIsCommitting(true);
     
     try {
-      console.log(`[Local Action] Committing price ${price} to class ${classId} with salt ${salt}`);
+      if (process.env.NODE_ENV === 'development') console.log(`[Local Action] Committing price ${price} to class ${classId} with salt ${salt}`);
       
       const capturedPrice = price;
       const capturedSalt = salt;
@@ -84,7 +84,7 @@ export default function SupplierView() {
         }
       }
 
-      console.log(`[SupplierView] EXACT BEFORE commit_price - price: ${priceBigInt.toString()}, saltBytes:`, saltBytes, `computed slot index: ${nextSlotIndex}`);
+      if (process.env.NODE_ENV === 'development') console.log(`[SupplierView] EXACT BEFORE commit_price - price: ${priceBigInt.toString()}, saltBytes:`, saltBytes, `computed slot index: ${nextSlotIndex}`);
       await mfnguardAPI.commit_price(classIdBytes, priceBigInt, saltBytes);
 
       setSlots([...slots, { classId, price: capturedPrice, salt: capturedSalt, status: "confirmed", slotIndex: nextSlotIndex }]);
@@ -96,8 +96,10 @@ export default function SupplierView() {
       currentPrices[nextSlotIndex] = priceBigInt;
       currentSalts[nextSlotIndex] = saltBytes;
       
-      console.log(`[SupplierView] EXACT BEFORE addSupplierData - appended price at index ${nextSlotIndex}: ${priceBigInt.toString()}`);
-      console.log(`[SupplierView] Value of classId exactly before addSupplierData: '${classId}'`);
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[SupplierView] EXACT BEFORE addSupplierData - appended price at index ${nextSlotIndex}: ${priceBigInt.toString()}`);
+        console.log(`[SupplierView] Value of classId exactly before addSupplierData: '${classId}'`);
+      }
       addSupplierData(classId, currentPrices, currentSalts);
       
       // Reset form
@@ -172,7 +174,6 @@ export default function SupplierView() {
                 type="text" 
                 value={classId}
                 onChange={e => {
-                  console.log(`[SupplierView] Input change raw value: '${e.target.value}'`);
                   setClassId(e.target.value);
                 }}
                 required
