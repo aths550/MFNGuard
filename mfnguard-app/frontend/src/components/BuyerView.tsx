@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useWallet } from "./WalletContext";
 import { useSharedData } from "./SharedDataContext";
 import { decryptPayload } from "../lib/crypto";
@@ -44,6 +44,25 @@ export default function BuyerView() {
   const [importPassphrase, setImportPassphrase] = useState<string>("");
   const [isImporting, setIsImporting] = useState<boolean>(false);
   const [importSuccess, setImportSuccess] = useState<string | null>(null);
+
+  // Auto-restore UI state from persistent context (localStorage) on mount/reload
+  useEffect(() => {
+    if (!classId) {
+      const storedClasses = Object.keys(supplierPrices);
+      if (storedClasses.length > 0) {
+        const lastClass = storedClasses[storedClasses.length - 1];
+        setClassId(lastClass);
+        
+        if (buyerPrice[lastClass]) {
+          setPrice(buyerPrice[lastClass].toString());
+        }
+        if (buyerSalt[lastClass]) {
+          const hex = Array.from(buyerSalt[lastClass]).map(b => b.toString(16).padStart(2, '0')).join('');
+          setSalt(hex);
+        }
+      }
+    }
+  }, [supplierPrices, buyerPrice, buyerSalt, classId]);
 
   const handleImportBundle = async (e: React.FormEvent) => {
     e.preventDefault();
