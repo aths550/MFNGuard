@@ -172,8 +172,8 @@ export default function DisputeView() {
                         <span className="font-mono text-emerald-400">{disputeResult.violator_price}</span>
                       </div>
                       <p className="text-xs text-slate-400 mt-4">
-                        {/* TODO: This claim is currently aspirational — auditor key gating is not yet implemented in the contract circuit. See TODO above. */}
-                        This data was revealed locally using the witnesses held in this browser session. Auditor-key-gated decryption is planned for production.
+                        {/* TODO: SECURITY — auditor key is not yet enforced by the contract circuit. See code TODO above. */}
+                        ⚠️ Note: The auditor key field is not yet enforced by the smart contract — this is a placeholder for the intended access-control design. Currently, any party holding the witness data can trigger this reveal.
                       </p>
                     </div>
                   ) : (
