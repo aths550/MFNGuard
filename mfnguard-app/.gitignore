@@ -57,8 +57,6 @@ jspm_packages/
 *.njsproj
 *.sln
 
-# Compact
-managed/
 
 .claude
 .midnight-expert
