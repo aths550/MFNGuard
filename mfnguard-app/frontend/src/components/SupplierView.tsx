@@ -91,6 +91,23 @@ export default function SupplierView() {
       if (process.env.NODE_ENV === 'development') console.log(`[SupplierView] EXACT BEFORE commit_price - price: ${priceBigInt.toString()}, saltBytes:`, saltBytes, `computed slot index: ${nextSlotIndex}`);
       await mfnguardAPI.commit_price(classIdBytes, priceBigInt, saltBytes);
 
+      // Poll for on-chain confirmation to hold the lock
+      let confirmed = false;
+      let attempts = 0;
+      while (!confirmed && attempts < 60) {
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        const state = await mfnguardAPI.get_class_state(classIdBytes, ledger);
+        if (state && state.filled && state.filled[nextSlotIndex] === 1n) {
+          confirmed = true;
+          break;
+        }
+        attempts++;
+      }
+
+      if (!confirmed) {
+        throw new Error("Transaction broadcasted but taking too long to confirm on-chain. Check wallet.");
+      }
+
       setSlots([...slots, { classId, price: capturedPrice, salt: capturedSalt, status: "confirmed", slotIndex: nextSlotIndex }]);
       
       const MAX_UINT64 = BigInt("18446744073709551615");
