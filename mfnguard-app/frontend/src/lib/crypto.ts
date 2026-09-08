@@ -78,9 +78,18 @@ export async function encryptPayload(plaintext: string, passphrase: string): Pro
 
 // Decrypt a payload back to plaintext JSON
 export async function decryptPayload(payload: EncryptedPayload, passphrase: string): Promise<string> {
-  const ivBytes = base64ToBytes(payload.iv);
-  const saltBytes = base64ToBytes(payload.salt);
-  const ciphertextBytes = base64ToBytes(payload.ciphertext);
+  if (!payload || typeof payload !== 'object' || !payload.iv || !payload.salt || !payload.ciphertext) {
+    throw new Error("This doesn't look like a valid witness bundle file (missing required fields).");
+  }
+
+  let ivBytes, saltBytes, ciphertextBytes;
+  try {
+    ivBytes = base64ToBytes(payload.iv);
+    saltBytes = base64ToBytes(payload.salt);
+    ciphertextBytes = base64ToBytes(payload.ciphertext);
+  } catch (err: any) {
+    throw new Error("This doesn't look like a valid witness bundle file (invalid base64 encoding).");
+  }
   
   const key = await deriveKey(passphrase, saltBytes);
   
