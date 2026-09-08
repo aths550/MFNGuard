@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
 /**
  * SharedDataContext
  * 
@@ -22,7 +22,6 @@ import React, { createContext, useContext, useState, ReactNode } from "react";
  * Real at-rest protection would require re-prompting for the passphrase on every page reload.
  */
 
-import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { obfuscateForStorage, deobfuscateFromStorage } from '../lib/crypto';
 
 export interface SharedDataContextType {

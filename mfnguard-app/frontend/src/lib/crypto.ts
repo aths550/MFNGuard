@@ -41,7 +41,7 @@ async function deriveKey(passphrase: string, saltBytes: Uint8Array): Promise<Cry
   return window.crypto.subtle.deriveKey(
     {
       name: "PBKDF2",
-      salt: saltBytes,
+      salt: saltBytes as any,
       iterations: 100000,
       hash: "SHA-256"
     },
@@ -63,7 +63,7 @@ export async function encryptPayload(plaintext: string, passphrase: string): Pro
   const encrypted = await window.crypto.subtle.encrypt(
     {
       name: "AES-GCM",
-      iv: iv
+      iv: iv as any
     },
     key,
     enc.encode(plaintext)
@@ -87,10 +87,10 @@ export async function decryptPayload(payload: EncryptedPayload, passphrase: stri
   const decrypted = await window.crypto.subtle.decrypt(
     {
       name: "AES-GCM",
-      iv: ivBytes
+      iv: ivBytes as any
     },
     key,
-    ciphertextBytes
+    ciphertextBytes as any
   );
   
   const dec = new TextDecoder();
@@ -111,14 +111,14 @@ export async function obfuscateForStorage(plaintext: string): Promise<string> {
   );
   const salt = enc.encode("static-salt-for-demo");
   const key = await window.crypto.subtle.deriveKey(
-    { name: "PBKDF2", salt, iterations: 1000, hash: "SHA-256" },
+    { name: "PBKDF2", salt: salt as any, iterations: 1000, hash: "SHA-256" },
     keyMaterial,
     { name: "AES-GCM", length: 256 },
     false,
     ["encrypt", "decrypt"]
   );
   const iv = new Uint8Array(12); // all zeros for predictable obfuscation
-  const encrypted = await window.crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, enc.encode(plaintext));
+  const encrypted = await window.crypto.subtle.encrypt({ name: "AES-GCM", iv: iv as any }, key, enc.encode(plaintext));
   return bytesToBase64(new Uint8Array(encrypted));
 }
 
@@ -133,13 +133,13 @@ export async function deobfuscateFromStorage(obfuscated: string): Promise<string
   );
   const salt = enc.encode("static-salt-for-demo");
   const key = await window.crypto.subtle.deriveKey(
-    { name: "PBKDF2", salt, iterations: 1000, hash: "SHA-256" },
+    { name: "PBKDF2", salt: salt as any, iterations: 1000, hash: "SHA-256" },
     keyMaterial,
     { name: "AES-GCM", length: 256 },
     false,
     ["encrypt", "decrypt"]
   );
   const iv = new Uint8Array(12);
-  const decrypted = await window.crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, base64ToBytes(obfuscated));
+  const decrypted = await window.crypto.subtle.decrypt({ name: "AES-GCM", iv: iv as any }, key, base64ToBytes(obfuscated) as any);
   return new TextDecoder().decode(decrypted);
 }

@@ -25,7 +25,7 @@ const stringToUint8Array = (str: string) => {
 
 export default function BuyerView() {
   const { connectedAddress, mfnguardAPI, disconnect, isSyncing } = useWallet();
-  const { addBuyerData, supplierPrices, supplierSalts, importSupplierData } = useSharedData();
+  const { addBuyerData, supplierPrices, supplierSalts, importSupplierData, buyerPrice, buyerSalt } = useSharedData();
   const [classId, setClassId] = useState("");
   const [price, setPrice] = useState("");
   
