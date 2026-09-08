@@ -133,6 +133,8 @@ export default function BuyerView() {
         setError("Wallet session expired. Please click 'Connect Lace Wallet' at the top right to reconnect, then try again.");
       } else if (errMsg.includes("182")) {
         setError("Wallet still syncing — please wait a moment and try again.");
+      } else if (errMsg.toLowerCase().includes("already pending")) {
+        setError("Blockchain Confirmation Pending: Your previous transaction is still being mined. Please wait a moment before setting a new reference price.");
       } else {
         setError(errMsg);
       }
@@ -188,6 +190,8 @@ export default function BuyerView() {
       const errMsg = err.message || "Unknown error";
       if (errMsg.includes("182")) {
         setError("Zero-Knowledge Proof Error: Wallet still syncing — please wait a moment and try again.");
+      } else if (errMsg.toLowerCase().includes("already pending")) {
+        setError("Blockchain Confirmation Pending: Your previous transaction is still being mined on the testnet. Please wait ~15-30 seconds for it to confirm before requesting another check.");
       } else if (errMsg.toLowerCase().includes("expired") || errMsg.toLowerCase().includes("reconnect")) {
         disconnect();
         setError("Zero-Knowledge Proof Error: Wallet session expired. Please click 'Connect Lace Wallet' at the top right to reconnect, then try again.");
