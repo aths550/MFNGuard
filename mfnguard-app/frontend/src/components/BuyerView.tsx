@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useWallet } from "./WalletContext";
 import { useSharedData } from "./SharedDataContext";
 import { decryptPayload } from "../lib/crypto";
+import { ledger } from "../../../contract/src/index";
 
 // Helper to convert hex string to Uint8Array
 const hexToUint8Array = (hex: string) => {
@@ -125,7 +126,26 @@ export default function BuyerView() {
       await mfnguardAPI.set_buyer_reference(classIdBytes, priceBigInt, saltBytes);
       addBuyerData(classId, priceBigInt, saltBytes);
 
-      setCommitStatus(`Successfully set reference price for ${classId}.`);
+      setCommitStatus(`Transaction submitted. Waiting for confirmation on-chain (~15-45s)...`);
+
+      // Poll for on-chain confirmation
+      let confirmed = false;
+      let attempts = 0;
+      while (!confirmed && attempts < 60) {
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        const state = await mfnguardAPI.get_class_state(classIdBytes, ledger);
+        if (state && state.buyer_filled === 1n) {
+          confirmed = true;
+          break;
+        }
+        attempts++;
+      }
+
+      if (confirmed) {
+        setCommitStatus(`Successfully set reference price for ${classId} and confirmed on-chain.`);
+      } else {
+        throw new Error("Transaction broadcasted but taking too long to confirm. Please verify in Lace Wallet.");
+      }
     } catch (err: any) {
       console.error("[MFNGuard] Caught error in handleSetReference:", err);
       let errMsg = "Failed to set reference price";
@@ -169,6 +189,17 @@ export default function BuyerView() {
     setError(null);
     
     try {
+      const classIdBytes = stringToUint8Array(classId);
+      
+      // Verify that the prerequisite (Set Reference Price) has actually confirmed on-chain
+      const state = await mfnguardAPI.get_class_state(classIdBytes, ledger);
+      if (!state || state.buyer_filled !== 1n) {
+        setError("Buyer reference price is not yet confirmed on-chain. Please wait ~15-30 seconds and try again.");
+        setIsChecking(false);
+        isCheckingRef.current = false;
+        return;
+      }
+
       if (process.env.NODE_ENV === 'development') {
         console.log(`[BuyerView] Looking up supplier data for classId: '${classId}'`);
         console.log(`[BuyerView] Current full supplierPrices store:`, supplierPrices);
@@ -181,7 +212,6 @@ export default function BuyerView() {
         throw new Error(`Supplier data for class '${classId}' not found in local session. Ensure the supplier shares their data locally first.`);
       }
 
-      const classIdBytes = stringToUint8Array(classId);
       const buyerPriceBigInt = BigInt(price);
       const buyerSaltBytes = hexToUint8Array(salt);
 
