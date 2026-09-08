@@ -5,7 +5,7 @@
 MFNGuard is a privacy-preserving Most-Favored-Nation (MFN) pricing compliance verifier on the Midnight blockchain, written in Compact. It allows buyers to cryptographically verify that they are receiving the best price from a supplier across a specific comparability class, without the supplier ever having to reveal the raw prices of other deals, and without the buyer revealing their own target price directly.
 
 ## Deployment Details (Placeholders)
-- **Network**: Preprod
+- **Network**: Preview Testnet
 - **Contract Address**: `[INSERT CONTRACT ADDRESS HERE]`
 - **Live Demo Link**: `[INSERT DEMO LINK HERE]`
 - **Demo Video**: `[INSERT VIDEO LINK HERE]`
@@ -25,7 +25,7 @@ In traditional B2B contracts, enforcing an MFN clause requires a costly, invasiv
 
 ### Prerequisites
 - Node.js (v18+)
-- [Lace Wallet](https://www.lace.io/) browser extension installed and configured for Midnight Testnet/Preprod.
+- [Lace Wallet](https://www.lace.io/) browser extension installed and configured for Midnight Testnet (Preview).
 
 ### Installation
 1. Clone the repository:
@@ -40,15 +40,14 @@ In traditional B2B contracts, enforcing an MFN clause requires a costly, invasiv
 
 ### Environment Variables
 Create a `.env.local` file in the `mfnguard-app/frontend` directory. 
-By default, the template connects to the Midnight `preview` testnet. To deploy and connect to **Preprod**, update the endpoints:
+By default, the template connects to the Midnight `preview` testnet. Set your deployed contract address here:
 
 ```env
-# Change from 'preview' to 'preprod' for the Midnight Preprod Network
-NEXT_PUBLIC_NETWORK_ID=preprod
+NEXT_PUBLIC_NETWORK_ID=preview
 NEXT_PUBLIC_CONTRACT_ADDRESS=YOUR_DEPLOYED_CONTRACT_ADDRESS_HERE
-NEXT_PUBLIC_INDEXER_URL=https://indexer.preprod.midnight.network/api/v4/graphql
-NEXT_PUBLIC_INDEXER_WS_URL=wss://indexer.preprod.midnight.network/api/v4/graphql/ws
-NEXT_PUBLIC_NODE_URL=https://rpc.preprod.midnight.network
+NEXT_PUBLIC_INDEXER_URL=https://indexer.preview.midnight.network/api/v4/graphql
+NEXT_PUBLIC_INDEXER_WS_URL=wss://indexer.preview.midnight.network/api/v4/graphql/ws
+NEXT_PUBLIC_NODE_URL=https://rpc.preview.midnight.network
 NEXT_PUBLIC_PROOF_SERVER_URL=http://127.0.0.1:6300
 ```
 
