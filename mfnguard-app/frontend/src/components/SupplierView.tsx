@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useWallet } from "./WalletContext";
 import { useSharedData } from "./SharedDataContext";
 import { encryptPayload } from "../lib/crypto";
@@ -44,6 +44,7 @@ export default function SupplierView() {
   
   const [slots, setSlots] = useState<Slot[]>([]);
   const [isCommitting, setIsCommitting] = useState(false);
+  const isCommittingRef = useRef(false);
   const [error, setError] = useState<string | null>(null);
   
   const [passphrase, setPassphrase] = useState<string>("");
@@ -52,13 +53,14 @@ export default function SupplierView() {
 
   const handleCommit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isCommitting || isSyncing) return;
+    if (isCommitting || isSyncing || isCommittingRef.current) return;
     if (!connectedAddress || !mfnguardAPI) {
       setError("Please connect your wallet first and ensure contract API is initialized.");
       return;
     }
     
     setError(null);
+    isCommittingRef.current = true;
     setIsCommitting(true);
     
     try {
@@ -108,17 +110,32 @@ export default function SupplierView() {
       setPrice("");
       setSalt(generateSalt());
     } catch (err: any) {
-      const errMsg = err.message || "Failed to commit price";
-      if (errMsg.toLowerCase().includes("expired") || errMsg.toLowerCase().includes("reconnect")) {
+      console.error("[MFNGuard] Caught error in handleCommit:", err);
+      let errMsg = "Failed to commit price";
+      if (typeof err === 'string') {
+        errMsg = err;
+      } else if (err && typeof err.message === 'string') {
+        errMsg = err.message;
+      } else if (err) {
+        try { errMsg = JSON.stringify(err); } catch(e) {}
+      }
+
+      console.log("[MFNGuard] Parsed errMsg:", errMsg);
+
+      const lowerMsg = errMsg.toLowerCase();
+      if (lowerMsg.includes("expired") || lowerMsg.includes("reconnect")) {
         disconnect();
         setError("Wallet session expired. Please click 'Connect Lace Wallet' at the top right to reconnect, then try again.");
-      } else if (errMsg.includes("182")) {
+      } else if (lowerMsg.includes("182")) {
         setError("Wallet still syncing — please wait a moment and try again.");
+      } else if (lowerMsg.includes("already pending")) {
+        setError("Blockchain Confirmation Pending: Your previous transaction is still being mined on the testnet. Please wait ~15-30 seconds for it to confirm before requesting another check.");
       } else {
         setError(errMsg);
       }
     } finally {
       setIsCommitting(false);
+      isCommittingRef.current = false;
     }
   };
 
