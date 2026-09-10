@@ -1,8 +1,16 @@
 # MFNGuard
 
-[![CI/CD](https://github.com/USERNAME/MFNGuard/actions/workflows/ci.yml/badge.svg)](https://github.com/USERNAME/MFNGuard/actions/workflows/ci.yml)
+[![CI/CD](https://github.com/aths550/MFNGuard/actions/workflows/ci.yml/badge.svg)](https://github.com/aths550/MFNGuard/actions/workflows/ci.yml)
+
 
 MFNGuard is a privacy-preserving Most-Favored-Nation (MFN) pricing compliance verifier on the Midnight blockchain, written in Compact. It allows buyers to cryptographically verify that they are receiving the best price from a supplier across a specific comparability class, without the supplier ever having to reveal the raw prices of other deals, and without the buyer revealing their own target price directly.
+
+## Level 4 (Waxing Gibbous) Submission Checklist
+- [x] Working MVP on Preview network
+- [ ] Live deploy link
+- [x] CI/CD pipeline
+- [ ] Product X profile link
+- [x] Minimum 15 commits
 
 ## Deployment Details (Placeholders)
 - **Network**: Preview Testnet
@@ -30,8 +38,8 @@ In traditional B2B contracts, enforcing an MFN clause requires a costly, invasiv
 ### Installation
 1. Clone the repository:
    ```bash
-   git clone https://github.com/USERNAME/MFNGuard.git
-   cd MFNGuard/mfnguard-app/frontend
+   git clone https://github.com/aths550/MFNGuard.git
+   cd MFNGuard
    ```
 2. Install dependencies:
    ```bash
@@ -39,7 +47,7 @@ In traditional B2B contracts, enforcing an MFN clause requires a costly, invasiv
    ```
 
 ### Environment Variables
-Create a `.env.local` file in the `mfnguard-app/frontend` directory. 
+Create a `.env.local` file in the `frontend` directory. 
 By default, the template connects to the Midnight `preview` testnet. Set your deployed contract address here:
 
 ```env
