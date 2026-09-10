@@ -1,16 +1,206 @@
-pragma language_version >= 0.14.0;
+pragma language_version 0.23;
 
 import CompactStandardLibrary;
 
-export ledger classes: Map<Uint<32>, PriceClass>;
-
-struct PriceClass {
-    slots: Vector<5, Uint<256>>;
-    filled: Vector<5, bool>;
-    buyer_ref: Uint<256>;
-    buyer_filled: bool;
+export struct PriceClass {
+    slots: Vector<5, Bytes<32>>;
+    filled: Vector<5, Uint<8>>;
+    buyer_ref: Bytes<32>;
+    buyer_filled: Uint<8>;
 }
 
-export circuit test(vec: Vector<5, Uint<256>>, b: bool): [] {
-    let a: Uint<256> = vec[0];
+export struct ComplianceResult {
+    compliant: Uint<8>; // 1 for true, 0 for false
+    discrepancy: Uint<64>;
+}
+
+export ledger classes: Map<Bytes<32>, PriceClass>;
+
+// Supplier commits a price. We hash the price and salt locally.
+export circuit commit_price(class_id: Bytes<32>, price: Uint<64>, salt: Bytes<32>): [] {
+    const commitment = persistentHash<Vector<2, Bytes<32>>>([price as Field as Bytes<32>, salt]);
+    
+    const is_member = classes.member(disclose(class_id));
+    
+    // Create an empty class if it doesn't exist
+    const empty_bytes = 0 as Field as Bytes<32>;
+    const empty_slots = [empty_bytes, empty_bytes, empty_bytes, empty_bytes, empty_bytes] as Vector<5, Bytes<32>>;
+    const empty_filled = [0, 0, 0, 0, 0] as Vector<5, Uint<8>>;
+    
+    const initial_class = PriceClass {
+        slots: empty_slots,
+        filled: empty_filled,
+        buyer_ref: empty_bytes,
+        buyer_filled: 0
+    };
+    
+    // Read current state
+    const current_class = is_member ? classes.lookup(disclose(class_id)) : initial_class;
+    
+    // Find an empty slot
+    const i0_empty = current_class.filled[0] == 0;
+    const i1_empty = current_class.filled[1] == 0;
+    const i2_empty = current_class.filled[2] == 0;
+    const i3_empty = current_class.filled[3] == 0;
+    const i4_empty = current_class.filled[4] == 0;
+    
+    const fill_0 = i0_empty;
+    const fill_1 = (!fill_0) && i1_empty;
+    const fill_2 = (!fill_0) && (!fill_1) && i2_empty;
+    const fill_3 = (!fill_0) && (!fill_1) && (!fill_2) && i3_empty;
+    const fill_4 = (!fill_0) && (!fill_1) && (!fill_2) && (!fill_3) && i4_empty;
+    
+    assert(fill_0 || fill_1 || fill_2 || fill_3 || fill_4, "No empty slots available in this price class");
+    
+    const next_slots = [
+        fill_0 ? commitment : current_class.slots[0],
+        fill_1 ? commitment : current_class.slots[1],
+        fill_2 ? commitment : current_class.slots[2],
+        fill_3 ? commitment : current_class.slots[3],
+        fill_4 ? commitment : current_class.slots[4]
+    ] as Vector<5, Bytes<32>>;
+    
+    const next_filled = [
+        fill_0 ? 1 : current_class.filled[0],
+        fill_1 ? 1 : current_class.filled[1],
+        fill_2 ? 1 : current_class.filled[2],
+        fill_3 ? 1 : current_class.filled[3],
+        fill_4 ? 1 : current_class.filled[4]
+    ] as Vector<5, Uint<8>>;
+    
+    const next_class = PriceClass {
+        slots: next_slots,
+        filled: next_filled,
+        buyer_ref: current_class.buyer_ref,
+        buyer_filled: current_class.buyer_filled
+    };
+    
+    classes.insert(disclose(class_id), disclose(next_class));
+}
+
+// Buyer sets their reference price commitment
+export circuit set_buyer_reference(class_id: Bytes<32>, price: Uint<64>, salt: Bytes<32>): [] {
+    const commitment = persistentHash<Vector<2, Bytes<32>>>([price as Field as Bytes<32>, salt]);
+    
+    const is_member = classes.member(disclose(class_id));
+    const empty_bytes = 0 as Field as Bytes<32>;
+    const empty_slots = [empty_bytes, empty_bytes, empty_bytes, empty_bytes, empty_bytes] as Vector<5, Bytes<32>>;
+    const empty_filled = [0, 0, 0, 0, 0] as Vector<5, Uint<8>>;
+    
+    const initial_class = PriceClass {
+        slots: empty_slots,
+        filled: empty_filled,
+        buyer_ref: empty_bytes,
+        buyer_filled: 0
+    };
+    
+    const current_class = is_member ? classes.lookup(disclose(class_id)) : initial_class;
+    
+    const next_class = PriceClass {
+        slots: current_class.slots,
+        filled: current_class.filled,
+        buyer_ref: commitment,
+        buyer_filled: 1
+    };
+    
+    classes.insert(disclose(class_id), disclose(next_class));
+}
+
+// Check compliance without revealing any underlying prices
+export circuit compliance_check(
+    class_id: Bytes<32>, 
+    buyer_price: Uint<64>, 
+    buyer_salt: Bytes<32>,
+    supplier_prices: Vector<5, Uint<64>>,
+    supplier_salts: Vector<5, Bytes<32>>
+): ComplianceResult {
+    const class_state = classes.lookup(disclose(class_id));
+    assert(class_state.buyer_filled == 1, "Buyer reference not set");
+    
+    const expected_buyer_commit = persistentHash<Vector<2, Bytes<32>>>([buyer_price as Field as Bytes<32>, buyer_salt]);
+    assert(expected_buyer_commit == class_state.buyer_ref, "Buyer witness does not match commitment");
+    
+    // Verify each filled slot matches the provided witness, and compute minimum
+    const max_val = 18446744073709551615; // Max Uint64
+    
+    const p0 = (class_state.filled[0] == 1) ? supplier_prices[0] : max_val;
+    const expected_commit_0 = persistentHash<Vector<2, Bytes<32>>>([p0 as Field as Bytes<32>, supplier_salts[0]]);
+    assert(class_state.filled[0] == 0 || expected_commit_0 == class_state.slots[0], "Supplier witness 0 does not match");
+
+    const p1 = (class_state.filled[1] == 1) ? supplier_prices[1] : max_val;
+    const expected_commit_1 = persistentHash<Vector<2, Bytes<32>>>([p1 as Field as Bytes<32>, supplier_salts[1]]);
+    assert(class_state.filled[1] == 0 || expected_commit_1 == class_state.slots[1], "Supplier witness 1 does not match");
+
+    const p2 = (class_state.filled[2] == 1) ? supplier_prices[2] : max_val;
+    const expected_commit_2 = persistentHash<Vector<2, Bytes<32>>>([p2 as Field as Bytes<32>, supplier_salts[2]]);
+    assert(class_state.filled[2] == 0 || expected_commit_2 == class_state.slots[2], "Supplier witness 2 does not match");
+
+    const p3 = (class_state.filled[3] == 1) ? supplier_prices[3] : max_val;
+    const expected_commit_3 = persistentHash<Vector<2, Bytes<32>>>([p3 as Field as Bytes<32>, supplier_salts[3]]);
+    assert(class_state.filled[3] == 0 || expected_commit_3 == class_state.slots[3], "Supplier witness 3 does not match");
+
+    const p4 = (class_state.filled[4] == 1) ? supplier_prices[4] : max_val;
+    const expected_commit_4 = persistentHash<Vector<2, Bytes<32>>>([p4 as Field as Bytes<32>, supplier_salts[4]]);
+    assert(class_state.filled[4] == 0 || expected_commit_4 == class_state.slots[4], "Supplier witness 4 does not match");
+
+    const has_any = class_state.filled[0] == 1 || class_state.filled[1] == 1 || class_state.filled[2] == 1 || class_state.filled[3] == 1 || class_state.filled[4] == 1;
+    assert(has_any, "No supplier prices committed in this class");
+    
+    const m1 = p0 < p1 ? p0 : p1;
+    const m2 = p2 < m1 ? p2 : m1;
+    const m3 = p3 < m2 ? p3 : m2;
+    const min_price = p4 < m3 ? p4 : m3;
+    
+    const compliant = buyer_price <= min_price;
+    const discrepancy = compliant ? 0 : (buyer_price - min_price);
+    
+    return ComplianceResult {
+        compliant: compliant ? 1 : 0,
+        discrepancy: discrepancy
+    };
+}
+
+export struct DisputeResult {
+    violator_found: Uint<8>;
+    violator_price: Uint<64>;
+    violator_index: Uint<8>;
+}
+
+export circuit reveal_violation(
+    class_id: Bytes<32>,
+    buyer_price: Uint<64>,
+    buyer_salt: Bytes<32>,
+    supplier_prices: Vector<5, Uint<64>>,
+    supplier_salts: Vector<5, Bytes<32>>
+): DisputeResult {
+    const class_state = classes.lookup(disclose(class_id));
+    assert(class_state.buyer_filled == 1, "Buyer reference not set");
+    
+    const expected_buyer_commit = persistentHash<Vector<2, Bytes<32>>>([buyer_price as Field as Bytes<32>, buyer_salt]);
+    assert(expected_buyer_commit == class_state.buyer_ref, "Buyer witness does not match commitment");
+    
+    const max_val = 18446744073709551615;
+    const p0 = (class_state.filled[0] == 1) ? supplier_prices[0] : max_val;
+    const p1 = (class_state.filled[1] == 1) ? supplier_prices[1] : max_val;
+    const p2 = (class_state.filled[2] == 1) ? supplier_prices[2] : max_val;
+    const p3 = (class_state.filled[3] == 1) ? supplier_prices[3] : max_val;
+    const p4 = (class_state.filled[4] == 1) ? supplier_prices[4] : max_val;
+    
+    const v0 = p0 < buyer_price;
+    const v1 = p1 < buyer_price;
+    const v2 = p2 < buyer_price;
+    const v3 = p3 < buyer_price;
+    const v4 = p4 < buyer_price;
+    
+    assert(v0 || v1 || v2 || v3 || v4, "No violation exists to reveal");
+    
+    const found = 1;
+    const v_price = v0 ? p0 : (v1 ? p1 : (v2 ? p2 : (v3 ? p3 : p4)));
+    const v_index = v0 ? 0 : (v1 ? 1 : (v2 ? 2 : (v3 ? 3 : 4)));
+    
+    return DisputeResult {
+        violator_found: found,
+        violator_price: v_price,
+        violator_index: v_index
+    };
 }

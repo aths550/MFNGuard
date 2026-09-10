@@ -1,8 +1,0 @@
-{
-  "version": 3,
-  "file": "index.js",
-  "sourceRoot": "../../../",
-  "sources": ["contract/src/test_loop.compact"],
-  "names": [],
-  "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;EAAA;;;;;;;;;;MAaA,AAAA,IAYC;;;;;cAZmB,UAAmB;cAAE,GAAY;;;;;;;;;;;;;;;;;;;;;;;;;yCAAjC,UAAmB,+BAAE,GAAY;;;;;;;iEAAjC,UAAmB,EAAE,GAAY;;;OAYpD;;;;GACA;EA1BD;;;;;;;;;;;;;;;;;;;;;;;;;;IAWA;;;;;;;;;;yEAAkD;;;;;;;GAejD;EAbD,AAAA,OAYC,4BAZmB,UAAmB,EAAE,GAAY;UAC3C,KAAwC,2BAAlC;;;;;;;;;;;;;;qIAAwB,UAAQ;;;+GAAzB;UACb,YAEmB,IADrB,GAAC,EAAE,GAAC,EAAE,GAAC,EAAE,GAAC,EAAE,GAAC;UAEX,YAKL,YAJU,YAAU;mCACT,KAAG;sCACA,KAAG;yCACA,KAAG;IAErB;;;;;;;;;;2HAAwB,UAAQ;;;2HAAY,YAAU;;;wEAA/C;;GACV;;;;;;;;;;;;;;;;IAdD;;;;;uCAAA;;;;;;;;;;;;;;;;4GAAkD;;;;;;uCAAlD;;;;;;;;;;;;4GAAkD;;;;;;;;;;;;;;uCAAlD;;;;;;;;;;;;;;;4GAAkD;;;;;;;;;;;;;;uCAAlD;;;;;;;;;;;;;;;;;4GAAkD;;;;;;;;;KAAA;;;;;;;;;;"
-}
