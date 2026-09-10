@@ -5,16 +5,10 @@
 
 MFNGuard is a privacy-preserving Most-Favored-Nation (MFN) pricing compliance verifier on the Midnight blockchain, written in Compact. It allows buyers to cryptographically verify that they are receiving the best price from a supplier across a specific comparability class, without the supplier ever having to reveal the raw prices of other deals, and without the buyer revealing their own target price directly.
 
-## Level 4 (Waxing Gibbous) Submission Checklist
-- [x] Working MVP on Preview network
-- [ ] Live deploy link
-- [x] CI/CD pipeline
-- [ ] Product X profile link
-- [x] Minimum 15 commits
 
 ## Deployment Details (Placeholders)
 - **Network**: Preview Testnet
-- **Contract Address**: `[INSERT CONTRACT ADDRESS HERE]`
+- **Contract Address**: `e61a7676bd4ea2e82b097c6f15f451ce1d0888353bd69479cf7342964eeb9778`
 - **Live Demo Link**: `[INSERT DEMO LINK HERE]`
 - **Demo Video**: `[INSERT VIDEO LINK HERE]`
 - **Product Profile**: `[INSERT X PROFILE LINK HERE]`
