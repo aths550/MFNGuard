@@ -14,11 +14,14 @@ export default function Home() {
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans p-8">
       {/* Header */}
       <header className="flex justify-between items-center max-w-5xl mx-auto mb-12">
-        <div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-emerald-400 to-teal-500 bg-clip-text text-transparent">
-            MFNGuard
-          </h1>
-          <p className="text-slate-400 text-sm mt-1">Privacy-Preserving MFN Compliance</p>
+        <div className="flex items-center gap-4">
+          <img src="/logo.jpg" alt="MFNGuard Logo" className="w-12 h-12 rounded-xl border border-slate-800 shadow-lg" />
+          <div>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-emerald-400 to-teal-500 bg-clip-text text-transparent">
+              MFNGuard
+            </h1>
+            <p className="text-slate-400 text-sm mt-1">Privacy-Preserving MFN Compliance</p>
+          </div>
         </div>
 
         <div className="flex items-center gap-4">

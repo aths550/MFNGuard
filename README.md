@@ -1,4 +1,4 @@
-# MFNGuard
+# <img src="frontend/public/logo.jpg" width="30" height="30" align="top"> MFNGuard
 
 [![CI/CD](https://github.com/aths550/MFNGuard/actions/workflows/ci.yml/badge.svg)](https://github.com/aths550/MFNGuard/actions/workflows/ci.yml)
 
