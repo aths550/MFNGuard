@@ -12,13 +12,6 @@ MFNGuard is a privacy-preserving Most-Favored-Nation (MFN) pricing compliance ve
 - **Demo Video**: [https://www.loom.com/share/b38bbe839e984400ad8c926c84456ec5](https://www.loom.com/share/b38bbe839e984400ad8c926c84456ec5)
 - **Deployed Contract (Preview Network)**: `e61a7676bd4ea2e82b097c6f15f451ce1d0888353bd69479cf7342964eeb9778`
 
-## Level 4 (Waxing Gibbous) Submission Checklist
-- [x] Public GitHub repo with documentation
-- [x] CI/CD pipeline with passing runs
-- [x] Product X profile created and linked
-- [x] Live demo link + contract address
-- [x] Demo video
-- [x] Minimum 15 meaningful commits
 
 ## Project Overview
 
