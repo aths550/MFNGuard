@@ -27,7 +27,7 @@ In traditional B2B contracts, enforcing an MFN clause requires a costly, invasiv
 
 ### Prerequisites
 - Node.js (v18+)
-- [Lace Wallet](https://www.lace.io/) browser extension installed and configured for Midnight Testnet (Preview).
+- [1AM Wallet](https://www.lace.io/) browser extension installed and configured for Midnight Testnet (Preview).
 
 ### Installation
 1. Clone the repository:
@@ -58,20 +58,20 @@ Start the development server:
 ```bash
 npm run dev
 ```
-Open [http://localhost:3000](http://localhost:3000) in your browser. Ensure your Lace wallet is connected to the same network specified in your `.env.local`.
+Open [http://localhost:3000](http://localhost:3000) in your browser. Ensure your 1AM wallet is connected to the same network specified in your `.env.local`.
 
 ## Usage Instructions
 
 ### Supplier Portal Flow
 1. Navigate to the **Supplier Portal**.
 2. Enter a **Comparability Class ID** (e.g., `class-a-q3`) and a **Price**. 
-3. Click **Commit Price** and sign the transaction in Lace Wallet. 
+3. Click **Commit Price** and sign the transaction in 1AM Wallet. 
 4. The app polls the blockchain to ensure your transaction is firmly committed.
 5. In the "Export Witnesses" section, enter a shared passphrase and download the encrypted witness bundle (`mfnguard-witness-...json`). Send this file and passphrase to the Buyer.
 
 ### Buyer Portal Flow
 1. Navigate to the **Buyer Portal**.
-2. Enter your **Class ID**, your **Price**, and click **Set Reference Price**. Sign the transaction in Lace Wallet. Wait for it to confirm on-chain.
+2. Enter your **Class ID**, your **Price**, and click **Set Reference Price**. Sign the transaction in 1AM Wallet. Wait for it to confirm on-chain.
 3. Once confirmed, import the witness bundle (`.json` file) sent by the Supplier and enter the shared passphrase.
 4. Click **Run Compliance Check**. The app generates a zero-knowledge proof locally verifying if the supplier gave a better price to anyone else in that class.
 

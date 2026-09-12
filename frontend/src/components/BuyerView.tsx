@@ -144,7 +144,7 @@ export default function BuyerView() {
       if (confirmed) {
         setCommitStatus(`Successfully set reference price for ${classId} and confirmed on-chain.`);
       } else {
-        throw new Error("Transaction broadcasted but taking too long to confirm. Please verify in Lace Wallet.");
+        throw new Error("Transaction broadcasted but taking too long to confirm. Please verify in 1AM Wallet.");
       }
     } catch (err: any) {
       console.error("[MFNGuard] Caught error in handleSetReference:", err);
@@ -160,7 +160,7 @@ export default function BuyerView() {
       const lowerMsg = errMsg.toLowerCase();
       if (lowerMsg.includes("expired") || lowerMsg.includes("reconnect")) {
         disconnect();
-        setError("Wallet session expired. Please click 'Connect Lace Wallet' at the top right to reconnect, then try again.");
+        setError("Wallet session expired. Please click 'Connect 1AM Wallet' at the top right to reconnect, then try again.");
       } else if (lowerMsg.includes("182")) {
         setError("Wallet still syncing — please wait a moment and try again.");
       } else if (lowerMsg.includes("already pending")) {
@@ -247,7 +247,7 @@ export default function BuyerView() {
         setError("Blockchain Confirmation Pending: Your previous transaction is still being mined on the testnet. Please wait ~15-30 seconds for it to confirm before requesting another check.");
       } else if (lowerMsg.includes("expired") || lowerMsg.includes("reconnect")) {
         disconnect();
-        setError("Zero-Knowledge Proof Error: Wallet session expired. Please click 'Connect Lace Wallet' at the top right to reconnect, then try again.");
+        setError("Zero-Knowledge Proof Error: Wallet session expired. Please click 'Connect 1AM Wallet' at the top right to reconnect, then try again.");
       } else {
         setError(`Zero-Knowledge Proof Error: ${errMsg}`);
       }

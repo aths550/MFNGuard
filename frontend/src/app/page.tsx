@@ -47,7 +47,7 @@ export default function Home() {
               onClick={connect}
               className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-sm font-semibold py-2 px-6 rounded-full transition-all duration-200 shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:shadow-[0_0_25px_rgba(16,185,129,0.5)]"
             >
-              Connect Lace Wallet
+              Connect 1AM Wallet
             </button>
           )}
         </div>
@@ -63,7 +63,7 @@ export default function Home() {
             <div>
               <h3 className="text-amber-500 font-medium">Wrong Network Detected</h3>
               <p className="text-amber-500/80 text-sm mt-1">
-                You are currently connected to {network}. MFNGuard requires the Midnight Preview testnet. Please switch networks in your Lace wallet.
+                You are currently connected to {network}. MFNGuard requires the Midnight Preview testnet. Please switch networks in your 1AM wallet.
               </p>
             </div>
           </div>
