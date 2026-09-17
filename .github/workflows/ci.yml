@@ -28,8 +28,9 @@ jobs:
       run: |
         wget https://github.com/LFDT-Minokawa/compact/releases/download/compactc-v0.31.1/compactc_v0.31.1_x86_64-unknown-linux-musl.zip
         unzip compactc_v0.31.1_x86_64-unknown-linux-musl.zip
-        chmod +x compactc
+        chmod +x compactc compactc.bin
         sudo mv compactc /usr/local/bin/compact
+        sudo mv compactc.bin /usr/local/bin/compactc.bin
 
     - name: Install Dependencies
       run: npm ci
