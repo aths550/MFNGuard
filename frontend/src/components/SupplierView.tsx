@@ -37,10 +37,11 @@ export default function SupplierView() {
   const { addSupplierData, supplierPrices: existingSupplierPrices, supplierSalts: existingSupplierSalts } = useSharedData();
   const [classId, setClassId] = useState("");
   const [price, setPrice] = useState("");
+  const [auditorSecret, setAuditorSecret] = useState("");
   
   // Auto-generate 32-byte salt as hex
-  const generateSalt = () => Array.from({ length: 32 }, () => Math.floor(Math.random() * 256).toString(16).padStart(2, '0')).join('');
-  const [salt, setSalt] = useState(generateSalt());
+  const generateHex32 = () => Array.from({ length: 32 }, () => Math.floor(Math.random() * 256).toString(16).padStart(2, '0')).join('');
+  const [salt, setSalt] = useState(generateHex32());
   
   const [slots, setSlots] = useState<Slot[]>([]);
   const [isCommitting, setIsCommitting] = useState(false);
@@ -56,6 +57,10 @@ export default function SupplierView() {
     if (isCommitting || isSyncing || isCommittingRef.current) return;
     if (!connectedAddress || !mfnguardAPI) {
       setError("Please connect your wallet first and ensure contract API is initialized.");
+      return;
+    }
+    if (auditorSecret.length !== 64) {
+      setError("Auditor Secret must be exactly 64 hex characters (32 bytes).");
       return;
     }
     
@@ -77,6 +82,10 @@ export default function SupplierView() {
       const classIdBytes = stringToUint8Array(classId);
       const saltBytes = hexToUint8Array(capturedSalt);
 
+      // Compute the public hash client-side
+      const secretBytes = hexToUint8Array(auditorSecret);
+      const auditorHashBytes = await mfnguardAPI.compute_auditor_hash(secretBytes);
+
       // Read current on-chain state to find the next available slot
       const classState = await mfnguardAPI.get_class_state(classIdBytes, ledger);
       let nextSlotIndex = 0;
@@ -89,7 +98,7 @@ export default function SupplierView() {
       }
 
       if (process.env.NODE_ENV === 'development') console.log(`[SupplierView] EXACT BEFORE commit_price - price: ${priceBigInt.toString()}, saltBytes:`, saltBytes, `computed slot index: ${nextSlotIndex}`);
-      await mfnguardAPI.commit_price(classIdBytes, priceBigInt, saltBytes);
+      await mfnguardAPI.commit_price(classIdBytes, priceBigInt, saltBytes, auditorHashBytes);
 
       // Poll for on-chain confirmation to hold the lock
       let confirmed = false;
@@ -125,7 +134,7 @@ export default function SupplierView() {
       
       // Reset form
       setPrice("");
-      setSalt(generateSalt());
+      setSalt(generateHex32());
     } catch (err: any) {
       console.error("[MFNGuard] Caught error in handleCommit:", err);
       let errMsg = "Failed to commit price";
@@ -231,6 +240,29 @@ export default function SupplierView() {
               />
             </div>
             
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-300">Auditor Secret Key (32-byte hex)</label>
+              <div className="flex space-x-2">
+                <input 
+                  type="text" 
+                  value={auditorSecret}
+                  onChange={e => setAuditorSecret(e.target.value)}
+                  className="flex-1 px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent font-mono text-sm text-white"
+                  placeholder="e.g. 1a2b3c..."
+                  required
+                />
+                <button 
+                  type="button"
+                  onClick={() => setAuditorSecret(generateHex32())}
+                  className="px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg hover:bg-slate-700 transition-colors text-sm text-white"
+                  title="Auto-generate secure secret"
+                >
+                  🎲 Gen
+                </button>
+              </div>
+              <p className="text-xs text-slate-400">Save this secret to give to the Auditor. The app hashes this securely before submitting.</p>
+            </div>
+            
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-1.5">Price</label>
               <input 
@@ -246,7 +278,7 @@ export default function SupplierView() {
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-1.5 flex justify-between">
                 <span>Cryptographic Salt</span>
-                <button type="button" onClick={() => setSalt(generateSalt())} className="text-emerald-400 hover:text-emerald-300 text-xs">Regenerate</button>
+                <button type="button" onClick={() => setSalt(generateHex32())} className="text-emerald-400 hover:text-emerald-300 text-xs">Regenerate</button>
               </label>
               <input 
                 type="text" 

@@ -10,7 +10,7 @@ MFNGuard is a privacy-preserving Most-Favored-Nation (MFN) pricing compliance ve
 - **Live Demo**: [https://mfn-guard-frontend.vercel.app](https://mfn-guard-frontend.vercel.app)
 - **Product X Profile**: [https://x.com/MFNGuard](https://x.com/MFNGuard)
 - **Demo Video**: [https://www.loom.com/share/b38bbe839e984400ad8c926c84456ec5](https://www.loom.com/share/b38bbe839e984400ad8c926c84456ec5)
-- **Deployed Contract (Preview Network)**: `e61a7676bd4ea2e82b097c6f15f451ce1d0888353bd69479cf7342964eeb9778`
+- **Deployed Contract (Preview Network)**: `39fb21b446a2f7c0062b1b365b263b62ff912a7a505e81d7a0c8680183141f48`
 
 
 ## Project Overview
@@ -81,8 +81,19 @@ Open [http://localhost:3000](http://localhost:3000) in your browser. Ensure your
 3. Enter the Auditor's Private Key (simulated in this MVP for testing purposes).
 4. Click **Reveal Violation** to unmask only the specific price that violated the contract.
 
-## Security Limitations (MVP)
+## Trust Model & Security Considerations (MVP)
 
-> **MVP limitation — fixed slate size:** The current implementation uses a fixed slate size of N=5 slots per comparability class due to current constraints around loops and mapping in the Compact compiler. Suppliers can only commit a maximum of 5 deals per class.
+> [!WARNING]
+> **Proof Server Trust Boundary:** MFNGuard currently relies on a centralized Proof Server to synthesize the zero-knowledge proofs. Because standard Midnight ZK-SNARKs are single-prover, the Proof Server acts as a necessary **Trusted Third Party (TTP)**. 
+> 
+> When running a Compliance Check or revealing a dispute, the Proof Server receives **both the Supplier's and Buyer's private prices and salts in plaintext**. Furthermore, the `auditor_secret` is resent in plaintext to the proof server on every `reveal_violation` call. 
+> 
+> **Consequently, the Proof Server operator possesses full visibility into all private data and holds the power to impersonate the Auditor.** Because the `auditor_hash` is immutable once set in a `PriceClass`, a single compromised proof-server session permanently compromises the auditor role for that entire class. 
+> 
+> A production-ready iteration of MFNGuard must replace this component with either advanced Multi-Party Computation (MPC) or run the Proof Server inside a verifiable Hardware Secure Enclave (e.g., Intel SGX or AWS Nitro) to seal memory and cryptographically attest that no logs are retained. Additionally, production versions should consider a rotating/one-time secret scheme to bound this exposure window.
 
-> **MVP limitation — proof server trust assumption:** Compliance checks are computed by a proof server that briefly holds both parties' plaintext prices in memory to generate the ZK proof. It does not persist or log this data, but it is a trusted third party for this specific operation. A production version would replace this with two-party MPC or co-proving, so no single party or server ever holds both secrets simultaneously.
+> [!NOTE]
+> **Fixed Slate Size:** The current implementation uses a fixed slate size of N=5 slots per comparability class due to current constraints around loops and mapping in the Compact compiler. Suppliers can only commit a maximum of 5 deals per class.
+
+> [!WARNING]
+> **KNOWN GAP - E2E Testing:** The automated `e2e-test.ts` script in the CI pipeline currently only validates environment variable injection and wiring. It **does not** execute a real on-chain transaction flow (`commit_price` -> `compliance_check`). This is because headless transaction execution requires a dedicated, pre-funded test wallet with tDUST, which cannot be reliably funded in an automated CI environment without manual faucet interaction. Do not mistake a passing CI build for real on-chain automated test coverage.

@@ -10,7 +10,7 @@ import {
   type Ledger,
   ledger,
   type ComplianceResult,
-  type DisputeResult
+  type DisputeResult,
 } from "../managed/mfnguard/contract/index.js";
 
 export class MFNGuardSimulator {
@@ -41,22 +41,36 @@ export class MFNGuardSimulator {
     return ledger(this.circuitContext.currentQueryContext.state);
   }
 
-  public commit_price(class_id: Uint8Array, price: bigint, salt: Uint8Array): Ledger {
+  public commit_price(
+    class_id: Uint8Array,
+    price: bigint,
+    salt: Uint8Array,
+  ): Ledger {
+    const auditor_secret = new Uint8Array(32);
+    const auditor_hash = (this.contract as any)._persistentHash_0([auditor_secret]);
     this.circuitContext = this.contract.impureCircuits.commit_price(
       this.circuitContext,
       class_id,
       price,
-      salt
+      salt,
+      auditor_hash
     ).context;
     return this.getLedger();
   }
 
-  public set_buyer_reference(class_id: Uint8Array, price: bigint, salt: Uint8Array): Ledger {
+  public set_buyer_reference(
+    class_id: Uint8Array,
+    price: bigint,
+    salt: Uint8Array,
+  ): Ledger {
+    const auditor_secret = new Uint8Array(32);
+    const auditor_hash = (this.contract as any)._persistentHash_0([auditor_secret]);
     this.circuitContext = this.contract.impureCircuits.set_buyer_reference(
       this.circuitContext,
       class_id,
       price,
-      salt
+      salt,
+      auditor_hash
     ).context;
     return this.getLedger();
   }
@@ -66,7 +80,7 @@ export class MFNGuardSimulator {
     buyer_price: bigint,
     buyer_salt: Uint8Array,
     supplier_prices: bigint[],
-    supplier_salts: Uint8Array[]
+    supplier_salts: Uint8Array[],
   ): ComplianceResult {
     const result = this.contract.impureCircuits.compliance_check(
       this.circuitContext,
@@ -74,18 +88,18 @@ export class MFNGuardSimulator {
       buyer_price,
       buyer_salt,
       supplier_prices,
-      supplier_salts
+      supplier_salts,
     );
     this.circuitContext = result.context;
     return result.result;
   }
-  
+
   public reveal_violation(
     class_id: Uint8Array,
     buyer_price: bigint,
     buyer_salt: Uint8Array,
     supplier_prices: bigint[],
-    supplier_salts: Uint8Array[]
+    supplier_salts: Uint8Array[],
   ): DisputeResult {
     const result = this.contract.impureCircuits.reveal_violation(
       this.circuitContext,
@@ -93,7 +107,8 @@ export class MFNGuardSimulator {
       buyer_price,
       buyer_salt,
       supplier_prices,
-      supplier_salts
+      supplier_salts,
+      new Uint8Array(32),
     );
     this.circuitContext = result.context;
     return result.result;

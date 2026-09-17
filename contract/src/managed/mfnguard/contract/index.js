@@ -11,18 +11,19 @@ const _descriptor_3 = new __compactRuntime.CompactTypeVector(5, _descriptor_2);
 
 class _PriceClass_0 {
   alignment() {
-    return _descriptor_1.alignment().concat(_descriptor_3.alignment().concat(_descriptor_0.alignment().concat(_descriptor_2.alignment())));
+    return _descriptor_1.alignment().concat(_descriptor_3.alignment().concat(_descriptor_0.alignment().concat(_descriptor_2.alignment().concat(_descriptor_0.alignment()))));
   }
   fromValue(value_0) {
     return {
       slots: _descriptor_1.fromValue(value_0),
       filled: _descriptor_3.fromValue(value_0),
       buyer_ref: _descriptor_0.fromValue(value_0),
-      buyer_filled: _descriptor_2.fromValue(value_0)
+      buyer_filled: _descriptor_2.fromValue(value_0),
+      auditor_hash: _descriptor_0.fromValue(value_0)
     }
   }
   toValue(value_0) {
-    return _descriptor_1.toValue(value_0.slots).concat(_descriptor_3.toValue(value_0.filled).concat(_descriptor_0.toValue(value_0.buyer_ref).concat(_descriptor_2.toValue(value_0.buyer_filled))));
+    return _descriptor_1.toValue(value_0.slots).concat(_descriptor_3.toValue(value_0.filled).concat(_descriptor_0.toValue(value_0.buyer_ref).concat(_descriptor_2.toValue(value_0.buyer_filled).concat(_descriptor_0.toValue(value_0.auditor_hash)))));
   }
 }
 
@@ -71,6 +72,8 @@ const _descriptor_9 = __compactRuntime.CompactTypeBoolean;
 
 const _descriptor_10 = new __compactRuntime.CompactTypeVector(2, _descriptor_0);
 
+const _descriptor_11 = new __compactRuntime.CompactTypeVector(1, _descriptor_0);
+
 class _Either_0 {
   alignment() {
     return _descriptor_9.alignment().concat(_descriptor_0.alignment().concat(_descriptor_0.alignment()));
@@ -87,9 +90,9 @@ class _Either_0 {
   }
 }
 
-const _descriptor_11 = new _Either_0();
+const _descriptor_12 = new _Either_0();
 
-const _descriptor_12 = new __compactRuntime.CompactTypeUnsignedInteger(340282366920938463463374607431768211455n, 16);
+const _descriptor_13 = new __compactRuntime.CompactTypeUnsignedInteger(340282366920938463463374607431768211455n, 16);
 
 class _ContractAddress_0 {
   alignment() {
@@ -105,7 +108,7 @@ class _ContractAddress_0 {
   }
 }
 
-const _descriptor_13 = new _ContractAddress_0();
+const _descriptor_14 = new _ContractAddress_0();
 
 export class Contract {
   witnesses;
@@ -119,47 +122,58 @@ export class Contract {
     }
     this.witnesses = witnesses_0;
     this.circuits = {
+      compute_auditor_hash(context, ...args_1) {
+        return { result: pureCircuits.compute_auditor_hash(...args_1), context };
+      },
       commit_price: (...args_1) => {
-        if (args_1.length !== 4) {
-          throw new __compactRuntime.CompactError(`commit_price: expected 4 arguments (as invoked from Typescript), received ${args_1.length}`);
+        if (args_1.length !== 5) {
+          throw new __compactRuntime.CompactError(`commit_price: expected 5 arguments (as invoked from Typescript), received ${args_1.length}`);
         }
         const contextOrig_0 = args_1[0];
         const class_id_0 = args_1[1];
         const price_0 = args_1[2];
         const salt_0 = args_1[3];
+        const auditor_hash_0 = args_1[4];
         if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.currentQueryContext != undefined)) {
           __compactRuntime.typeError('commit_price',
                                      'argument 1 (as invoked from Typescript)',
-                                     'mfnguard.compact line 20 char 1',
+                                     'mfnguard.compact line 25 char 1',
                                      'CircuitContext',
                                      contextOrig_0)
         }
         if (!(class_id_0.buffer instanceof ArrayBuffer && class_id_0.BYTES_PER_ELEMENT === 1 && class_id_0.length === 32)) {
           __compactRuntime.typeError('commit_price',
                                      'argument 1 (argument 2 as invoked from Typescript)',
-                                     'mfnguard.compact line 20 char 1',
+                                     'mfnguard.compact line 25 char 1',
                                      'Bytes<32>',
                                      class_id_0)
         }
         if (!(typeof(price_0) === 'bigint' && price_0 >= 0n && price_0 <= 18446744073709551615n)) {
           __compactRuntime.typeError('commit_price',
                                      'argument 2 (argument 3 as invoked from Typescript)',
-                                     'mfnguard.compact line 20 char 1',
+                                     'mfnguard.compact line 25 char 1',
                                      'Uint<0..18446744073709551616>',
                                      price_0)
         }
         if (!(salt_0.buffer instanceof ArrayBuffer && salt_0.BYTES_PER_ELEMENT === 1 && salt_0.length === 32)) {
           __compactRuntime.typeError('commit_price',
                                      'argument 3 (argument 4 as invoked from Typescript)',
-                                     'mfnguard.compact line 20 char 1',
+                                     'mfnguard.compact line 25 char 1',
                                      'Bytes<32>',
                                      salt_0)
+        }
+        if (!(auditor_hash_0.buffer instanceof ArrayBuffer && auditor_hash_0.BYTES_PER_ELEMENT === 1 && auditor_hash_0.length === 32)) {
+          __compactRuntime.typeError('commit_price',
+                                     'argument 4 (argument 5 as invoked from Typescript)',
+                                     'mfnguard.compact line 25 char 1',
+                                     'Bytes<32>',
+                                     auditor_hash_0)
         }
         const context = { ...contextOrig_0, gasCost: __compactRuntime.emptyRunningCost() };
         const partialProofData = {
           input: {
-            value: _descriptor_0.toValue(class_id_0).concat(_descriptor_5.toValue(price_0).concat(_descriptor_0.toValue(salt_0))),
-            alignment: _descriptor_0.alignment().concat(_descriptor_5.alignment().concat(_descriptor_0.alignment()))
+            value: _descriptor_0.toValue(class_id_0).concat(_descriptor_5.toValue(price_0).concat(_descriptor_0.toValue(salt_0).concat(_descriptor_0.toValue(auditor_hash_0)))),
+            alignment: _descriptor_0.alignment().concat(_descriptor_5.alignment().concat(_descriptor_0.alignment().concat(_descriptor_0.alignment())))
           },
           output: undefined,
           publicTranscript: [],
@@ -169,51 +183,60 @@ export class Contract {
                                               partialProofData,
                                               class_id_0,
                                               price_0,
-                                              salt_0);
+                                              salt_0,
+                                              auditor_hash_0);
         partialProofData.output = { value: [], alignment: [] };
         return { result: result_0, context: context, proofData: partialProofData, gasCost: context.gasCost };
       },
       set_buyer_reference: (...args_1) => {
-        if (args_1.length !== 4) {
-          throw new __compactRuntime.CompactError(`set_buyer_reference: expected 4 arguments (as invoked from Typescript), received ${args_1.length}`);
+        if (args_1.length !== 5) {
+          throw new __compactRuntime.CompactError(`set_buyer_reference: expected 5 arguments (as invoked from Typescript), received ${args_1.length}`);
         }
         const contextOrig_0 = args_1[0];
         const class_id_0 = args_1[1];
         const price_0 = args_1[2];
         const salt_0 = args_1[3];
+        const auditor_hash_0 = args_1[4];
         if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.currentQueryContext != undefined)) {
           __compactRuntime.typeError('set_buyer_reference',
                                      'argument 1 (as invoked from Typescript)',
-                                     'mfnguard.compact line 82 char 1',
+                                     'mfnguard.compact line 89 char 1',
                                      'CircuitContext',
                                      contextOrig_0)
         }
         if (!(class_id_0.buffer instanceof ArrayBuffer && class_id_0.BYTES_PER_ELEMENT === 1 && class_id_0.length === 32)) {
           __compactRuntime.typeError('set_buyer_reference',
                                      'argument 1 (argument 2 as invoked from Typescript)',
-                                     'mfnguard.compact line 82 char 1',
+                                     'mfnguard.compact line 89 char 1',
                                      'Bytes<32>',
                                      class_id_0)
         }
         if (!(typeof(price_0) === 'bigint' && price_0 >= 0n && price_0 <= 18446744073709551615n)) {
           __compactRuntime.typeError('set_buyer_reference',
                                      'argument 2 (argument 3 as invoked from Typescript)',
-                                     'mfnguard.compact line 82 char 1',
+                                     'mfnguard.compact line 89 char 1',
                                      'Uint<0..18446744073709551616>',
                                      price_0)
         }
         if (!(salt_0.buffer instanceof ArrayBuffer && salt_0.BYTES_PER_ELEMENT === 1 && salt_0.length === 32)) {
           __compactRuntime.typeError('set_buyer_reference',
                                      'argument 3 (argument 4 as invoked from Typescript)',
-                                     'mfnguard.compact line 82 char 1',
+                                     'mfnguard.compact line 89 char 1',
                                      'Bytes<32>',
                                      salt_0)
+        }
+        if (!(auditor_hash_0.buffer instanceof ArrayBuffer && auditor_hash_0.BYTES_PER_ELEMENT === 1 && auditor_hash_0.length === 32)) {
+          __compactRuntime.typeError('set_buyer_reference',
+                                     'argument 4 (argument 5 as invoked from Typescript)',
+                                     'mfnguard.compact line 89 char 1',
+                                     'Bytes<32>',
+                                     auditor_hash_0)
         }
         const context = { ...contextOrig_0, gasCost: __compactRuntime.emptyRunningCost() };
         const partialProofData = {
           input: {
-            value: _descriptor_0.toValue(class_id_0).concat(_descriptor_5.toValue(price_0).concat(_descriptor_0.toValue(salt_0))),
-            alignment: _descriptor_0.alignment().concat(_descriptor_5.alignment().concat(_descriptor_0.alignment()))
+            value: _descriptor_0.toValue(class_id_0).concat(_descriptor_5.toValue(price_0).concat(_descriptor_0.toValue(salt_0).concat(_descriptor_0.toValue(auditor_hash_0)))),
+            alignment: _descriptor_0.alignment().concat(_descriptor_5.alignment().concat(_descriptor_0.alignment().concat(_descriptor_0.alignment())))
           },
           output: undefined,
           publicTranscript: [],
@@ -223,7 +246,8 @@ export class Contract {
                                                      partialProofData,
                                                      class_id_0,
                                                      price_0,
-                                                     salt_0);
+                                                     salt_0,
+                                                     auditor_hash_0);
         partialProofData.output = { value: [], alignment: [] };
         return { result: result_0, context: context, proofData: partialProofData, gasCost: context.gasCost };
       },
@@ -240,42 +264,42 @@ export class Contract {
         if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.currentQueryContext != undefined)) {
           __compactRuntime.typeError('compliance_check',
                                      'argument 1 (as invoked from Typescript)',
-                                     'mfnguard.compact line 110 char 1',
+                                     'mfnguard.compact line 119 char 1',
                                      'CircuitContext',
                                      contextOrig_0)
         }
         if (!(class_id_0.buffer instanceof ArrayBuffer && class_id_0.BYTES_PER_ELEMENT === 1 && class_id_0.length === 32)) {
           __compactRuntime.typeError('compliance_check',
                                      'argument 1 (argument 2 as invoked from Typescript)',
-                                     'mfnguard.compact line 110 char 1',
+                                     'mfnguard.compact line 119 char 1',
                                      'Bytes<32>',
                                      class_id_0)
         }
         if (!(typeof(buyer_price_0) === 'bigint' && buyer_price_0 >= 0n && buyer_price_0 <= 18446744073709551615n)) {
           __compactRuntime.typeError('compliance_check',
                                      'argument 2 (argument 3 as invoked from Typescript)',
-                                     'mfnguard.compact line 110 char 1',
+                                     'mfnguard.compact line 119 char 1',
                                      'Uint<0..18446744073709551616>',
                                      buyer_price_0)
         }
         if (!(buyer_salt_0.buffer instanceof ArrayBuffer && buyer_salt_0.BYTES_PER_ELEMENT === 1 && buyer_salt_0.length === 32)) {
           __compactRuntime.typeError('compliance_check',
                                      'argument 3 (argument 4 as invoked from Typescript)',
-                                     'mfnguard.compact line 110 char 1',
+                                     'mfnguard.compact line 119 char 1',
                                      'Bytes<32>',
                                      buyer_salt_0)
         }
         if (!(Array.isArray(supplier_prices_0) && supplier_prices_0.length === 5 && supplier_prices_0.every((t) => typeof(t) === 'bigint' && t >= 0n && t <= 18446744073709551615n))) {
           __compactRuntime.typeError('compliance_check',
                                      'argument 4 (argument 5 as invoked from Typescript)',
-                                     'mfnguard.compact line 110 char 1',
+                                     'mfnguard.compact line 119 char 1',
                                      'Vector<5, Uint<0..18446744073709551616>>',
                                      supplier_prices_0)
         }
         if (!(Array.isArray(supplier_salts_0) && supplier_salts_0.length === 5 && supplier_salts_0.every((t) => t.buffer instanceof ArrayBuffer && t.BYTES_PER_ELEMENT === 1 && t.length === 32))) {
           __compactRuntime.typeError('compliance_check',
                                      'argument 5 (argument 6 as invoked from Typescript)',
-                                     'mfnguard.compact line 110 char 1',
+                                     'mfnguard.compact line 119 char 1',
                                      'Vector<5, Bytes<32>>',
                                      supplier_salts_0)
         }
@@ -300,8 +324,8 @@ export class Contract {
         return { result: result_0, context: context, proofData: partialProofData, gasCost: context.gasCost };
       },
       reveal_violation: (...args_1) => {
-        if (args_1.length !== 6) {
-          throw new __compactRuntime.CompactError(`reveal_violation: expected 6 arguments (as invoked from Typescript), received ${args_1.length}`);
+        if (args_1.length !== 7) {
+          throw new __compactRuntime.CompactError(`reveal_violation: expected 7 arguments (as invoked from Typescript), received ${args_1.length}`);
         }
         const contextOrig_0 = args_1[0];
         const class_id_0 = args_1[1];
@@ -309,53 +333,61 @@ export class Contract {
         const buyer_salt_0 = args_1[3];
         const supplier_prices_0 = args_1[4];
         const supplier_salts_0 = args_1[5];
+        const auditor_secret_0 = args_1[6];
         if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.currentQueryContext != undefined)) {
           __compactRuntime.typeError('reveal_violation',
                                      'argument 1 (as invoked from Typescript)',
-                                     'mfnguard.compact line 169 char 1',
+                                     'mfnguard.compact line 178 char 1',
                                      'CircuitContext',
                                      contextOrig_0)
         }
         if (!(class_id_0.buffer instanceof ArrayBuffer && class_id_0.BYTES_PER_ELEMENT === 1 && class_id_0.length === 32)) {
           __compactRuntime.typeError('reveal_violation',
                                      'argument 1 (argument 2 as invoked from Typescript)',
-                                     'mfnguard.compact line 169 char 1',
+                                     'mfnguard.compact line 178 char 1',
                                      'Bytes<32>',
                                      class_id_0)
         }
         if (!(typeof(buyer_price_0) === 'bigint' && buyer_price_0 >= 0n && buyer_price_0 <= 18446744073709551615n)) {
           __compactRuntime.typeError('reveal_violation',
                                      'argument 2 (argument 3 as invoked from Typescript)',
-                                     'mfnguard.compact line 169 char 1',
+                                     'mfnguard.compact line 178 char 1',
                                      'Uint<0..18446744073709551616>',
                                      buyer_price_0)
         }
         if (!(buyer_salt_0.buffer instanceof ArrayBuffer && buyer_salt_0.BYTES_PER_ELEMENT === 1 && buyer_salt_0.length === 32)) {
           __compactRuntime.typeError('reveal_violation',
                                      'argument 3 (argument 4 as invoked from Typescript)',
-                                     'mfnguard.compact line 169 char 1',
+                                     'mfnguard.compact line 178 char 1',
                                      'Bytes<32>',
                                      buyer_salt_0)
         }
         if (!(Array.isArray(supplier_prices_0) && supplier_prices_0.length === 5 && supplier_prices_0.every((t) => typeof(t) === 'bigint' && t >= 0n && t <= 18446744073709551615n))) {
           __compactRuntime.typeError('reveal_violation',
                                      'argument 4 (argument 5 as invoked from Typescript)',
-                                     'mfnguard.compact line 169 char 1',
+                                     'mfnguard.compact line 178 char 1',
                                      'Vector<5, Uint<0..18446744073709551616>>',
                                      supplier_prices_0)
         }
         if (!(Array.isArray(supplier_salts_0) && supplier_salts_0.length === 5 && supplier_salts_0.every((t) => t.buffer instanceof ArrayBuffer && t.BYTES_PER_ELEMENT === 1 && t.length === 32))) {
           __compactRuntime.typeError('reveal_violation',
                                      'argument 5 (argument 6 as invoked from Typescript)',
-                                     'mfnguard.compact line 169 char 1',
+                                     'mfnguard.compact line 178 char 1',
                                      'Vector<5, Bytes<32>>',
                                      supplier_salts_0)
+        }
+        if (!(auditor_secret_0.buffer instanceof ArrayBuffer && auditor_secret_0.BYTES_PER_ELEMENT === 1 && auditor_secret_0.length === 32)) {
+          __compactRuntime.typeError('reveal_violation',
+                                     'argument 6 (argument 7 as invoked from Typescript)',
+                                     'mfnguard.compact line 178 char 1',
+                                     'Bytes<32>',
+                                     auditor_secret_0)
         }
         const context = { ...contextOrig_0, gasCost: __compactRuntime.emptyRunningCost() };
         const partialProofData = {
           input: {
-            value: _descriptor_0.toValue(class_id_0).concat(_descriptor_5.toValue(buyer_price_0).concat(_descriptor_0.toValue(buyer_salt_0).concat(_descriptor_6.toValue(supplier_prices_0).concat(_descriptor_1.toValue(supplier_salts_0))))),
-            alignment: _descriptor_0.alignment().concat(_descriptor_5.alignment().concat(_descriptor_0.alignment().concat(_descriptor_6.alignment().concat(_descriptor_1.alignment()))))
+            value: _descriptor_0.toValue(class_id_0).concat(_descriptor_5.toValue(buyer_price_0).concat(_descriptor_0.toValue(buyer_salt_0).concat(_descriptor_6.toValue(supplier_prices_0).concat(_descriptor_1.toValue(supplier_salts_0).concat(_descriptor_0.toValue(auditor_secret_0)))))),
+            alignment: _descriptor_0.alignment().concat(_descriptor_5.alignment().concat(_descriptor_0.alignment().concat(_descriptor_6.alignment().concat(_descriptor_1.alignment().concat(_descriptor_0.alignment())))))
           },
           output: undefined,
           publicTranscript: [],
@@ -367,7 +399,8 @@ export class Contract {
                                                   buyer_price_0,
                                                   buyer_salt_0,
                                                   supplier_prices_0,
-                                                  supplier_salts_0);
+                                                  supplier_salts_0,
+                                                  auditor_secret_0);
         partialProofData.output = { value: _descriptor_8.toValue(result_0), alignment: _descriptor_8.alignment() };
         return { result: result_0, context: context, proofData: partialProofData, gasCost: context.gasCost };
       }
@@ -433,13 +466,26 @@ export class Contract {
     }
   }
   _persistentHash_0(value_0) {
+    const result_0 = __compactRuntime.persistentHash(_descriptor_11, value_0);
+    return result_0;
+  }
+  _persistentHash_1(value_0) {
     const result_0 = __compactRuntime.persistentHash(_descriptor_10, value_0);
     return result_0;
   }
-  _commit_price_0(context, partialProofData, class_id_0, price_0, salt_0) {
-    const commitment_0 = this._persistentHash_0([__compactRuntime.convertFieldToBytes(32,
+  _compute_auditor_hash_0(secret_0) {
+    return this._persistentHash_0([secret_0]);
+  }
+  _commit_price_0(context,
+                  partialProofData,
+                  class_id_0,
+                  price_0,
+                  salt_0,
+                  auditor_hash_0)
+  {
+    const commitment_0 = this._persistentHash_1([__compactRuntime.convertFieldToBytes(32,
                                                                                       price_0,
-                                                                                      'mfnguard.compact line 21 char 62'),
+                                                                                      'mfnguard.compact line 26 char 62'),
                                                  salt_0]);
     const is_member_0 = _descriptor_9.fromValue(__compactRuntime.queryLedgerState(context,
                                                                                   partialProofData,
@@ -459,7 +505,7 @@ export class Contract {
                                                                                               result: undefined } }]).value);
     const empty_bytes_0 = __compactRuntime.convertFieldToBytes(32,
                                                                0n,
-                                                               'mfnguard.compact line 26 char 25');
+                                                               'mfnguard.compact line 31 char 25');
     const empty_slots_0 = [empty_bytes_0,
                            empty_bytes_0,
                            empty_bytes_0,
@@ -469,7 +515,8 @@ export class Contract {
     const initial_class_0 = { slots: empty_slots_0,
                               filled: empty_filled_0,
                               buyer_ref: empty_bytes_0,
-                              buyer_filled: 0n };
+                              buyer_filled: 0n,
+                              auditor_hash: auditor_hash_0 };
     const current_class_0 = is_member_0 ?
                             _descriptor_4.fromValue(__compactRuntime.queryLedgerState(context,
                                                                                       partialProofData,
@@ -520,7 +567,8 @@ export class Contract {
     const next_class_0 = { slots: next_slots_0,
                            filled: next_filled_0,
                            buyer_ref: current_class_0.buyer_ref,
-                           buyer_filled: current_class_0.buyer_filled };
+                           buyer_filled: current_class_0.buyer_filled,
+                           auditor_hash: current_class_0.auditor_hash };
     __compactRuntime.queryLedgerState(context,
                                       partialProofData,
                                       [
@@ -540,11 +588,16 @@ export class Contract {
                                        { ins: { cached: true, n: 1 } }]);
     return [];
   }
-  _set_buyer_reference_0(context, partialProofData, class_id_0, price_0, salt_0)
+  _set_buyer_reference_0(context,
+                         partialProofData,
+                         class_id_0,
+                         price_0,
+                         salt_0,
+                         auditor_hash_0)
   {
-    const commitment_0 = this._persistentHash_0([__compactRuntime.convertFieldToBytes(32,
+    const commitment_0 = this._persistentHash_1([__compactRuntime.convertFieldToBytes(32,
                                                                                       price_0,
-                                                                                      'mfnguard.compact line 83 char 62'),
+                                                                                      'mfnguard.compact line 90 char 62'),
                                                  salt_0]);
     const is_member_0 = _descriptor_9.fromValue(__compactRuntime.queryLedgerState(context,
                                                                                   partialProofData,
@@ -564,7 +617,7 @@ export class Contract {
                                                                                               result: undefined } }]).value);
     const empty_bytes_0 = __compactRuntime.convertFieldToBytes(32,
                                                                0n,
-                                                               'mfnguard.compact line 86 char 25');
+                                                               'mfnguard.compact line 93 char 25');
     const empty_slots_0 = [empty_bytes_0,
                            empty_bytes_0,
                            empty_bytes_0,
@@ -574,7 +627,8 @@ export class Contract {
     const initial_class_0 = { slots: empty_slots_0,
                               filled: empty_filled_0,
                               buyer_ref: empty_bytes_0,
-                              buyer_filled: 0n };
+                              buyer_filled: 0n,
+                              auditor_hash: auditor_hash_0 };
     const current_class_0 = is_member_0 ?
                             _descriptor_4.fromValue(__compactRuntime.queryLedgerState(context,
                                                                                       partialProofData,
@@ -599,7 +653,8 @@ export class Contract {
     const next_class_0 = { slots: current_class_0.slots,
                            filled: current_class_0.filled,
                            buyer_ref: commitment_0,
-                           buyer_filled: 1n };
+                           buyer_filled: 1n,
+                           auditor_hash: current_class_0.auditor_hash };
     __compactRuntime.queryLedgerState(context,
                                       partialProofData,
                                       [
@@ -647,9 +702,9 @@ export class Contract {
                                                                                                 result: undefined } }]).value);
     __compactRuntime.assert(this._equal_5(class_state_0.buyer_filled, 1n),
                             'Buyer reference not set');
-    const expected_buyer_commit_0 = this._persistentHash_0([__compactRuntime.convertFieldToBytes(32,
+    const expected_buyer_commit_0 = this._persistentHash_1([__compactRuntime.convertFieldToBytes(32,
                                                                                                  buyer_price_0,
-                                                                                                 'mfnguard.compact line 120 char 73'),
+                                                                                                 'mfnguard.compact line 129 char 73'),
                                                             buyer_salt_0]);
     __compactRuntime.assert(this._equal_6(expected_buyer_commit_0,
                                           class_state_0.buyer_ref),
@@ -658,9 +713,9 @@ export class Contract {
     const p0_0 = this._equal_7(class_state_0.filled[0], 1n) ?
                  supplier_prices_0[0] :
                  max_val_0;
-    const expected_commit_0_0 = this._persistentHash_0([__compactRuntime.convertFieldToBytes(32,
+    const expected_commit_0_0 = this._persistentHash_1([__compactRuntime.convertFieldToBytes(32,
                                                                                              p0_0,
-                                                                                             'mfnguard.compact line 127 char 69'),
+                                                                                             'mfnguard.compact line 136 char 69'),
                                                         supplier_salts_0[0]]);
     __compactRuntime.assert(this._equal_8(class_state_0.filled[0], 0n)
                             ||
@@ -670,9 +725,9 @@ export class Contract {
     const p1_0 = this._equal_10(class_state_0.filled[1], 1n) ?
                  supplier_prices_0[1] :
                  max_val_0;
-    const expected_commit_1_0 = this._persistentHash_0([__compactRuntime.convertFieldToBytes(32,
+    const expected_commit_1_0 = this._persistentHash_1([__compactRuntime.convertFieldToBytes(32,
                                                                                              p1_0,
-                                                                                             'mfnguard.compact line 131 char 69'),
+                                                                                             'mfnguard.compact line 140 char 69'),
                                                         supplier_salts_0[1]]);
     __compactRuntime.assert(this._equal_11(class_state_0.filled[1], 0n)
                             ||
@@ -682,9 +737,9 @@ export class Contract {
     const p2_0 = this._equal_13(class_state_0.filled[2], 1n) ?
                  supplier_prices_0[2] :
                  max_val_0;
-    const expected_commit_2_0 = this._persistentHash_0([__compactRuntime.convertFieldToBytes(32,
+    const expected_commit_2_0 = this._persistentHash_1([__compactRuntime.convertFieldToBytes(32,
                                                                                              p2_0,
-                                                                                             'mfnguard.compact line 135 char 69'),
+                                                                                             'mfnguard.compact line 144 char 69'),
                                                         supplier_salts_0[2]]);
     __compactRuntime.assert(this._equal_14(class_state_0.filled[2], 0n)
                             ||
@@ -694,9 +749,9 @@ export class Contract {
     const p3_0 = this._equal_16(class_state_0.filled[3], 1n) ?
                  supplier_prices_0[3] :
                  max_val_0;
-    const expected_commit_3_0 = this._persistentHash_0([__compactRuntime.convertFieldToBytes(32,
+    const expected_commit_3_0 = this._persistentHash_1([__compactRuntime.convertFieldToBytes(32,
                                                                                              p3_0,
-                                                                                             'mfnguard.compact line 139 char 69'),
+                                                                                             'mfnguard.compact line 148 char 69'),
                                                         supplier_salts_0[3]]);
     __compactRuntime.assert(this._equal_17(class_state_0.filled[3], 0n)
                             ||
@@ -706,9 +761,9 @@ export class Contract {
     const p4_0 = this._equal_19(class_state_0.filled[4], 1n) ?
                  supplier_prices_0[4] :
                  max_val_0;
-    const expected_commit_4_0 = this._persistentHash_0([__compactRuntime.convertFieldToBytes(32,
+    const expected_commit_4_0 = this._persistentHash_1([__compactRuntime.convertFieldToBytes(32,
                                                                                              p4_0,
-                                                                                             'mfnguard.compact line 143 char 69'),
+                                                                                             'mfnguard.compact line 152 char 69'),
                                                         supplier_salts_0[4]]);
     __compactRuntime.assert(this._equal_20(class_state_0.filled[4], 0n)
                             ||
@@ -744,7 +799,8 @@ export class Contract {
                       buyer_price_0,
                       buyer_salt_0,
                       supplier_prices_0,
-                      supplier_salts_0)
+                      supplier_salts_0,
+                      auditor_secret_0)
   {
     const class_state_0 = _descriptor_4.fromValue(__compactRuntime.queryLedgerState(context,
                                                                                     partialProofData,
@@ -766,27 +822,31 @@ export class Contract {
                                                                                                 result: undefined } }]).value);
     __compactRuntime.assert(this._equal_27(class_state_0.buyer_filled, 1n),
                             'Buyer reference not set');
-    const expected_buyer_commit_0 = this._persistentHash_0([__compactRuntime.convertFieldToBytes(32,
+    const expected_auditor_hash_0 = this._persistentHash_0([auditor_secret_0]);
+    __compactRuntime.assert(this._equal_28(expected_auditor_hash_0,
+                                           class_state_0.auditor_hash),
+                            'Unauthorized auditor');
+    const expected_buyer_commit_0 = this._persistentHash_1([__compactRuntime.convertFieldToBytes(32,
                                                                                                  buyer_price_0,
-                                                                                                 'mfnguard.compact line 179 char 73'),
+                                                                                                 'mfnguard.compact line 193 char 73'),
                                                             buyer_salt_0]);
-    __compactRuntime.assert(this._equal_28(expected_buyer_commit_0,
+    __compactRuntime.assert(this._equal_29(expected_buyer_commit_0,
                                            class_state_0.buyer_ref),
                             'Buyer witness does not match commitment');
     const max_val_0 = 18446744073709551615n;
-    const p0_0 = this._equal_29(class_state_0.filled[0], 1n) ?
+    const p0_0 = this._equal_30(class_state_0.filled[0], 1n) ?
                  supplier_prices_0[0] :
                  max_val_0;
-    const p1_0 = this._equal_30(class_state_0.filled[1], 1n) ?
+    const p1_0 = this._equal_31(class_state_0.filled[1], 1n) ?
                  supplier_prices_0[1] :
                  max_val_0;
-    const p2_0 = this._equal_31(class_state_0.filled[2], 1n) ?
+    const p2_0 = this._equal_32(class_state_0.filled[2], 1n) ?
                  supplier_prices_0[2] :
                  max_val_0;
-    const p3_0 = this._equal_32(class_state_0.filled[3], 1n) ?
+    const p3_0 = this._equal_33(class_state_0.filled[3], 1n) ?
                  supplier_prices_0[3] :
                  max_val_0;
-    const p4_0 = this._equal_33(class_state_0.filled[4], 1n) ?
+    const p4_0 = this._equal_34(class_state_0.filled[4], 1n) ?
                  supplier_prices_0[4] :
                  max_val_0;
     const v0_0 = p0_0 < buyer_price_0;
@@ -922,7 +982,7 @@ export class Contract {
     return true;
   }
   _equal_29(x0, y0) {
-    if (x0 !== y0) { return false; }
+    if (!x0.every((x, i) => y0[i] === x)) { return false; }
     return true;
   }
   _equal_30(x0, y0) {
@@ -938,6 +998,10 @@ export class Contract {
     return true;
   }
   _equal_33(x0, y0) {
+    if (x0 !== y0) { return false; }
+    return true;
+  }
+  _equal_34(x0, y0) {
     if (x0 !== y0) { return false; }
     return true;
   }
@@ -1005,7 +1069,7 @@ export function ledger(stateOrChargedState) {
         if (!(key_0.buffer instanceof ArrayBuffer && key_0.BYTES_PER_ELEMENT === 1 && key_0.length === 32)) {
           __compactRuntime.typeError('member',
                                      'argument 1',
-                                     'mfnguard.compact line 17 char 1',
+                                     'mfnguard.compact line 18 char 1',
                                      'Bytes<32>',
                                      key_0)
         }
@@ -1034,7 +1098,7 @@ export function ledger(stateOrChargedState) {
         if (!(key_0.buffer instanceof ArrayBuffer && key_0.BYTES_PER_ELEMENT === 1 && key_0.length === 32)) {
           __compactRuntime.typeError('lookup',
                                      'argument 1',
-                                     'mfnguard.compact line 17 char 1',
+                                     'mfnguard.compact line 18 char 1',
                                      'Bytes<32>',
                                      key_0)
         }
@@ -1071,7 +1135,22 @@ const _emptyContext = {
   currentQueryContext: new __compactRuntime.QueryContext(new __compactRuntime.ContractState().data, __compactRuntime.dummyContractAddress())
 };
 const _dummyContract = new Contract({ });
-export const pureCircuits = {};
+export const pureCircuits = {
+  compute_auditor_hash: (...args_0) => {
+    if (args_0.length !== 1) {
+      throw new __compactRuntime.CompactError(`compute_auditor_hash: expected 1 argument (as invoked from Typescript), received ${args_0.length}`);
+    }
+    const secret_0 = args_0[0];
+    if (!(secret_0.buffer instanceof ArrayBuffer && secret_0.BYTES_PER_ELEMENT === 1 && secret_0.length === 32)) {
+      __compactRuntime.typeError('compute_auditor_hash',
+                                 'argument 1',
+                                 'mfnguard.compact line 20 char 1',
+                                 'Bytes<32>',
+                                 secret_0)
+    }
+    return _dummyContract._compute_auditor_hash_0(secret_0);
+  }
+};
 export const contractReferenceLocations =
   { tag: 'publicLedgerArray', indices: { } };
 //# sourceMappingURL=index.js.map

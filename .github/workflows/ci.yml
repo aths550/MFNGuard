@@ -24,12 +24,24 @@ jobs:
         cache: 'npm'
         cache-dependency-path: '**/package-lock.json'
 
+    - name: Install compactc
+      run: |
+        wget https://github.com/LFDT-Minokawa/compact/releases/download/compactc-v0.31.1/compactc_v0.31.1_x86_64-unknown-linux-musl.zip
+        unzip compactc_v0.31.1_x86_64-unknown-linux-musl.zip
+        chmod +x compactc
+        sudo mv compactc /usr/local/bin/compact
+
     - name: Install Dependencies
       run: npm ci
       working-directory: .
 
+    - name: Compile Compact Contract
+      run: npm run compact
+      working-directory: ./contract
+
     - name: Build Next.js Application
       run: npm run build
+      working-directory: ./frontend
       env:
         NEXT_PUBLIC_NETWORK_ID: preview
         NEXT_PUBLIC_INDEXER_URL: https://indexer.preview.midnight.network/api/v4/graphql
@@ -37,6 +49,14 @@ jobs:
         NEXT_PUBLIC_NODE_URL: https://rpc.preview.midnight.network
         NEXT_PUBLIC_PROOF_SERVER_URL: http://127.0.0.1:6300
 
+    - name: Run E2E Smoke Test
+      run: npx ts-node scripts/e2e-test.ts
+      working-directory: .
+      env:
+        NEXT_PUBLIC_CONTRACT_ADDRESS: 39fb21b446a2f7c0062b1b365b263b62ff912a7a505e81d7a0c8680183141f48
+        PREVIEW_TEST_WALLET_KEY: ${{ secrets.PREVIEW_TEST_WALLET_KEY }}
+
     - name: Run Linting
       run: npm run lint
+      working-directory: ./frontend
       continue-on-error: true # Known misconfiguration in the starter template for this specific step

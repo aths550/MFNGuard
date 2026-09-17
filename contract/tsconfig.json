@@ -6,7 +6,7 @@
     "declaration": true,
     "lib": ["ESNext"],
     "target": "ES2022",
-    "module": "ESNext",
+    "module": "Node16",
     "moduleResolution": "node16",
     "allowJs": true,
     "forceConsistentCasingInFileNames": true,

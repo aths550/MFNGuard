@@ -3,7 +3,7 @@
 ## Deployment Configuration (MVP Preview v1)
 
 - **Network**: Midnight Preview Testnet
-- **Contract Address**: `e61a7676bd4ea2e82b097c6f15f451ce1d0888353bd69479cf7342964eeb9778`
+- **Contract Address**: `39fb21b446a2f7c0062b1b365b263b62ff912a7a505e81d7a0c8680183141f48`
 - **Indexer URL**: `https://indexer.preview.midnight.network/api/v4/graphql`
 - **Indexer WS URL**: `wss://indexer.preview.midnight.network/api/v4/graphql/ws`
 - **Node RPC URL**: `https://rpc.preview.midnight.network`
@@ -46,7 +46,7 @@ This MVP uses an **Encrypted Payload File** (Option A) to securely transmit witn
 
 ```
 NEXT_PUBLIC_NETWORK_ID=preview
-NEXT_PUBLIC_CONTRACT_ADDRESS=e61a7676bd4ea2e82b097c6f15f451ce1d0888353bd69479cf7342964eeb9778
+NEXT_PUBLIC_CONTRACT_ADDRESS=39fb21b446a2f7c0062b1b365b263b62ff912a7a505e81d7a0c8680183141f48
 NEXT_PUBLIC_INDEXER_URL=https://indexer.preview.midnight.network/api/v4/graphql
 NEXT_PUBLIC_INDEXER_WS_URL=wss://indexer.preview.midnight.network/api/v4/graphql/ws
 NEXT_PUBLIC_NODE_URL=https://rpc.preview.midnight.network

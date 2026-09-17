@@ -4,6 +4,24 @@
   "runtime-version": "0.16.0",
   "circuits": [
     {
+      "name": "compute_auditor_hash",
+      "pure": true,
+      "proof": false,
+      "arguments": [
+        {
+          "name": "secret",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Bytes",
+        "length": 32
+      }
+    },
+    {
       "name": "commit_price",
       "pure": false,
       "proof": true,
@@ -24,6 +42,13 @@
         },
         {
           "name": "salt",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        },
+        {
+          "name": "auditor_hash",
           "type": {
             "type-name": "Bytes",
             "length": 32
@@ -57,6 +82,13 @@
         },
         {
           "name": "salt",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        },
+        {
+          "name": "auditor_hash",
           "type": {
             "type-name": "Bytes",
             "length": 32
@@ -186,6 +218,13 @@
               "length": 32
             }
           }
+        },
+        {
+          "name": "auditor_secret",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
         }
       ],
       "result-type": {
@@ -269,6 +308,13 @@
             "type": {
               "type-name": "Uint",
               "maxval": 255
+            }
+          },
+          {
+            "name": "auditor_hash",
+            "type": {
+              "type-name": "Bytes",
+              "length": 32
             }
           }
         ]

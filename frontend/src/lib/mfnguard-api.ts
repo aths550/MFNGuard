@@ -1,5 +1,5 @@
 import { CompiledMFNGuardContractContract } from '../../../contract/src/index';
-import { Contract, type ComplianceResult, type DisputeResult } from 'mfnguard-contract';
+import { Contract, pureCircuits, type ComplianceResult, type DisputeResult } from 'mfnguard-contract';
 import { type ContractAddress, fromHex, toHex } from '@midnight-ntwrk/compact-runtime';
 import { type Logger } from 'pino';
 import { findDeployedContract, type FoundContract } from '@midnight-ntwrk/midnight-js-contracts';
@@ -33,8 +33,8 @@ export type DeployedMFNGuardContract = FoundContract<Contract<any, any>>;
 export interface DeployedMFNGuardAPI {
   readonly deployedContractAddress: ContractAddress;
 
-  commit_price: (class_id: Uint8Array, price: bigint, salt: Uint8Array) => Promise<void>;
-  set_buyer_reference: (class_id: Uint8Array, price: bigint, salt: Uint8Array) => Promise<void>;
+  commit_price: (class_id: Uint8Array, price: bigint, salt: Uint8Array, auditor_hash: Uint8Array) => Promise<void>;
+  set_buyer_reference: (class_id: Uint8Array, price: bigint, salt: Uint8Array, auditor_hash: Uint8Array) => Promise<void>;
   compliance_check: (
     class_id: Uint8Array,
     buyer_price: bigint,
@@ -47,8 +47,11 @@ export interface DeployedMFNGuardAPI {
     buyer_price: bigint,
     buyer_salt: Uint8Array,
     supplier_prices: bigint[],
-    supplier_salts: Uint8Array[]
+    supplier_salts: Uint8Array[],
+    auditor_secret: Uint8Array
   ) => Promise<DisputeResult>;
+  
+  compute_auditor_hash: (secret: Uint8Array) => Promise<Uint8Array>;
 }
 
 const mfnguardPrivateStateKey = 'mfnguard-private-state';
@@ -68,15 +71,15 @@ export class MFNGuardAPI implements DeployedMFNGuardAPI {
 
   readonly deployedContractAddress: ContractAddress;
 
-  async commit_price(class_id: Uint8Array, price: bigint, salt: Uint8Array): Promise<void> {
+  async commit_price(class_id: Uint8Array, price: bigint, salt: Uint8Array, auditor_hash: Uint8Array): Promise<void> {
     this.logger?.info('commit_price');
-    const txData = await this.deployedContract.callTx.commit_price(class_id, price, salt);
+    const txData = await this.deployedContract.callTx.commit_price(class_id, price, salt, auditor_hash);
     this.logger?.trace({ transactionAdded: { circuit: 'commit_price', txHash: txData.public.txHash } });
   }
 
-  async set_buyer_reference(class_id: Uint8Array, price: bigint, salt: Uint8Array): Promise<void> {
+  async set_buyer_reference(class_id: Uint8Array, price: bigint, salt: Uint8Array, auditor_hash: Uint8Array): Promise<void> {
     this.logger?.info('set_buyer_reference');
-    const txData = await this.deployedContract.callTx.set_buyer_reference(class_id, price, salt);
+    const txData = await this.deployedContract.callTx.set_buyer_reference(class_id, price, salt, auditor_hash);
     this.logger?.trace({ transactionAdded: { circuit: 'set_buyer_reference', txHash: txData.public.txHash } });
   }
 
@@ -130,7 +133,8 @@ export class MFNGuardAPI implements DeployedMFNGuardAPI {
     buyer_price: bigint,
     buyer_salt: Uint8Array,
     supplier_prices: bigint[],
-    supplier_salts: Uint8Array[]
+    supplier_salts: Uint8Array[],
+    auditor_secret: Uint8Array
   ): Promise<DisputeResult> {
     this.logger?.info('reveal_violation');
     const txData = await this.deployedContract.callTx.reveal_violation(
@@ -138,10 +142,16 @@ export class MFNGuardAPI implements DeployedMFNGuardAPI {
       buyer_price,
       buyer_salt,
       supplier_prices,
-      supplier_salts
+      supplier_salts,
+      auditor_secret
     );
     this.logger?.trace({ transactionAdded: { circuit: 'reveal_violation', txHash: txData.public.txHash } });
     return (txData as any).private?.result || (txData as any).result;
+  }
+
+  async compute_auditor_hash(secret: Uint8Array): Promise<Uint8Array> {
+    // Pure circuit evaluation locally (does not mutate state, no wallet prompt, no proof provider needed)
+    return pureCircuits.compute_auditor_hash(secret);
   }
 
   static async join(providers: MFNGuardProviders, contractAddress: ContractAddress, logger?: Logger): Promise<MFNGuardAPI> {

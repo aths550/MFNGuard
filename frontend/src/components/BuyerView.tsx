@@ -29,14 +29,15 @@ export default function BuyerView() {
   const { addBuyerData, supplierPrices, supplierSalts, importSupplierData, buyerPrice, buyerSalt } = useSharedData();
   const [classId, setClassId] = useState("");
   const [price, setPrice] = useState("");
+  const [auditorSecret, setAuditorSecret] = useState("");
   
   // Transaction locks to prevent double-click race conditions
   const isCommittingRef = useRef(false);
   const isCheckingRef = useRef(false);
 
   // Auto-generate 32-byte salt as hex
-  const generateSalt = () => Array.from({ length: 32 }, () => Math.floor(Math.random() * 256).toString(16).padStart(2, '0')).join('');
-  const [salt, setSalt] = useState(generateSalt());
+  const generateHex32 = () => Array.from({ length: 32 }, () => Math.floor(Math.random() * 256).toString(16).padStart(2, '0')).join('');
+  const [salt, setSalt] = useState(generateHex32());
   
   const [isCommitting, setIsCommitting] = useState(false);
   const [commitStatus, setCommitStatus] = useState<string | null>(null);
@@ -105,6 +106,10 @@ export default function BuyerView() {
       setError("Please connect your wallet first and ensure contract API is initialized.");
       return;
     }
+    if (auditorSecret.length !== 64) {
+      setError("Auditor Secret must be exactly 64 hex characters (32 bytes).");
+      return;
+    }
     
     setError(null);
     setCommitStatus(null);
@@ -122,8 +127,11 @@ export default function BuyerView() {
 
       const classIdBytes = stringToUint8Array(classId);
       const saltBytes = hexToUint8Array(salt);
+      
+      const secretBytes = hexToUint8Array(auditorSecret);
+      const auditorHashBytes = await mfnguardAPI.compute_auditor_hash(secretBytes);
 
-      await mfnguardAPI.set_buyer_reference(classIdBytes, priceBigInt, saltBytes);
+      await mfnguardAPI.set_buyer_reference(classIdBytes, priceBigInt, saltBytes, auditorHashBytes);
       addBuyerData(classId, priceBigInt, saltBytes);
 
       setCommitStatus(`Transaction submitted. Waiting for confirmation on-chain (~15-45s)...`);
@@ -176,7 +184,7 @@ export default function BuyerView() {
 
   const handleRunComplianceCheck = async () => {
     if (isChecking || isSyncing || isCheckingRef.current) return;
-    if (!classId || !price || !salt || !mfnguardAPI) {
+    if (!classId || !price || !salt || !auditorSecret || !mfnguardAPI) {
       setError("Please set the reference price details first.");
       return;
     }
@@ -302,7 +310,7 @@ export default function BuyerView() {
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-1.5 flex justify-between">
                 <span>Cryptographic Salt</span>
-                <button type="button" onClick={() => setSalt(generateSalt())} className="text-emerald-400 hover:text-emerald-300 text-xs">Regenerate</button>
+                <button type="button" onClick={() => setSalt(generateHex32())} className="text-emerald-400 hover:text-emerald-300 text-xs">Regenerate</button>
               </label>
               <input 
                 type="text" 
@@ -311,6 +319,29 @@ export default function BuyerView() {
                 required
                 className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-400 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-colors"
               />
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-300">Auditor Secret Key (32-byte hex)</label>
+              <div className="flex space-x-2">
+                <input 
+                  type="text" 
+                  value={auditorSecret}
+                  onChange={e => setAuditorSecret(e.target.value)}
+                  className="flex-1 px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent font-mono text-sm"
+                  placeholder="e.g. 1a2b3c..."
+                  required
+                />
+                <button 
+                  type="button"
+                  onClick={() => setAuditorSecret(generateHex32())}
+                  className="px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg hover:bg-slate-700 transition-colors text-sm"
+                  title="Auto-generate secure secret"
+                >
+                  🎲 Gen
+                </button>
+              </div>
+              <p className="text-xs text-slate-400">Save this secret to give to the Auditor. The app hashes this securely before submitting.</p>
             </div>
             
             {commitStatus && (

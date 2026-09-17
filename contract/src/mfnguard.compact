@@ -7,6 +7,7 @@ export struct PriceClass {
     filled: Vector<5, Uint<8>>;
     buyer_ref: Bytes<32>;
     buyer_filled: Uint<8>;
+    auditor_hash: Bytes<32>;
 }
 
 export struct ComplianceResult {
@@ -16,8 +17,12 @@ export struct ComplianceResult {
 
 export ledger classes: Map<Bytes<32>, PriceClass>;
 
+export circuit compute_auditor_hash(secret: Bytes<32>): Bytes<32> {
+    return persistentHash<Vector<1, Bytes<32>>>([secret]);
+}
+
 // Supplier commits a price. We hash the price and salt locally.
-export circuit commit_price(class_id: Bytes<32>, price: Uint<64>, salt: Bytes<32>): [] {
+export circuit commit_price(class_id: Bytes<32>, price: Uint<64>, salt: Bytes<32>, auditor_hash: Bytes<32>): [] {
     const commitment = persistentHash<Vector<2, Bytes<32>>>([price as Field as Bytes<32>, salt]);
     
     const is_member = classes.member(disclose(class_id));
@@ -31,7 +36,8 @@ export circuit commit_price(class_id: Bytes<32>, price: Uint<64>, salt: Bytes<32
         slots: empty_slots,
         filled: empty_filled,
         buyer_ref: empty_bytes,
-        buyer_filled: 0
+        buyer_filled: 0,
+        auditor_hash: auditor_hash
     };
     
     // Read current state
@@ -72,14 +78,15 @@ export circuit commit_price(class_id: Bytes<32>, price: Uint<64>, salt: Bytes<32
         slots: next_slots,
         filled: next_filled,
         buyer_ref: current_class.buyer_ref,
-        buyer_filled: current_class.buyer_filled
+        buyer_filled: current_class.buyer_filled,
+        auditor_hash: current_class.auditor_hash
     };
     
     classes.insert(disclose(class_id), disclose(next_class));
 }
 
 // Buyer sets their reference price commitment
-export circuit set_buyer_reference(class_id: Bytes<32>, price: Uint<64>, salt: Bytes<32>): [] {
+export circuit set_buyer_reference(class_id: Bytes<32>, price: Uint<64>, salt: Bytes<32>, auditor_hash: Bytes<32>): [] {
     const commitment = persistentHash<Vector<2, Bytes<32>>>([price as Field as Bytes<32>, salt]);
     
     const is_member = classes.member(disclose(class_id));
@@ -91,7 +98,8 @@ export circuit set_buyer_reference(class_id: Bytes<32>, price: Uint<64>, salt: B
         slots: empty_slots,
         filled: empty_filled,
         buyer_ref: empty_bytes,
-        buyer_filled: 0
+        buyer_filled: 0,
+        auditor_hash: auditor_hash
     };
     
     const current_class = is_member ? classes.lookup(disclose(class_id)) : initial_class;
@@ -100,7 +108,8 @@ export circuit set_buyer_reference(class_id: Bytes<32>, price: Uint<64>, salt: B
         slots: current_class.slots,
         filled: current_class.filled,
         buyer_ref: commitment,
-        buyer_filled: 1
+        buyer_filled: 1,
+        auditor_hash: current_class.auditor_hash
     };
     
     classes.insert(disclose(class_id), disclose(next_class));
@@ -171,10 +180,15 @@ export circuit reveal_violation(
     buyer_price: Uint<64>,
     buyer_salt: Bytes<32>,
     supplier_prices: Vector<5, Uint<64>>,
-    supplier_salts: Vector<5, Bytes<32>>
+    supplier_salts: Vector<5, Bytes<32>>,
+    auditor_secret: Bytes<32>
 ): DisputeResult {
     const class_state = classes.lookup(disclose(class_id));
     assert(class_state.buyer_filled == 1, "Buyer reference not set");
+    
+    // Authorize auditor
+    const expected_auditor_hash = persistentHash<Vector<1, Bytes<32>>>([auditor_secret]);
+    assert(expected_auditor_hash == class_state.auditor_hash, "Unauthorized auditor");
     
     const expected_buyer_commit = persistentHash<Vector<2, Bytes<32>>>([buyer_price as Field as Bytes<32>, buyer_salt]);
     assert(expected_buyer_commit == class_state.buyer_ref, "Buyer witness does not match commitment");

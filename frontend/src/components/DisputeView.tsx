@@ -46,17 +46,15 @@ export default function DisputeView() {
 
       const classIdBytes = stringToUint8Array(classId);
 
-      // TODO: SECURITY — auditorKey is currently NOT passed to reveal_violation().
-      // The Compact circuit does not accept an auditor key parameter and has no caller-authorization.
-      // For production, the circuit must be extended to require an auditor public key/signature,
-      // or the reveal output must be encrypted to the auditor's key inside the circuit.
-      // Currently, any caller holding witness data can reveal the violator's price.
+      const auditorSecretBytes = stringToUint8Array(auditorKey);
+
       const result = await mfnguardAPI.reveal_violation(
         classIdBytes,
         bPrice,
         bSalt,
         sPrices,
-        sSalts
+        sSalts,
+        auditorSecretBytes
       );
       
       setDisputeResult({
@@ -103,14 +101,14 @@ export default function DisputeView() {
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1.5">Auditor Public Key (Hex)</label>
+              <label className="block text-sm font-medium text-slate-300 mb-1.5">Auditor Secret Key (Hex/String)</label>
               <input 
-                type="text" 
+                type="password" 
                 value={auditorKey}
                 onChange={e => setAuditorKey(e.target.value)}
                 required
                 className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-white font-mono text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-colors"
-                placeholder="0x..."
+                placeholder="Enter 32-byte secret..."
               />
             </div>
             
@@ -172,8 +170,7 @@ export default function DisputeView() {
                         <span className="font-mono text-emerald-400">{disputeResult.violator_price}</span>
                       </div>
                       <p className="text-xs text-slate-400 mt-4">
-                        {/* TODO: SECURITY — auditor key is not yet enforced by the contract circuit. See code TODO above. */}
-                        ⚠️ Note: The auditor key field is not yet enforced by the smart contract — this is a placeholder for the intended access-control design. Currently, any party holding the witness data can trigger this reveal.
+                        ✅ The auditor key was verified on-chain via ZK hash commitment.
                       </p>
                     </div>
                   ) : (

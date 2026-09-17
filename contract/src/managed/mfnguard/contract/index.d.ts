@@ -3,7 +3,8 @@ import type * as __compactRuntime from '@midnight-ntwrk/compact-runtime';
 export type PriceClass = { slots: Uint8Array[];
                            filled: bigint[];
                            buyer_ref: Uint8Array;
-                           buyer_filled: bigint
+                           buyer_filled: bigint;
+                           auditor_hash: Uint8Array
                          };
 
 export type ComplianceResult = { compliant: bigint; discrepancy: bigint };
@@ -20,11 +21,13 @@ export type ImpureCircuits<PS> = {
   commit_price(context: __compactRuntime.CircuitContext<PS>,
                class_id_0: Uint8Array,
                price_0: bigint,
-               salt_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+               salt_0: Uint8Array,
+               auditor_hash_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
   set_buyer_reference(context: __compactRuntime.CircuitContext<PS>,
                       class_id_0: Uint8Array,
                       price_0: bigint,
-                      salt_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+                      salt_0: Uint8Array,
+                      auditor_hash_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
   compliance_check(context: __compactRuntime.CircuitContext<PS>,
                    class_id_0: Uint8Array,
                    buyer_price_0: bigint,
@@ -36,18 +39,21 @@ export type ImpureCircuits<PS> = {
                    buyer_price_0: bigint,
                    buyer_salt_0: Uint8Array,
                    supplier_prices_0: bigint[],
-                   supplier_salts_0: Uint8Array[]): __compactRuntime.CircuitResults<PS, DisputeResult>;
+                   supplier_salts_0: Uint8Array[],
+                   auditor_secret_0: Uint8Array): __compactRuntime.CircuitResults<PS, DisputeResult>;
 }
 
 export type ProvableCircuits<PS> = {
   commit_price(context: __compactRuntime.CircuitContext<PS>,
                class_id_0: Uint8Array,
                price_0: bigint,
-               salt_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+               salt_0: Uint8Array,
+               auditor_hash_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
   set_buyer_reference(context: __compactRuntime.CircuitContext<PS>,
                       class_id_0: Uint8Array,
                       price_0: bigint,
-                      salt_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+                      salt_0: Uint8Array,
+                      auditor_hash_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
   compliance_check(context: __compactRuntime.CircuitContext<PS>,
                    class_id_0: Uint8Array,
                    buyer_price_0: bigint,
@@ -59,21 +65,27 @@ export type ProvableCircuits<PS> = {
                    buyer_price_0: bigint,
                    buyer_salt_0: Uint8Array,
                    supplier_prices_0: bigint[],
-                   supplier_salts_0: Uint8Array[]): __compactRuntime.CircuitResults<PS, DisputeResult>;
+                   supplier_salts_0: Uint8Array[],
+                   auditor_secret_0: Uint8Array): __compactRuntime.CircuitResults<PS, DisputeResult>;
 }
 
 export type PureCircuits = {
+  compute_auditor_hash(secret_0: Uint8Array): Uint8Array;
 }
 
 export type Circuits<PS> = {
+  compute_auditor_hash(context: __compactRuntime.CircuitContext<PS>,
+                       secret_0: Uint8Array): __compactRuntime.CircuitResults<PS, Uint8Array>;
   commit_price(context: __compactRuntime.CircuitContext<PS>,
                class_id_0: Uint8Array,
                price_0: bigint,
-               salt_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+               salt_0: Uint8Array,
+               auditor_hash_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
   set_buyer_reference(context: __compactRuntime.CircuitContext<PS>,
                       class_id_0: Uint8Array,
                       price_0: bigint,
-                      salt_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+                      salt_0: Uint8Array,
+                      auditor_hash_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
   compliance_check(context: __compactRuntime.CircuitContext<PS>,
                    class_id_0: Uint8Array,
                    buyer_price_0: bigint,
@@ -85,7 +97,8 @@ export type Circuits<PS> = {
                    buyer_price_0: bigint,
                    buyer_salt_0: Uint8Array,
                    supplier_prices_0: bigint[],
-                   supplier_salts_0: Uint8Array[]): __compactRuntime.CircuitResults<PS, DisputeResult>;
+                   supplier_salts_0: Uint8Array[],
+                   auditor_secret_0: Uint8Array): __compactRuntime.CircuitResults<PS, DisputeResult>;
 }
 
 export type Ledger = {
