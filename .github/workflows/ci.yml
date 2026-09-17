@@ -49,8 +49,8 @@ jobs:
         NEXT_PUBLIC_NODE_URL: https://rpc.preview.midnight.network
         NEXT_PUBLIC_PROOF_SERVER_URL: http://127.0.0.1:6300
 
-    - name: Run E2E Smoke Test
-      run: npx ts-node scripts/e2e-test.ts
+    - name: Run On-Chain E2E Tests
+      run: npx tsx scripts/e2e-test.ts
       working-directory: .
       env:
         NEXT_PUBLIC_CONTRACT_ADDRESS: fd1b841ba4dff397916eb0ca339574f1f4e276edc8e02ab44459f6951ff638fa
