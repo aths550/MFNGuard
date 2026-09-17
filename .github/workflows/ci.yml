@@ -53,7 +53,7 @@ jobs:
       run: npx ts-node scripts/e2e-test.ts
       working-directory: .
       env:
-        NEXT_PUBLIC_CONTRACT_ADDRESS: 39fb21b446a2f7c0062b1b365b263b62ff912a7a505e81d7a0c8680183141f48
+        NEXT_PUBLIC_CONTRACT_ADDRESS: fd1b841ba4dff397916eb0ca339574f1f4e276edc8e02ab44459f6951ff638fa
         PREVIEW_TEST_WALLET_KEY: ${{ secrets.PREVIEW_TEST_WALLET_KEY }}
 
     - name: Run Linting
