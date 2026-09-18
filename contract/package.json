@@ -18,7 +18,7 @@
     "compact": "compactc.bin src/mfnguard.compact ./src/managed/mfnguard",
     "lint": "eslint src",
     "prepack": "npm build",
-    "test": "vitest",
+    "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "devDependencies": {

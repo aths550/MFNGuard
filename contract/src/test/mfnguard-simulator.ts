@@ -45,9 +45,8 @@ export class MFNGuardSimulator {
     class_id: Uint8Array,
     price: bigint,
     salt: Uint8Array,
+    auditor_hash: Uint8Array,
   ): Ledger {
-    const auditor_secret = new Uint8Array(32);
-    const auditor_hash = (this.contract as any)._persistentHash_0([auditor_secret]);
     this.circuitContext = this.contract.impureCircuits.commit_price(
       this.circuitContext,
       class_id,
@@ -62,9 +61,8 @@ export class MFNGuardSimulator {
     class_id: Uint8Array,
     price: bigint,
     salt: Uint8Array,
+    auditor_hash: Uint8Array,
   ): Ledger {
-    const auditor_secret = new Uint8Array(32);
-    const auditor_hash = (this.contract as any)._persistentHash_0([auditor_secret]);
     this.circuitContext = this.contract.impureCircuits.set_buyer_reference(
       this.circuitContext,
       class_id,
@@ -100,6 +98,7 @@ export class MFNGuardSimulator {
     buyer_salt: Uint8Array,
     supplier_prices: bigint[],
     supplier_salts: Uint8Array[],
+    auditor_secret: Uint8Array,
   ): DisputeResult {
     const result = this.contract.impureCircuits.reveal_violation(
       this.circuitContext,
@@ -108,7 +107,7 @@ export class MFNGuardSimulator {
       buyer_salt,
       supplier_prices,
       supplier_salts,
-      new Uint8Array(32),
+      auditor_secret,
     );
     this.circuitContext = result.context;
     return result.result;
