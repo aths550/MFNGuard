@@ -50,6 +50,9 @@ jobs:
         NEXT_PUBLIC_NODE_URL: https://rpc.preview.midnight.network
         NEXT_PUBLIC_PROOF_SERVER_URL: http://127.0.0.1:6300
 
+    - name: Start Proof Server
+      run: docker run -d -p 6300:6300 midnightntwrk/proof-server:8.0.3
+
     - name: Run On-Chain E2E Tests
       run: npx tsx scripts/e2e-test.ts
       working-directory: .
