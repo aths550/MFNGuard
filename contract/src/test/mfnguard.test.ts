@@ -175,4 +175,20 @@ describe("MFNGuard smart contract", () => {
     expect(result.violator_price).toEqual(800n);
     expect(result.violator_index).toEqual(1n);
   });
+
+  it("rejects double calls to set_buyer_reference for the same class_id", () => {
+    const simulator = new MFNGuardSimulator();
+    const class_id = randomBytes(32);
+    const auditor_secret = randomBytes(32);
+    const auditor_hash = pureCircuits.compute_auditor_hash(auditor_secret);
+    const buyer_salt = randomBytes(32);
+
+    // First call should succeed
+    simulator.set_buyer_reference(class_id, 900n, buyer_salt, auditor_hash);
+
+    // Second call should fail
+    expect(() =>
+      simulator.set_buyer_reference(class_id, 800n, buyer_salt, auditor_hash),
+    ).toThrow(/Buyer reference already set/);
+  });
 });

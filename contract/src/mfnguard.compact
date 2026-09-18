@@ -104,6 +104,8 @@ export circuit set_buyer_reference(class_id: Bytes<32>, price: Uint<64>, salt: B
     
     const current_class = is_member ? classes.lookup(disclose(class_id)) : initial_class;
     
+    assert(current_class.buyer_filled == 0, "Buyer reference already set");
+    
     const next_class = PriceClass {
         slots: current_class.slots,
         filled: current_class.filled,

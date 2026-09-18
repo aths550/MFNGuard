@@ -74,7 +74,7 @@ async function run() {
   // Polling loop to wait for wallet history sync completion on Preview
   for (let i = 0; i < 60; i++) {
     try {
-      tx1 = await contract.callTx.set_buyer_reference(classId, 100n, buyerSalt, auditorHash);
+      tx1 = await contract.callTx.set_buyer_reference(classId, 900n, buyerSalt, auditorHash);
       console.log(`Transaction submitted! Hash: ${tx1.public.txHash}`);
       break;
     } catch (e: any) {
@@ -90,20 +90,20 @@ async function run() {
 
   console.log(`\n--- STEP 2: Supplier commits price ---`);
   try {
-    const tx2 = await contract.callTx.commit_price(classId, 120n, supplierSalt, auditorHash);
+    const tx2 = await contract.callTx.commit_price(classId, 800n, supplierSalt, auditorHash);
     console.log(`Transaction submitted! Hash: ${tx2.public.txHash}`);
   } catch (e: any) {
     console.error("Failed commit_price:", e.message);
     process.exit(1);
   }
 
-  const paddedPrices = [120n, 0n, 0n, 0n, 0n];
+  const paddedPrices = [800n, 0n, 0n, 0n, 0n];
   const paddedSalts = [supplierSalt, new Uint8Array(32), new Uint8Array(32), new Uint8Array(32), new Uint8Array(32)];
 
   console.log(`\n--- STEP 3: Attempting reveal_violation with WRONG secret ---`);
   try {
     const tx3 = await contract.callTx.reveal_violation(
-      classId, 100n, buyerSalt, paddedPrices, paddedSalts, wrongSecret
+      classId, 900n, buyerSalt, paddedPrices, paddedSalts, wrongSecret
     );
     console.error(`❌ FAILURE: Wrong secret succeeded! TX Hash: ${tx3.public.txHash}`);
     process.exit(1);
@@ -119,7 +119,7 @@ async function run() {
   console.log(`\n--- STEP 4: Attempting reveal_violation with CORRECT secret ---`);
   try {
     const tx4 = await contract.callTx.reveal_violation(
-      classId, 100n, buyerSalt, paddedPrices, paddedSalts, auditorSecret
+      classId, 900n, buyerSalt, paddedPrices, paddedSalts, auditorSecret
     );
     console.log(`✅ SUCCESS: Correct secret succeeded! TX Hash: ${tx4.public.txHash}`);
   } catch (e: any) {

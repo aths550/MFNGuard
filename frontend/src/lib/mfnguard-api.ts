@@ -180,6 +180,20 @@ export const initializeProviders = async (connectedAPI: ConnectedAPI, logger?: L
   const proofServerUrl = process.env.NEXT_PUBLIC_PROOF_SERVER_URL;
   if (!proofServerUrl) throw new Error('NEXT_PUBLIC_PROOF_SERVER_URL must be defined');
 
+  // CONSTANT ALLOWLIST FOR PROOF SERVER to constrain trust boundary
+  const ALLOWED_PROOF_SERVERS = [
+    'http://127.0.0.1:6300',
+    'http://localhost:6300',
+    'http://127.0.0.1:6300/',
+    'http://localhost:6300/',
+    // In production, add your officially hosted trusted proof server here:
+    // 'https://proof.mfnguard.app'
+  ];
+
+  if (!ALLOWED_PROOF_SERVERS.includes(proofServerUrl)) {
+    throw new Error(`Security Violation: Proof server ${proofServerUrl} is not in the trusted allowlist! This prevents sending sensitive data to arbitrary servers.`);
+  }
+
   // Currently we use a local path or window.location.origin for zkConfig (the browser ZKIR keys).
   // Next.js will need to serve these from /zkir and /keys in the public dir.
   const zkConfigPath = window.location.origin;
