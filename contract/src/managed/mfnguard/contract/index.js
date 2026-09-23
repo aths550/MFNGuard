@@ -264,42 +264,42 @@ export class Contract {
         if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.currentQueryContext != undefined)) {
           __compactRuntime.typeError('compliance_check',
                                      'argument 1 (as invoked from Typescript)',
-                                     'mfnguard.compact line 119 char 1',
+                                     'mfnguard.compact line 121 char 1',
                                      'CircuitContext',
                                      contextOrig_0)
         }
         if (!(class_id_0.buffer instanceof ArrayBuffer && class_id_0.BYTES_PER_ELEMENT === 1 && class_id_0.length === 32)) {
           __compactRuntime.typeError('compliance_check',
                                      'argument 1 (argument 2 as invoked from Typescript)',
-                                     'mfnguard.compact line 119 char 1',
+                                     'mfnguard.compact line 121 char 1',
                                      'Bytes<32>',
                                      class_id_0)
         }
         if (!(typeof(buyer_price_0) === 'bigint' && buyer_price_0 >= 0n && buyer_price_0 <= 18446744073709551615n)) {
           __compactRuntime.typeError('compliance_check',
                                      'argument 2 (argument 3 as invoked from Typescript)',
-                                     'mfnguard.compact line 119 char 1',
+                                     'mfnguard.compact line 121 char 1',
                                      'Uint<0..18446744073709551616>',
                                      buyer_price_0)
         }
         if (!(buyer_salt_0.buffer instanceof ArrayBuffer && buyer_salt_0.BYTES_PER_ELEMENT === 1 && buyer_salt_0.length === 32)) {
           __compactRuntime.typeError('compliance_check',
                                      'argument 3 (argument 4 as invoked from Typescript)',
-                                     'mfnguard.compact line 119 char 1',
+                                     'mfnguard.compact line 121 char 1',
                                      'Bytes<32>',
                                      buyer_salt_0)
         }
         if (!(Array.isArray(supplier_prices_0) && supplier_prices_0.length === 5 && supplier_prices_0.every((t) => typeof(t) === 'bigint' && t >= 0n && t <= 18446744073709551615n))) {
           __compactRuntime.typeError('compliance_check',
                                      'argument 4 (argument 5 as invoked from Typescript)',
-                                     'mfnguard.compact line 119 char 1',
+                                     'mfnguard.compact line 121 char 1',
                                      'Vector<5, Uint<0..18446744073709551616>>',
                                      supplier_prices_0)
         }
         if (!(Array.isArray(supplier_salts_0) && supplier_salts_0.length === 5 && supplier_salts_0.every((t) => t.buffer instanceof ArrayBuffer && t.BYTES_PER_ELEMENT === 1 && t.length === 32))) {
           __compactRuntime.typeError('compliance_check',
                                      'argument 5 (argument 6 as invoked from Typescript)',
-                                     'mfnguard.compact line 119 char 1',
+                                     'mfnguard.compact line 121 char 1',
                                      'Vector<5, Bytes<32>>',
                                      supplier_salts_0)
         }
@@ -337,49 +337,49 @@ export class Contract {
         if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.currentQueryContext != undefined)) {
           __compactRuntime.typeError('reveal_violation',
                                      'argument 1 (as invoked from Typescript)',
-                                     'mfnguard.compact line 178 char 1',
+                                     'mfnguard.compact line 180 char 1',
                                      'CircuitContext',
                                      contextOrig_0)
         }
         if (!(class_id_0.buffer instanceof ArrayBuffer && class_id_0.BYTES_PER_ELEMENT === 1 && class_id_0.length === 32)) {
           __compactRuntime.typeError('reveal_violation',
                                      'argument 1 (argument 2 as invoked from Typescript)',
-                                     'mfnguard.compact line 178 char 1',
+                                     'mfnguard.compact line 180 char 1',
                                      'Bytes<32>',
                                      class_id_0)
         }
         if (!(typeof(buyer_price_0) === 'bigint' && buyer_price_0 >= 0n && buyer_price_0 <= 18446744073709551615n)) {
           __compactRuntime.typeError('reveal_violation',
                                      'argument 2 (argument 3 as invoked from Typescript)',
-                                     'mfnguard.compact line 178 char 1',
+                                     'mfnguard.compact line 180 char 1',
                                      'Uint<0..18446744073709551616>',
                                      buyer_price_0)
         }
         if (!(buyer_salt_0.buffer instanceof ArrayBuffer && buyer_salt_0.BYTES_PER_ELEMENT === 1 && buyer_salt_0.length === 32)) {
           __compactRuntime.typeError('reveal_violation',
                                      'argument 3 (argument 4 as invoked from Typescript)',
-                                     'mfnguard.compact line 178 char 1',
+                                     'mfnguard.compact line 180 char 1',
                                      'Bytes<32>',
                                      buyer_salt_0)
         }
         if (!(Array.isArray(supplier_prices_0) && supplier_prices_0.length === 5 && supplier_prices_0.every((t) => typeof(t) === 'bigint' && t >= 0n && t <= 18446744073709551615n))) {
           __compactRuntime.typeError('reveal_violation',
                                      'argument 4 (argument 5 as invoked from Typescript)',
-                                     'mfnguard.compact line 178 char 1',
+                                     'mfnguard.compact line 180 char 1',
                                      'Vector<5, Uint<0..18446744073709551616>>',
                                      supplier_prices_0)
         }
         if (!(Array.isArray(supplier_salts_0) && supplier_salts_0.length === 5 && supplier_salts_0.every((t) => t.buffer instanceof ArrayBuffer && t.BYTES_PER_ELEMENT === 1 && t.length === 32))) {
           __compactRuntime.typeError('reveal_violation',
                                      'argument 5 (argument 6 as invoked from Typescript)',
-                                     'mfnguard.compact line 178 char 1',
+                                     'mfnguard.compact line 180 char 1',
                                      'Vector<5, Bytes<32>>',
                                      supplier_salts_0)
         }
         if (!(auditor_secret_0.buffer instanceof ArrayBuffer && auditor_secret_0.BYTES_PER_ELEMENT === 1 && auditor_secret_0.length === 32)) {
           __compactRuntime.typeError('reveal_violation',
                                      'argument 6 (argument 7 as invoked from Typescript)',
-                                     'mfnguard.compact line 178 char 1',
+                                     'mfnguard.compact line 180 char 1',
                                      'Bytes<32>',
                                      auditor_secret_0)
         }
@@ -650,6 +650,8 @@ export class Contract {
                                                                                                   result: undefined } }]).value)
                             :
                             initial_class_0;
+    __compactRuntime.assert(this._equal_5(current_class_0.buyer_filled, 0n),
+                            'Buyer reference already set');
     const next_class_0 = { slots: current_class_0.slots,
                            filled: current_class_0.filled,
                            buyer_ref: commitment_0,
@@ -700,85 +702,85 @@ export class Contract {
                                                                                                                 alignment: _descriptor_0.alignment() } }] } },
                                                                                      { popeq: { cached: false,
                                                                                                 result: undefined } }]).value);
-    __compactRuntime.assert(this._equal_5(class_state_0.buyer_filled, 1n),
+    __compactRuntime.assert(this._equal_6(class_state_0.buyer_filled, 1n),
                             'Buyer reference not set');
     const expected_buyer_commit_0 = this._persistentHash_1([__compactRuntime.convertFieldToBytes(32,
                                                                                                  buyer_price_0,
-                                                                                                 'mfnguard.compact line 129 char 73'),
+                                                                                                 'mfnguard.compact line 131 char 73'),
                                                             buyer_salt_0]);
-    __compactRuntime.assert(this._equal_6(expected_buyer_commit_0,
+    __compactRuntime.assert(this._equal_7(expected_buyer_commit_0,
                                           class_state_0.buyer_ref),
                             'Buyer witness does not match commitment');
     const max_val_0 = 18446744073709551615n;
-    const p0_0 = this._equal_7(class_state_0.filled[0], 1n) ?
+    const p0_0 = this._equal_8(class_state_0.filled[0], 1n) ?
                  supplier_prices_0[0] :
                  max_val_0;
     const expected_commit_0_0 = this._persistentHash_1([__compactRuntime.convertFieldToBytes(32,
                                                                                              p0_0,
-                                                                                             'mfnguard.compact line 136 char 69'),
+                                                                                             'mfnguard.compact line 138 char 69'),
                                                         supplier_salts_0[0]]);
-    __compactRuntime.assert(this._equal_8(class_state_0.filled[0], 0n)
+    __compactRuntime.assert(this._equal_9(class_state_0.filled[0], 0n)
                             ||
-                            this._equal_9(expected_commit_0_0,
-                                          class_state_0.slots[0]),
+                            this._equal_10(expected_commit_0_0,
+                                           class_state_0.slots[0]),
                             'Supplier witness 0 does not match');
-    const p1_0 = this._equal_10(class_state_0.filled[1], 1n) ?
+    const p1_0 = this._equal_11(class_state_0.filled[1], 1n) ?
                  supplier_prices_0[1] :
                  max_val_0;
     const expected_commit_1_0 = this._persistentHash_1([__compactRuntime.convertFieldToBytes(32,
                                                                                              p1_0,
-                                                                                             'mfnguard.compact line 140 char 69'),
+                                                                                             'mfnguard.compact line 142 char 69'),
                                                         supplier_salts_0[1]]);
-    __compactRuntime.assert(this._equal_11(class_state_0.filled[1], 0n)
+    __compactRuntime.assert(this._equal_12(class_state_0.filled[1], 0n)
                             ||
-                            this._equal_12(expected_commit_1_0,
+                            this._equal_13(expected_commit_1_0,
                                            class_state_0.slots[1]),
                             'Supplier witness 1 does not match');
-    const p2_0 = this._equal_13(class_state_0.filled[2], 1n) ?
+    const p2_0 = this._equal_14(class_state_0.filled[2], 1n) ?
                  supplier_prices_0[2] :
                  max_val_0;
     const expected_commit_2_0 = this._persistentHash_1([__compactRuntime.convertFieldToBytes(32,
                                                                                              p2_0,
-                                                                                             'mfnguard.compact line 144 char 69'),
+                                                                                             'mfnguard.compact line 146 char 69'),
                                                         supplier_salts_0[2]]);
-    __compactRuntime.assert(this._equal_14(class_state_0.filled[2], 0n)
+    __compactRuntime.assert(this._equal_15(class_state_0.filled[2], 0n)
                             ||
-                            this._equal_15(expected_commit_2_0,
+                            this._equal_16(expected_commit_2_0,
                                            class_state_0.slots[2]),
                             'Supplier witness 2 does not match');
-    const p3_0 = this._equal_16(class_state_0.filled[3], 1n) ?
+    const p3_0 = this._equal_17(class_state_0.filled[3], 1n) ?
                  supplier_prices_0[3] :
                  max_val_0;
     const expected_commit_3_0 = this._persistentHash_1([__compactRuntime.convertFieldToBytes(32,
                                                                                              p3_0,
-                                                                                             'mfnguard.compact line 148 char 69'),
+                                                                                             'mfnguard.compact line 150 char 69'),
                                                         supplier_salts_0[3]]);
-    __compactRuntime.assert(this._equal_17(class_state_0.filled[3], 0n)
+    __compactRuntime.assert(this._equal_18(class_state_0.filled[3], 0n)
                             ||
-                            this._equal_18(expected_commit_3_0,
+                            this._equal_19(expected_commit_3_0,
                                            class_state_0.slots[3]),
                             'Supplier witness 3 does not match');
-    const p4_0 = this._equal_19(class_state_0.filled[4], 1n) ?
+    const p4_0 = this._equal_20(class_state_0.filled[4], 1n) ?
                  supplier_prices_0[4] :
                  max_val_0;
     const expected_commit_4_0 = this._persistentHash_1([__compactRuntime.convertFieldToBytes(32,
                                                                                              p4_0,
-                                                                                             'mfnguard.compact line 152 char 69'),
+                                                                                             'mfnguard.compact line 154 char 69'),
                                                         supplier_salts_0[4]]);
-    __compactRuntime.assert(this._equal_20(class_state_0.filled[4], 0n)
+    __compactRuntime.assert(this._equal_21(class_state_0.filled[4], 0n)
                             ||
-                            this._equal_21(expected_commit_4_0,
+                            this._equal_22(expected_commit_4_0,
                                            class_state_0.slots[4]),
                             'Supplier witness 4 does not match');
-    const has_any_0 = this._equal_22(class_state_0.filled[0], 1n)
+    const has_any_0 = this._equal_23(class_state_0.filled[0], 1n)
                       ||
-                      this._equal_23(class_state_0.filled[1], 1n)
+                      this._equal_24(class_state_0.filled[1], 1n)
                       ||
-                      this._equal_24(class_state_0.filled[2], 1n)
+                      this._equal_25(class_state_0.filled[2], 1n)
                       ||
-                      this._equal_25(class_state_0.filled[3], 1n)
+                      this._equal_26(class_state_0.filled[3], 1n)
                       ||
-                      this._equal_26(class_state_0.filled[4], 1n);
+                      this._equal_27(class_state_0.filled[4], 1n);
     __compactRuntime.assert(has_any_0,
                             'No supplier prices committed in this class');
     const m1_0 = p0_0 < p1_0 ? p0_0 : p1_0;
@@ -820,33 +822,33 @@ export class Contract {
                                                                                                                 alignment: _descriptor_0.alignment() } }] } },
                                                                                      { popeq: { cached: false,
                                                                                                 result: undefined } }]).value);
-    __compactRuntime.assert(this._equal_27(class_state_0.buyer_filled, 1n),
+    __compactRuntime.assert(this._equal_28(class_state_0.buyer_filled, 1n),
                             'Buyer reference not set');
     const expected_auditor_hash_0 = this._persistentHash_0([auditor_secret_0]);
-    __compactRuntime.assert(this._equal_28(expected_auditor_hash_0,
+    __compactRuntime.assert(this._equal_29(expected_auditor_hash_0,
                                            class_state_0.auditor_hash),
                             'Unauthorized auditor');
     const expected_buyer_commit_0 = this._persistentHash_1([__compactRuntime.convertFieldToBytes(32,
                                                                                                  buyer_price_0,
-                                                                                                 'mfnguard.compact line 193 char 73'),
+                                                                                                 'mfnguard.compact line 195 char 73'),
                                                             buyer_salt_0]);
-    __compactRuntime.assert(this._equal_29(expected_buyer_commit_0,
+    __compactRuntime.assert(this._equal_30(expected_buyer_commit_0,
                                            class_state_0.buyer_ref),
                             'Buyer witness does not match commitment');
     const max_val_0 = 18446744073709551615n;
-    const p0_0 = this._equal_30(class_state_0.filled[0], 1n) ?
+    const p0_0 = this._equal_31(class_state_0.filled[0], 1n) ?
                  supplier_prices_0[0] :
                  max_val_0;
-    const p1_0 = this._equal_31(class_state_0.filled[1], 1n) ?
+    const p1_0 = this._equal_32(class_state_0.filled[1], 1n) ?
                  supplier_prices_0[1] :
                  max_val_0;
-    const p2_0 = this._equal_32(class_state_0.filled[2], 1n) ?
+    const p2_0 = this._equal_33(class_state_0.filled[2], 1n) ?
                  supplier_prices_0[2] :
                  max_val_0;
-    const p3_0 = this._equal_33(class_state_0.filled[3], 1n) ?
+    const p3_0 = this._equal_34(class_state_0.filled[3], 1n) ?
                  supplier_prices_0[3] :
                  max_val_0;
-    const p4_0 = this._equal_34(class_state_0.filled[4], 1n) ?
+    const p4_0 = this._equal_35(class_state_0.filled[4], 1n) ?
                  supplier_prices_0[4] :
                  max_val_0;
     const v0_0 = p0_0 < buyer_price_0;
@@ -890,11 +892,11 @@ export class Contract {
     return true;
   }
   _equal_6(x0, y0) {
-    if (!x0.every((x, i) => y0[i] === x)) { return false; }
+    if (x0 !== y0) { return false; }
     return true;
   }
   _equal_7(x0, y0) {
-    if (x0 !== y0) { return false; }
+    if (!x0.every((x, i) => y0[i] === x)) { return false; }
     return true;
   }
   _equal_8(x0, y0) {
@@ -902,11 +904,11 @@ export class Contract {
     return true;
   }
   _equal_9(x0, y0) {
-    if (!x0.every((x, i) => y0[i] === x)) { return false; }
+    if (x0 !== y0) { return false; }
     return true;
   }
   _equal_10(x0, y0) {
-    if (x0 !== y0) { return false; }
+    if (!x0.every((x, i) => y0[i] === x)) { return false; }
     return true;
   }
   _equal_11(x0, y0) {
@@ -914,11 +916,11 @@ export class Contract {
     return true;
   }
   _equal_12(x0, y0) {
-    if (!x0.every((x, i) => y0[i] === x)) { return false; }
+    if (x0 !== y0) { return false; }
     return true;
   }
   _equal_13(x0, y0) {
-    if (x0 !== y0) { return false; }
+    if (!x0.every((x, i) => y0[i] === x)) { return false; }
     return true;
   }
   _equal_14(x0, y0) {
@@ -926,11 +928,11 @@ export class Contract {
     return true;
   }
   _equal_15(x0, y0) {
-    if (!x0.every((x, i) => y0[i] === x)) { return false; }
+    if (x0 !== y0) { return false; }
     return true;
   }
   _equal_16(x0, y0) {
-    if (x0 !== y0) { return false; }
+    if (!x0.every((x, i) => y0[i] === x)) { return false; }
     return true;
   }
   _equal_17(x0, y0) {
@@ -938,11 +940,11 @@ export class Contract {
     return true;
   }
   _equal_18(x0, y0) {
-    if (!x0.every((x, i) => y0[i] === x)) { return false; }
+    if (x0 !== y0) { return false; }
     return true;
   }
   _equal_19(x0, y0) {
-    if (x0 !== y0) { return false; }
+    if (!x0.every((x, i) => y0[i] === x)) { return false; }
     return true;
   }
   _equal_20(x0, y0) {
@@ -950,11 +952,11 @@ export class Contract {
     return true;
   }
   _equal_21(x0, y0) {
-    if (!x0.every((x, i) => y0[i] === x)) { return false; }
+    if (x0 !== y0) { return false; }
     return true;
   }
   _equal_22(x0, y0) {
-    if (x0 !== y0) { return false; }
+    if (!x0.every((x, i) => y0[i] === x)) { return false; }
     return true;
   }
   _equal_23(x0, y0) {
@@ -978,7 +980,7 @@ export class Contract {
     return true;
   }
   _equal_28(x0, y0) {
-    if (!x0.every((x, i) => y0[i] === x)) { return false; }
+    if (x0 !== y0) { return false; }
     return true;
   }
   _equal_29(x0, y0) {
@@ -986,7 +988,7 @@ export class Contract {
     return true;
   }
   _equal_30(x0, y0) {
-    if (x0 !== y0) { return false; }
+    if (!x0.every((x, i) => y0[i] === x)) { return false; }
     return true;
   }
   _equal_31(x0, y0) {
@@ -1002,6 +1004,10 @@ export class Contract {
     return true;
   }
   _equal_34(x0, y0) {
+    if (x0 !== y0) { return false; }
+    return true;
+  }
+  _equal_35(x0, y0) {
     if (x0 !== y0) { return false; }
     return true;
   }

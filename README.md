@@ -97,3 +97,10 @@ Open [http://localhost:3000](http://localhost:3000) in your browser. Ensure your
 
 > [!WARNING]
 > **KNOWN GAP - E2E Testing:** The automated `e2e-test.ts` script in the CI pipeline currently only validates environment variable injection and wiring. It **does not** execute a real on-chain transaction flow (`commit_price` -> `compliance_check`). This is because headless transaction execution requires a dedicated, pre-funded test wallet with tDUST, which cannot be reliably funded in an automated CI environment without manual faucet interaction. Do not mistake a passing CI build for real on-chain automated test coverage.
+
+> [!IMPORTANT]
+> **Circuit Updates Require Fresh Deployment:** If you modify the `mfnguard.compact` circuit code in any way, the resulting verifier keys will change upon compilation (`npm run compact`). The frontend will immediately crash with a `ContractTypeError` (mismatched verifier keys) if it tries to connect to the old deployed contract.
+> **Going forward, any circuit change requires you to:**
+> 1. Deploy a FRESH instance of the updated contract to Preview and capture its new contract address.
+> 2. Update `NEXT_PUBLIC_CONTRACT_ADDRESS` consistently everywhere (Vercel environment variables, `.github/workflows/ci.yml`, and local `.env.local`).
+> 3. Redeploy the frontend on Vercel so it picks up the new environment variables.
