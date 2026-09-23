@@ -88,15 +88,17 @@ Open [http://localhost:3000](http://localhost:3000) in your browser. Ensure your
 > 
 > When running a Compliance Check or revealing a dispute, the Proof Server receives **both the Supplier's and Buyer's private prices and salts in plaintext**. Furthermore, the `auditor_secret` is resent in plaintext to the proof server on every `reveal_violation` call. 
 > 
-> **Consequently, the Proof Server operator possesses full visibility into all private data and holds the power to impersonate the Auditor.** Because the `auditor_hash` is immutable once set in a `PriceClass`, a single compromised proof-server session permanently compromises the auditor role for that entire class. 
+> **Mitigation in Place:** The frontend implements an `ALLOWED_PROOF_SERVERS` client-side allowlist check before initializing the Midnight SDK. This strictly prevents accidental misconfigurations from routing private inputs to unauthorized domains. However, because this is a client-side check, it does not stop a determined attacker who can manually edit or bypass the shipped JavaScript.
 > 
-> A production-ready iteration of MFNGuard must replace this component with either advanced Multi-Party Computation (MPC) or run the Proof Server inside a verifiable Hardware Secure Enclave (e.g., Intel SGX or AWS Nitro) to seal memory and cryptographically attest that no logs are retained. Additionally, production versions should consider a rotating/one-time secret scheme to bound this exposure window.
+> **Production Recommendation:** A production-ready iteration of MFNGuard must replace this component with either advanced Multi-Party Computation (MPC) or run the Proof Server inside a verifiable Hardware Secure Enclave (e.g., Intel SGX or AWS Nitro) to seal memory and cryptographically attest that no logs are retained. 
 
 > [!NOTE]
 > **Fixed Slate Size:** The current implementation uses a fixed slate size of N=5 slots per comparability class due to current constraints around loops and mapping in the Compact compiler. Suppliers can only commit a maximum of 5 deals per class.
 
 > [!WARNING]
-> **KNOWN GAP - E2E Testing:** The automated `e2e-test.ts` script in the CI pipeline currently only validates environment variable injection and wiring. It **does not** execute a real on-chain transaction flow (`commit_price` -> `compliance_check`). This is because headless transaction execution requires a dedicated, pre-funded test wallet with tDUST, which cannot be reliably funded in an automated CI environment without manual faucet interaction. Do not mistake a passing CI build for real on-chain automated test coverage.
+> **KNOWN GAP - E2E Testing Volatility:** The automated `e2e-test.ts` script in the CI pipeline is fully wired to execute a real on-chain transaction flow (`commit_price` -> `set_buyer_reference` -> `reveal_violation`) and explicitly asserts on-chain rejections (e.g., halting double-calls). 
+> 
+> However, headless transaction execution requires a dedicated test wallet with `tDUST` to pay network fees. Because the Midnight testnet faucet is often heavily rate-limited or unresponsive in automated CI environments, the script is configured to gracefully exit `0` rather than fail the build if it detects `Insufficient Funds`. Therefore, a passing CI build does not mathematically guarantee that the full on-chain pipeline was executed on that specific run, but rather that the TypeScript wiring remains structurally sound.
 
 > [!IMPORTANT]
 > **Circuit Updates Require Fresh Deployment:** If you modify the `mfnguard.compact` circuit code in any way, the resulting verifier keys will change upon compilation (`npm run compact`). The frontend will immediately crash with a `ContractTypeError` (mismatched verifier keys) if it tries to connect to the old deployed contract.
