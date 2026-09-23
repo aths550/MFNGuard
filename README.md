@@ -10,7 +10,7 @@ MFNGuard is a privacy-preserving Most-Favored-Nation (MFN) pricing compliance ve
 - **Live Demo**: [https://mfn-guard-frontend.vercel.app](https://mfn-guard-frontend.vercel.app)
 - **Product X Profile**: [https://x.com/MFNGuard](https://x.com/MFNGuard)
 - **Demo Video**: [https://www.loom.com/share/b38bbe839e984400ad8c926c84456ec5](https://www.loom.com/share/b38bbe839e984400ad8c926c84456ec5)
-- **Deployed Contract (Preview Network)**: `fd1b841ba4dff397916eb0ca339574f1f4e276edc8e02ab44459f6951ff638fa`
+- **Deployed Contract (Preview Network)**: `6a00832f3eac9d9d49dad3f6715d5d8faa6fbab2517c77a015f9173814b4806a`
 
 
 ## Project Overview
