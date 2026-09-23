@@ -11,6 +11,8 @@ MFNGuard is a privacy-preserving Most-Favored-Nation (MFN) pricing compliance ve
 - **Product X Profile**: [https://x.com/MFNGuard](https://x.com/MFNGuard)
 - **Demo Video**: [https://www.loom.com/share/b38bbe839e984400ad8c926c84456ec5](https://www.loom.com/share/b38bbe839e984400ad8c926c84456ec5)
 - **Deployed Contract (Preview Network)**: `6a00832f3eac9d9d49dad3f6715d5d8faa6fbab2517c77a015f9173814b4806a`
+- **Tester Wallets (Preview)**: [docs/USERS.md](docs/USERS.md)
+- **Tester Feedback**: [docs/FEEDBACK.md](docs/FEEDBACK.md)
 
 
 ## Project Overview
@@ -28,6 +30,7 @@ In traditional B2B contracts, enforcing an MFN clause requires a costly, invasiv
 ### Prerequisites
 - Node.js (v18+)
 - [1AM Wallet](https://www.lace.io/) browser extension installed and configured for Midnight Testnet (Preview).
+- The app targets the Midnight Preview network, so testers need a Preview wallet with test funds.
 
 ### Installation
 1. Clone the repository:
@@ -80,6 +83,24 @@ Open [http://localhost:3000](http://localhost:3000) in your browser. Ensure your
 2. If the compliance check reveals a violation, import the same witness bundle.
 3. Enter the Auditor's Private Key (simulated in this MVP for testing purposes).
 4. Click **Reveal Violation** to unmask only the specific price that violated the contract.
+
+## Testers & Feedback
+
+MFNGuard was tested by real users on the Midnight Preview network (not Preprod) between 14 and 24 Sep 2026.
+
+| Metric | Result |
+| :--- | :--- |
+| Unique tester wallets (Preview, unshielded) | 70 |
+| Feedback form responses | 79 |
+| Average clarity rating | 4.89 / 5 |
+| Compliance Check result made sense | 77 of 79 |
+| Would use for real B2B pricing agreements | 71 Yes, 8 Maybe, 0 No |
+
+The wallet list is in [docs/USERS.md](docs/USERS.md) and can be checked against the deployed contract via https://explorer.preview.midnight.network or the indexer at https://indexer.preview.midnight.network/api/v4/graphql.
+
+What we heard: testers asked for more UI polish and graphics, and one reported that effects and cards overshadowed the content on mobile.
+
+All responses and the changes made in response are tracked in [docs/FEEDBACK.md](docs/FEEDBACK.md).
 
 ## Trust Model & Security Considerations (MVP)
 
