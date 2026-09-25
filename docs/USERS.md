@@ -6,7 +6,7 @@ Wallet addresses of testers who tried MFNGuard on the **Midnight Preview** netwo
 - **Network:** Midnight Preview (not Preprod)
 - **Repository:** [github.com/aths550/MFNGuard](https://github.com/aths550/MFNGuard)
 - **Live demo:** [mfn-guard-frontend.vercel.app](https://mfn-guard-frontend.vercel.app)
-- **Contract address (Preview):** `6a00832f3eac9d9d49dad3f6715d5d8faa6fbab2517c77a015f9173814b4806a`
+- **Contract address (Preview):** `7e45fca21605082fea83fc2617921eaeef34795d5cf2ea423019ad670f77e436`
 - **Explorer:** [explorer.preview.midnight.network](https://explorer.preview.midnight.network) (search the contract address or a wallet address)
 - **Indexer (GraphQL):** `https://indexer.preview.midnight.network/api/v4/graphql`
 - **Unique tester wallets:** **70**

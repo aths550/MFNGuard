@@ -3,7 +3,7 @@
 20 distinct tester wallet addresses on the **Midnight Preview** network, collected for Level 6 (Supermoon). These are separate from and do not overlap with the 70 wallets already listed in [docs/USERS.md](docs/USERS.md) for Level 5.
 
 - **Network:** Midnight Preview (not Preprod) — see the [Network & Contract](README.md#network--contract) section in the README.
-- **Contract address (Preview):** `6a00832f3eac9d9d49dad3f6715d5d8faa6fbab2517c77a015f9173814b4806a`
+- **Contract address (Preview):** `7e45fca21605082fea83fc2617921eaeef34795d5cf2ea423019ad670f77e436`
 - **Explorer:** [explorer.preview.midnight.network](https://explorer.preview.midnight.network) (search the contract address or a wallet address)
 - **Indexer (GraphQL):** `https://indexer.preview.midnight.network/api/v4/graphql`
 - **Unique wallets:** **20**
