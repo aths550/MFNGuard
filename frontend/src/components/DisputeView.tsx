@@ -74,7 +74,7 @@ export default function DisputeView() {
     <div className="space-y-8 animate-in fade-in duration-500">
       <div>
         <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-white mb-2">Auditor Dispute Portal</h2>
-        <p className="text-blue-200/70 text-sm md:text-base max-w-2xl">Investigate proven violations by revealing the violator's specific price to an authorized auditor.</p>
+        <p className="text-emerald-200/70 text-sm md:text-base max-w-2xl">Investigate proven violations by revealing the violator's specific price to an authorized auditor.</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 relative z-10">
@@ -91,7 +91,7 @@ export default function DisputeView() {
           
           <form onSubmit={handleRunDispute} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-blue-100/80 mb-2">Comparability Class ID</label>
+              <label className="block text-sm font-medium text-emerald-100/80 mb-2">Comparability Class ID</label>
               <input 
                 type="text" 
                 value={classId}
@@ -103,7 +103,7 @@ export default function DisputeView() {
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-blue-100/80 mb-2">Auditor Secret Key (Hex/String)</label>
+              <label className="block text-sm font-medium text-emerald-100/80 mb-2">Auditor Secret Key (Hex/String)</label>
               <input 
                 type="password" 
                 value={auditorKey}
@@ -139,12 +139,12 @@ export default function DisputeView() {
             {!disputeResult && !isChecking && (
               <div className="relative z-10">
                 <div className="w-16 h-16 md:w-20 md:h-20 bg-fuchsia-500/5 rounded-2xl flex items-center justify-center mb-6 border border-fuchsia-500/10 mx-auto shadow-[0_0_30px_rgba(245,158,11,0.05)]">
-                  <svg className="w-8 h-8 md:w-10 md:h-10 text-blue-300/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="w-8 h-8 md:w-10 md:h-10 text-emerald-300/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                   </svg>
                 </div>
-                <h3 className="text-xl md:text-2xl font-bold mb-3 text-blue-200/80">Awaiting Dispute</h3>
-                <p className="text-sm md:text-base text-blue-200/50 max-w-sm mx-auto">Enter a class ID where a violation has been proven to reveal the offending supplier slot.</p>
+                <h3 className="text-xl md:text-2xl font-bold mb-3 text-emerald-200/80">Awaiting Dispute</h3>
+                <p className="text-sm md:text-base text-emerald-200/50 max-w-sm mx-auto">Enter a class ID where a violation has been proven to reveal the offending supplier slot.</p>
               </div>
             )}
 
@@ -152,7 +152,7 @@ export default function DisputeView() {
               <div className="flex flex-col items-center relative z-10 py-8">
                 <div className="w-16 h-16 border-4 border-fuchsia-500/20 border-t-fuchsia-500 rounded-full animate-spin mb-6"></div>
                 <p className="text-fuchsia-500 font-semibold text-lg">Generating Dispute Proof...</p>
-                <p className="text-sm text-blue-200/60 mt-2">Checking against local private state</p>
+                <p className="text-sm text-emerald-200/60 mt-2">Checking against local private state</p>
               </div>
             )}
 
@@ -178,7 +178,7 @@ export default function DisputeView() {
                       </p>
                     </div>
                   ) : (
-                    <p className="text-blue-100/80 text-sm md:text-base leading-relaxed bg-black/30 p-6 rounded-2xl border border-white/5">
+                    <p className="text-emerald-100/80 text-sm md:text-base leading-relaxed bg-black/30 p-6 rounded-2xl border border-white/5">
                       No violation was found in this class. The dispute cannot proceed.
                     </p>
                   )}

@@ -72,23 +72,9 @@ export default function Home() {
         {/* Tabs */}
         <div className="flex flex-col sm:flex-row gap-2 mb-6 md:mb-10 bg-white/5 p-1.5 md:p-2 rounded-[20px] border border-white/10 backdrop-blur-xl md:inline-flex w-full md:w-auto shadow-2xl">
           {(['supplier', 'buyer', 'dispute'] as const).map((tab) => {
-            let activeColors = '';
-            let inactiveColors = '';
-            let shadowColor = '';
-            
-            if (tab === 'supplier') {
-              activeColors = 'bg-emerald-600/90 border-emerald-400/30';
-              inactiveColors = 'text-emerald-200/60';
-              shadowColor = 'rgba(16,185,129,0.4)';
-            } else if (tab === 'buyer') {
-              activeColors = 'bg-amber-600/90 border-amber-400/30';
-              inactiveColors = 'text-amber-200/60';
-              shadowColor = 'rgba(245,158,11,0.4)';
-            } else if (tab === 'dispute') {
-              activeColors = 'bg-blue-600/90 border-blue-400/30';
-              inactiveColors = 'text-blue-200/60';
-              shadowColor = 'rgba(59,130,246,0.4)';
-            }
+            let activeColors = 'bg-emerald-600/90 border-emerald-400/30';
+            let inactiveColors = 'text-emerald-200/60';
+            let shadowColor = 'rgba(16,185,129,0.4)';
             
             return (
               <button
