@@ -11,20 +11,20 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<"supplier" | "buyer" | "dispute">("supplier");
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans p-8">
+    <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900 via-[#0a0a0e] to-black text-gray-100 font-sans p-4 md:p-8 selection:bg-indigo-500/30">
       {/* Header */}
-      <header className="flex justify-between items-center max-w-5xl mx-auto mb-12">
-        <div className="flex items-center gap-4">
-          <img src="/logo.jpg" alt="MFNGuard Logo" className="w-12 h-12 rounded-xl border border-slate-800 shadow-lg" />
+      <header className="flex flex-col md:flex-row justify-between items-center max-w-5xl mx-auto mb-8 md:mb-12 gap-6 md:gap-0">
+        <div className="flex items-center gap-4 w-full md:w-auto justify-center md:justify-start">
+          <img src="/logo.jpg" alt="MFNGuard Logo" className="w-12 h-12 md:w-14 md:h-14 rounded-2xl border border-indigo-500/20 shadow-[0_0_20px_rgba(99,102,241,0.15)]" />
           <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-emerald-400 to-teal-500 bg-clip-text text-transparent">
+            <h1 className="text-2xl md:text-4xl font-extrabold bg-gradient-to-br from-white via-indigo-200 to-indigo-500 bg-clip-text text-transparent tracking-tight">
               MFNGuard
             </h1>
-            <p className="text-slate-400 text-sm mt-1">Privacy-Preserving MFN Compliance</p>
+            <p className="text-indigo-200/60 text-xs md:text-sm mt-1 font-medium tracking-wide uppercase">Privacy-Preserving Compliance</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
           {error && (
             <div className="text-red-400 text-sm bg-red-400/10 px-3 py-1.5 rounded-full border border-red-400/20">
               {error}
@@ -32,22 +32,22 @@ export default function Home() {
           )}
           
           {connectedAddress ? (
-            <div className="flex items-center gap-3 bg-slate-900 border border-slate-800 rounded-full py-1.5 px-4">
+            <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-2xl py-2 px-4 md:px-5 backdrop-blur-md shadow-inner w-full sm:w-auto justify-between sm:justify-start">
               <div className="flex items-center gap-2">
-                <div className={`w-2 h-2 rounded-full ${isPreview ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]' : 'bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.5)]'}`}></div>
-                <span className={`text-sm font-medium ${isPreview ? 'text-emerald-400' : 'text-amber-400'}`}>
+                <div className={`w-2 h-2 rounded-full ${isPreview ? 'bg-indigo-400 shadow-[0_0_8px_rgba(129,140,248,0.6)]' : 'bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.6)]'}`}></div>
+                <span className={`text-xs md:text-sm font-semibold tracking-wide ${isPreview ? 'text-indigo-300' : 'text-amber-400'}`}>
                   {network || "Unknown"}
                 </span>
               </div>
-              <div className="w-px h-4 bg-slate-700"></div>
-              <span className="text-sm text-slate-300 font-mono">{connectedAddress}</span>
+              <div className="w-px h-5 bg-white/10 mx-1 md:mx-2"></div>
+              <span className="text-xs md:text-sm text-gray-300 font-mono tracking-wider">{connectedAddress.slice(0, 8)}...{connectedAddress.slice(-6)}</span>
             </div>
           ) : (
             <button 
               onClick={connect}
-              className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-sm font-semibold py-2 px-6 rounded-full transition-all duration-200 shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:shadow-[0_0_25px_rgba(16,185,129,0.5)]"
+              className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 text-white text-sm md:text-base font-semibold py-2.5 px-8 rounded-2xl transition-all duration-300 shadow-[0_0_20px_rgba(79,70,229,0.4)] hover:shadow-[0_0_30px_rgba(79,70,229,0.6)] active:scale-95 flex items-center justify-center gap-2"
             >
-              Connect 1AM Wallet
+              Connect Wallet
             </button>
           )}
         </div>
@@ -70,15 +70,15 @@ export default function Home() {
         )}
 
         {/* Tabs */}
-        <div className="flex gap-2 mb-8 bg-slate-900/50 p-1.5 rounded-2xl border border-slate-800/50 backdrop-blur-sm inline-flex">
+        <div className="flex flex-col sm:flex-row gap-2 mb-6 md:mb-10 bg-white/5 p-1.5 md:p-2 rounded-[20px] border border-white/10 backdrop-blur-xl md:inline-flex w-full md:w-auto shadow-2xl">
           {(['supplier', 'buyer', 'dispute'] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`capitalize px-6 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+              className={`capitalize px-4 md:px-8 py-3 rounded-xl text-sm md:text-base font-semibold transition-all duration-300 w-full sm:w-auto flex-1 md:flex-none ${
                 activeTab === tab 
-                  ? 'bg-slate-800 text-white shadow-lg border border-slate-700/50' 
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                  ? 'bg-indigo-600/90 text-white shadow-[0_4px_20px_rgba(79,70,229,0.4)] border border-indigo-400/30' 
+                  : 'text-indigo-200/60 hover:text-white hover:bg-white/5 border border-transparent'
               }`}
             >
               {tab} View
@@ -87,7 +87,9 @@ export default function Home() {
         </div>
 
         {/* Tab Content */}
-        <div className="bg-slate-900/40 border border-slate-800/60 rounded-3xl p-8 backdrop-blur-md shadow-2xl">
+        <div className="bg-[#0a0a0e]/80 border border-white/10 rounded-3xl p-5 md:p-10 backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] relative overflow-hidden">
+          {/* Subtle glow effect */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[80%] h-[1px] bg-gradient-to-r from-transparent via-indigo-500/50 to-transparent"></div>
           {activeTab === "supplier" && <SupplierView />}
           {activeTab === "buyer" && <BuyerView />}
           {activeTab === "dispute" && <DisputeView />}

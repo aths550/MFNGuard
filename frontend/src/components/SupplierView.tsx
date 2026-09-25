@@ -211,43 +211,43 @@ export default function SupplierView() {
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       <div>
-        <h2 className="text-2xl font-semibold mb-2">Supplier Portal</h2>
-        <p className="text-slate-400 text-sm">Commit prices privately to the blockchain. Your raw prices never leave your device.</p>
+        <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-white mb-2">Supplier Portal</h2>
+        <p className="text-indigo-200/70 text-sm md:text-base max-w-2xl">Commit prices privately to the blockchain. Your raw prices never leave your device.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 relative z-10">
         {/* Commit Form */}
-        <div className="bg-slate-900/50 p-6 rounded-2xl border border-slate-800">
-          <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
-            <svg className="w-5 h-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-            </svg>
+        <div className="bg-[#12121a]/90 p-5 md:p-8 rounded-3xl border border-white/5 shadow-2xl backdrop-blur-md">
+          <h3 className="text-lg md:text-xl font-semibold mb-6 flex items-center gap-3 text-white">
+            <div className="p-2 bg-indigo-500/10 rounded-xl border border-indigo-500/20">
+              <svg className="w-5 h-5 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+            </div>
             Commit Deal
           </h3>
           
-          <form onSubmit={handleCommit} className="space-y-4">
+          <form onSubmit={handleCommit} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1.5">Comparability Class ID</label>
+              <label className="block text-sm font-medium text-indigo-100/80 mb-2">Comparability Class ID</label>
               <input 
                 type="text" 
                 value={classId}
-                onChange={e => {
-                  setClassId(e.target.value);
-                }}
+                onChange={e => setClassId(e.target.value)}
                 required
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-colors"
+                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all shadow-inner"
                 placeholder="e.g., class-a-q3"
               />
             </div>
             
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-300">Auditor Secret Key (32-byte hex)</label>
-              <div className="flex space-x-2">
+              <label className="block text-sm font-medium text-indigo-100/80">Auditor Secret Key (32-byte hex)</label>
+              <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
                 <input 
                   type="text" 
                   value={auditorSecret}
                   onChange={e => setAuditorSecret(e.target.value)}
-                  className="flex-1 px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent font-mono text-sm text-white"
+                  className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 font-mono text-sm shadow-inner transition-all"
                   placeholder="e.g. 1a2b3c..."
                   required
                 />
@@ -264,28 +264,28 @@ export default function SupplierView() {
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1.5">Price</label>
+              <label className="block text-sm font-medium text-indigo-100/80 mb-2">Price</label>
               <input 
                 type="number" 
                 value={price}
                 onChange={e => setPrice(e.target.value)}
                 required
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-colors"
+                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all shadow-inner"
                 placeholder="e.g., 1000"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1.5 flex justify-between">
+              <label className="flex justify-between items-center text-sm font-medium text-indigo-100/80 mb-2">
                 <span>Cryptographic Salt</span>
-                <button type="button" onClick={() => setSalt(generateHex32())} className="text-emerald-400 hover:text-emerald-300 text-xs">Regenerate</button>
+                <button type="button" onClick={() => setSalt(generateHex32())} className="text-indigo-400 hover:text-indigo-300 text-xs font-semibold tracking-wide uppercase transition-colors">Regenerate</button>
               </label>
               <input 
                 type="text" 
                 value={salt}
                 onChange={e => setSalt(e.target.value)}
                 required
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-400 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-colors"
+                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-indigo-200/60 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all shadow-inner"
               />
             </div>
             
@@ -298,7 +298,7 @@ export default function SupplierView() {
             <button 
               type="submit" 
               disabled={isCommitting || isSyncing || !connectedAddress || !mfnguardAPI}
-              className="w-full bg-slate-100 hover:bg-white text-slate-950 font-semibold py-3 px-4 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed mt-2"
+              className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-3.5 px-4 rounded-xl transition-all duration-300 shadow-[0_0_20px_rgba(79,70,229,0.3)] hover:shadow-[0_0_30px_rgba(79,70,229,0.5)] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed mt-4"
             >
               {isSyncing ? "Syncing wallet, one moment..." : isCommitting ? "Committing to Chain..." : "Commit Price"}
             </button>
@@ -306,25 +306,26 @@ export default function SupplierView() {
         </div>
 
         {/* Local Session Data */}
-        <div>
-          <div className="flex justify-between items-end mb-4">
-            <h3 className="text-lg font-medium">Export Witnesses</h3>
+        <div className="flex flex-col gap-6">
+          <div>
+            <h3 className="text-lg md:text-xl font-semibold mb-2 text-white">Export Witnesses</h3>
+            <p className="text-indigo-200/60 text-sm mb-4">Export encrypted bundle to share with buyer.</p>
           </div>
           
           {slots.length > 0 && (
-            <div className="bg-slate-900/50 p-4 rounded-xl border border-slate-800 mb-6 space-y-3">
-              <label className="block text-sm font-medium text-slate-300">Shared Passphrase (for Export)</label>
+            <div className="bg-[#12121a]/90 p-5 md:p-6 rounded-3xl border border-white/5 shadow-xl backdrop-blur-md space-y-4">
+              <label className="block text-sm font-medium text-indigo-100/80">Shared Passphrase (for Export)</label>
               <input 
                 type="password"
                 value={passphrase}
                 onChange={e => setPassphrase(e.target.value)}
                 placeholder="Enter passphrase to encrypt"
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 shadow-inner transition-all"
               />
               <button 
                 onClick={handleExportBundle}
                 disabled={isExporting || !passphrase}
-                className="w-full text-sm bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 py-2.5 px-3 rounded-lg transition-colors disabled:opacity-50"
+                className="w-full text-sm font-semibold bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/20 py-3 px-4 rounded-xl transition-all duration-300 disabled:opacity-50 hover:shadow-[0_0_15px_rgba(99,102,241,0.2)] active:scale-[0.98]"
               >
                 {isExporting ? "Encrypting..." : "Export Witness Bundle"}
               </button>
@@ -339,27 +340,27 @@ export default function SupplierView() {
 
           <div className="space-y-3">
             {slots.length === 0 ? (
-              <div className="bg-slate-900/30 border border-slate-800/50 border-dashed rounded-2xl p-8 text-center text-slate-500 text-sm">
+              <div className="bg-[#12121a]/50 border border-white/5 border-dashed rounded-3xl p-10 text-center text-indigo-200/40 text-sm">
                 No prices committed in this session yet.
               </div>
             ) : (
               slots.map((slot, idx) => (
-                <div key={idx} className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex justify-between items-center">
+                <div key={idx} className="bg-[#12121a]/90 border border-white/5 rounded-2xl p-4 md:p-5 flex justify-between items-center shadow-lg">
                   <div>
-                    <div className="font-medium text-slate-200">{slot.classId}</div>
-                    <div className="text-xs text-slate-500 font-mono mt-1">Slot {slot.slotIndex !== undefined ? slot.slotIndex : idx}</div>
+                    <div className="font-semibold text-white">{slot.classId}</div>
+                    <div className="text-xs text-indigo-200/60 font-mono mt-1">Slot {slot.slotIndex !== undefined ? slot.slotIndex : idx}</div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-                    <span className="text-sm text-emerald-400">Confirmed</span>
+                  <div className="flex items-center gap-2 px-3 py-1 bg-emerald-500/10 rounded-full border border-emerald-500/20">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_5px_rgba(52,211,153,0.8)]"></span>
+                    <span className="text-xs font-semibold text-emerald-400 tracking-wide uppercase">Confirmed</span>
                   </div>
                 </div>
               ))
             )}
           </div>
           
-          <div className="mt-6 text-xs text-slate-500 bg-slate-900/50 p-4 rounded-xl border border-slate-800/50">
-            <span className="font-semibold text-slate-400">Persistence Note:</span> Your witnesses are persisted securely in localStorage. Export them as an encrypted bundle to share with the Buyer out-of-band.
+          <div className="mt-4 text-xs text-indigo-200/50 bg-[#12121a]/40 p-5 rounded-2xl border border-white/5">
+            <span className="font-semibold text-indigo-300/80">Persistence Note:</span> Your witnesses are persisted securely in localStorage. Export them as an encrypted bundle to share with the Buyer out-of-band.
           </div>
         </div>
       </div>

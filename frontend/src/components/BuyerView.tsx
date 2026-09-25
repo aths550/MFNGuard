@@ -268,84 +268,86 @@ export default function BuyerView() {
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       <div>
-        <h2 className="text-2xl font-semibold mb-2">Buyer Portal</h2>
-        <p className="text-slate-400 text-sm">Verify that your price is as good as the supplier's best price without seeing their data.</p>
+        <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-white mb-2">Buyer Portal</h2>
+        <p className="text-indigo-200/70 text-sm md:text-base max-w-2xl">Verify that your price is as good as the supplier's best price without seeing their data.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 relative z-10">
         {/* Set Reference Form */}
-        <div className="bg-slate-900/50 p-6 rounded-2xl border border-slate-800">
-          <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
-            <svg className="w-5 h-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-            </svg>
+        <div className="bg-[#12121a]/90 p-5 md:p-8 rounded-3xl border border-white/5 shadow-2xl backdrop-blur-md">
+          <h3 className="text-lg md:text-xl font-semibold mb-6 flex items-center gap-3 text-white">
+            <div className="p-2 bg-indigo-500/10 rounded-xl border border-indigo-500/20">
+              <svg className="w-5 h-5 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
+            </div>
             Set Contracted Price
           </h3>
           
-          <form onSubmit={handleSetReference} className="space-y-4">
+          <form onSubmit={handleSetReference} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1.5">Comparability Class ID</label>
+              <label className="block text-sm font-medium text-indigo-100/80 mb-2">Comparability Class ID</label>
               <input 
                 type="text" 
                 value={classId}
                 onChange={e => setClassId(e.target.value)}
                 required
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-colors"
+                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all shadow-inner"
                 placeholder="e.g., class-a-q3"
               />
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1.5">Your Price</label>
+              <label className="block text-sm font-medium text-indigo-100/80 mb-2">Your Price</label>
               <input 
                 type="number" 
                 value={price}
                 onChange={e => setPrice(e.target.value)}
                 required
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-colors"
+                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all shadow-inner"
                 placeholder="e.g., 900"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1.5 flex justify-between">
+              <label className="flex justify-between items-center text-sm font-medium text-indigo-100/80 mb-2">
                 <span>Cryptographic Salt</span>
-                <button type="button" onClick={() => setSalt(generateHex32())} className="text-emerald-400 hover:text-emerald-300 text-xs">Regenerate</button>
+                <button type="button" onClick={() => setSalt(generateHex32())} className="text-indigo-400 hover:text-indigo-300 text-xs font-semibold tracking-wide uppercase transition-colors">Regenerate</button>
               </label>
               <input 
                 type="text" 
                 value={salt}
                 onChange={e => setSalt(e.target.value)}
                 required
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-400 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-colors"
+                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-indigo-200/60 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all shadow-inner"
               />
             </div>
             
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-300">Auditor Secret Key (32-byte hex)</label>
-              <div className="flex space-x-2">
+              <label className="block text-sm font-medium text-indigo-100/80">Auditor Secret Key (32-byte hex)</label>
+              <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
                 <input 
                   type="text" 
                   value={auditorSecret}
                   onChange={e => setAuditorSecret(e.target.value)}
-                  className="flex-1 px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent font-mono text-sm"
+                  className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 font-mono text-sm shadow-inner transition-all"
                   placeholder="e.g. 1a2b3c..."
                   required
                 />
                 <button 
                   type="button"
                   onClick={() => setAuditorSecret(generateHex32())}
-                  className="px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg hover:bg-slate-700 transition-colors text-sm"
+                  className="px-4 py-3 bg-indigo-500/10 border border-indigo-500/20 rounded-xl hover:bg-indigo-500/20 transition-colors text-sm font-medium text-indigo-300"
                   title="Auto-generate secure secret"
                 >
                   🎲 Gen
                 </button>
               </div>
-              <p className="text-xs text-slate-400">Save this secret to give to the Auditor. The app hashes this securely before submitting.</p>
+              <p className="text-xs text-indigo-200/50 pt-1">Save this secret to give to the Auditor. The app hashes this securely before submitting.</p>
             </div>
             
             {commitStatus && (
-              <div className="text-emerald-400 text-sm p-3 bg-emerald-400/10 rounded-xl border border-emerald-400/20">
+              <div className="text-emerald-400 text-sm p-4 bg-emerald-500/10 rounded-xl border border-emerald-500/20 backdrop-blur-md">
                 {commitStatus}
               </div>
             )}
@@ -353,7 +355,7 @@ export default function BuyerView() {
             <button 
               type="submit" 
               disabled={isCommitting || isSyncing || !connectedAddress || !mfnguardAPI}
-              className="w-full bg-slate-100 hover:bg-white text-slate-950 font-semibold py-3 px-4 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed mt-2"
+              className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-3.5 px-4 rounded-xl transition-all duration-300 shadow-[0_0_20px_rgba(79,70,229,0.3)] hover:shadow-[0_0_30px_rgba(79,70,229,0.5)] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed mt-4"
             >
               {isSyncing ? "Syncing wallet, one moment..." : isCommitting ? "Setting Reference..." : "Set Reference Price"}
             </button>
@@ -361,21 +363,23 @@ export default function BuyerView() {
         </div>
 
         {/* Verification Check */}
-        <div className="flex flex-col">
-          <div className="bg-slate-900/30 border border-slate-800/50 rounded-2xl p-6 flex-grow flex flex-col items-center justify-center text-center">
+        <div className="flex flex-col gap-6 md:gap-8">
+          <div className="bg-[#12121a]/50 border border-white/5 rounded-3xl p-6 md:p-8 flex-grow flex flex-col items-center justify-center text-center backdrop-blur-sm shadow-lg relative overflow-hidden">
+            {/* Ambient background glow */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 h-3/4 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none"></div>
             
             {!checkResult && !isChecking && (
-              <>
-                <div className="w-16 h-16 bg-emerald-500/10 rounded-full flex items-center justify-center mb-4 border border-emerald-500/20">
-                  <svg className="w-8 h-8 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="relative z-10">
+                <div className="w-16 h-16 md:w-20 md:h-20 bg-emerald-500/10 rounded-2xl flex items-center justify-center mb-6 border border-emerald-500/20 mx-auto shadow-[0_0_30px_rgba(16,185,129,0.15)] rotate-3">
+                  <svg className="w-8 h-8 md:w-10 md:h-10 text-emerald-400 -rotate-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
-                <h3 className="text-lg font-medium mb-2">Ready to Verify?</h3>
-                <p className="text-sm text-slate-400 mb-6 max-w-xs">Ensure you have imported the supplier's witness bundle before running this check.</p>
+                <h3 className="text-xl md:text-2xl font-bold mb-3 text-white">Ready to Verify?</h3>
+                <p className="text-sm md:text-base text-indigo-200/60 mb-8 max-w-sm mx-auto">Ensure you have imported the supplier's witness bundle before running this check.</p>
                 
                 {error && (
-                  <div className="w-full text-red-400 text-sm p-3 mb-6 bg-red-400/10 rounded-xl border border-red-400/20 text-left">
+                  <div className="w-full text-red-400 text-sm p-4 mb-8 bg-red-500/10 rounded-xl border border-red-500/20 text-left backdrop-blur-md">
                     {error}
                   </div>
                 )}
@@ -383,49 +387,49 @@ export default function BuyerView() {
                 <button 
                   onClick={handleRunComplianceCheck}
                   disabled={isChecking || isSyncing || !mfnguardAPI}
-                  className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold py-3 px-8 rounded-xl transition-all duration-200 shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:shadow-[0_0_25px_rgba(16,185,129,0.5)] disabled:opacity-50"
+                  className="bg-emerald-500 hover:bg-emerald-400 text-black font-bold py-3.5 px-8 rounded-xl transition-all duration-300 shadow-[0_0_20px_rgba(16,185,129,0.4)] hover:shadow-[0_0_30px_rgba(16,185,129,0.6)] disabled:opacity-50 active:scale-[0.98] w-full sm:w-auto"
                 >
                   {isSyncing ? "Syncing wallet, one moment..." : "Run Compliance Check"}
                 </button>
-              </>
+              </div>
             )}
 
             {isChecking && (
-              <div className="flex flex-col items-center">
-                <div className="w-12 h-12 border-4 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin mb-4"></div>
-                <p className="text-emerald-400 font-medium">Generating Zero-Knowledge Proof...</p>
-                <p className="text-sm text-slate-400 mt-2">Checking against supplier's private state</p>
+              <div className="flex flex-col items-center relative z-10 py-8">
+                <div className="w-16 h-16 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin mb-6"></div>
+                <p className="text-emerald-400 font-semibold text-lg">Generating Zero-Knowledge Proof...</p>
+                <p className="text-sm text-indigo-200/60 mt-2">Checking against supplier's private state</p>
               </div>
             )}
 
             {checkResult && (
-              <div className="w-full animate-in zoom-in duration-300">
-                <div className={`p-6 rounded-2xl border ${checkResult.compliant ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-red-500/10 border-red-500/30'}`}>
-                  <div className="flex justify-center mb-4">
+              <div className="w-full animate-in zoom-in duration-500 relative z-10">
+                <div className={`p-8 rounded-3xl border backdrop-blur-xl shadow-2xl ${checkResult.compliant ? 'bg-emerald-500/10 border-emerald-500/30 shadow-[0_10px_40px_rgba(16,185,129,0.15)]' : 'bg-red-500/10 border-red-500/30 shadow-[0_10px_40px_rgba(239,68,68,0.15)]'}`}>
+                  <div className="flex justify-center mb-6">
                     {checkResult.compliant ? (
-                      <div className="w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center">
-                        <svg className="w-10 h-10 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                      <div className="w-20 h-20 bg-emerald-500/20 rounded-2xl flex items-center justify-center border border-emerald-500/30 shadow-[0_0_30px_rgba(16,185,129,0.3)]">
+                        <svg className="w-10 h-10 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
                       </div>
                     ) : (
-                      <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center">
-                        <svg className="w-10 h-10 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                      <div className="w-20 h-20 bg-red-500/20 rounded-2xl flex items-center justify-center border border-red-500/30 shadow-[0_0_30px_rgba(239,68,68,0.3)]">
+                        <svg className="w-10 h-10 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" /></svg>
                       </div>
                     )}
                   </div>
                   
-                  <h3 className={`text-2xl font-bold mb-2 ${checkResult.compliant ? 'text-emerald-400' : 'text-red-400'}`}>
+                  <h3 className={`text-2xl md:text-3xl font-bold mb-3 tracking-tight ${checkResult.compliant ? 'text-emerald-400' : 'text-red-400'}`}>
                     {checkResult.compliant ? 'MFN Compliant' : 'MFN Violation Detected'}
                   </h3>
                   
-                  <p className="text-slate-300 text-sm mb-4">
+                  <p className="text-indigo-100/80 text-sm md:text-base mb-8 max-w-md mx-auto leading-relaxed">
                     {checkResult.compliant 
-                      ? "Cryptographic proof generated. Your price is verified to be the lowest or equal to the lowest in the class." 
+                      ? "Cryptographic proof generated successfully. Your price is verified to be the lowest or equal to the lowest in the class." 
                       : `A violation was cryptographically proven. Discrepancy amount: ${checkResult.discrepancy}`}
                   </p>
                   
                   <button 
                     onClick={() => setCheckResult(null)}
-                    className="text-sm text-slate-400 hover:text-white underline decoration-slate-600 hover:decoration-slate-400 transition-colors"
+                    className="text-sm font-medium text-indigo-300 hover:text-white px-6 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all active:scale-[0.98]"
                   >
                     Run Another Check
                   </button>
@@ -435,37 +439,41 @@ export default function BuyerView() {
           </div>
 
           {/* Import Witness Bundle Section */}
-          <div className="mt-8 bg-slate-900/50 p-6 rounded-2xl border border-slate-800">
-            <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
-              <svg className="w-5 h-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-              </svg>
+          <div className="bg-[#12121a]/90 p-5 md:p-8 rounded-3xl border border-white/5 shadow-xl backdrop-blur-md">
+            <h3 className="text-lg md:text-xl font-semibold mb-6 flex items-center gap-3 text-white">
+              <div className="p-2 bg-indigo-500/10 rounded-xl border border-indigo-500/20">
+                <svg className="w-5 h-5 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                </svg>
+              </div>
               Import Witness Bundle
             </h3>
             
-            <form onSubmit={handleImportBundle} className="space-y-4">
+            <form onSubmit={handleImportBundle} className="space-y-5">
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1.5">Encrypted Bundle (.json)</label>
-                <input 
-                  type="file" 
-                  accept=".json"
-                  onChange={e => setImportFile(e.target.files?.[0] || null)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-slate-400 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-emerald-500/10 file:text-emerald-400 hover:file:bg-emerald-500/20"
-                />
+                <label className="block text-sm font-medium text-indigo-100/80 mb-2">Encrypted Bundle (.json)</label>
+                <div className="relative">
+                  <input 
+                    type="file" 
+                    accept=".json"
+                    onChange={e => setImportFile(e.target.files?.[0] || null)}
+                    className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-indigo-200/60 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-500/20 file:text-indigo-300 hover:file:bg-indigo-500/30 transition-all cursor-pointer shadow-inner"
+                  />
+                </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1.5">Shared Passphrase</label>
+                <label className="block text-sm font-medium text-indigo-100/80 mb-2">Shared Passphrase</label>
                 <input 
                   type="password"
                   value={importPassphrase}
                   onChange={e => setImportPassphrase(e.target.value)}
                   placeholder="Enter decryption passphrase"
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                  className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 shadow-inner transition-all"
                 />
               </div>
               
               {importSuccess && (
-                <div className="text-emerald-400 text-sm p-3 bg-emerald-400/10 rounded-xl border border-emerald-400/20">
+                <div className="text-emerald-400 text-sm p-4 bg-emerald-500/10 rounded-xl border border-emerald-500/20 backdrop-blur-md">
                   {importSuccess}
                 </div>
               )}
@@ -473,7 +481,7 @@ export default function BuyerView() {
               <button 
                 type="submit" 
                 disabled={isImporting || !importFile || !importPassphrase}
-                className="w-full text-sm bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 py-2.5 px-3 rounded-lg transition-colors disabled:opacity-50 mt-2"
+                className="w-full text-sm font-semibold bg-white/5 hover:bg-white/10 text-white border border-white/10 py-3.5 px-4 rounded-xl transition-all duration-300 disabled:opacity-50 mt-4 active:scale-[0.98]"
               >
                 {isImporting ? "Decrypting..." : "Import Witnesses"}
               </button>
