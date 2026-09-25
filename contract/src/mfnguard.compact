@@ -41,10 +41,10 @@ export circuit commit_price(class_id: Bytes<32>, price: Uint<64>, salt: Bytes<32
     };
     
     // Read current state
-    let current_class: PriceClass = initial_class;
-    if (is_member) {
-        current_class = classes.lookup(disclose(class_id));
+    if (!is_member) {
+        classes.insert(disclose(class_id), initial_class);
     }
+    const current_class = classes.lookup(disclose(class_id));
     
     // Find an empty slot
     const i0_empty = current_class.filled[0] == 0;
@@ -105,10 +105,10 @@ export circuit set_buyer_reference(class_id: Bytes<32>, price: Uint<64>, salt: B
         auditor_hash: auditor_hash
     };
     
-    let current_class: PriceClass = initial_class;
-    if (is_member) {
-        current_class = classes.lookup(disclose(class_id));
+    if (!is_member) {
+        classes.insert(disclose(class_id), initial_class);
     }
+    const current_class = classes.lookup(disclose(class_id));
     
     assert(current_class.buyer_filled == 0, "Buyer reference already set");
     
