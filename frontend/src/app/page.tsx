@@ -11,16 +11,16 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<"supplier" | "buyer" | "dispute">("supplier");
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-rose-900 via-[#0a0a0e] to-black text-gray-100 font-sans p-4 md:p-8 selection:bg-rose-500/30">
+    <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-orange-900 via-[#0a0a0e] to-black text-gray-100 font-sans p-4 md:p-8 selection:bg-orange-500/30">
       {/* Header */}
       <header className="flex flex-col md:flex-row justify-between items-center max-w-5xl mx-auto mb-8 md:mb-12 gap-6 md:gap-0">
         <div className="flex items-center gap-4 w-full md:w-auto justify-center md:justify-start">
-          <img src="/logo.jpg" alt="MFNGuard Logo" className="w-12 h-12 md:w-14 md:h-14 rounded-2xl border border-rose-500/20 shadow-[0_0_20px_rgba(99,102,241,0.15)]" />
+          <img src="/logo.jpg" alt="MFNGuard Logo" className="w-12 h-12 md:w-14 md:h-14 rounded-2xl border border-orange-500/20 shadow-[0_0_20px_rgba(99,102,241,0.15)]" />
           <div>
-            <h1 className="text-2xl md:text-4xl font-extrabold bg-gradient-to-br from-white via-rose-200 to-rose-500 bg-clip-text text-transparent tracking-tight">
+            <h1 className="text-2xl md:text-4xl font-extrabold bg-gradient-to-br from-white via-orange-200 to-orange-500 bg-clip-text text-transparent tracking-tight">
               MFNGuard
             </h1>
-            <p className="text-rose-200/60 text-xs md:text-sm mt-1 font-medium tracking-wide uppercase">Privacy-Preserving Compliance</p>
+            <p className="text-orange-200/60 text-xs md:text-sm mt-1 font-medium tracking-wide uppercase">Privacy-Preserving Compliance</p>
           </div>
         </div>
 
@@ -34,8 +34,8 @@ export default function Home() {
           {connectedAddress ? (
             <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-2xl py-2 px-4 md:px-5 backdrop-blur-md shadow-inner w-full sm:w-auto justify-between sm:justify-start">
               <div className="flex items-center gap-2">
-                <div className={`w-2 h-2 rounded-full ${isPreview ? 'bg-rose-400 shadow-[0_0_8px_rgba(129,140,248,0.6)]' : 'bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.6)]'}`}></div>
-                <span className={`text-xs md:text-sm font-semibold tracking-wide ${isPreview ? 'text-rose-300' : 'text-amber-400'}`}>
+                <div className={`w-2 h-2 rounded-full ${isPreview ? 'bg-orange-400 shadow-[0_0_8px_rgba(129,140,248,0.6)]' : 'bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.6)]'}`}></div>
+                <span className={`text-xs md:text-sm font-semibold tracking-wide ${isPreview ? 'text-orange-300' : 'text-amber-400'}`}>
                   {network || "Unknown"}
                 </span>
               </div>
@@ -45,7 +45,7 @@ export default function Home() {
           ) : (
             <button 
               onClick={connect}
-              className="w-full sm:w-auto bg-rose-600 hover:bg-rose-500 text-white text-sm md:text-base font-semibold py-2.5 px-8 rounded-2xl transition-all duration-300 shadow-[0_0_20px_rgba(79,70,229,0.4)] hover:shadow-[0_0_30px_rgba(79,70,229,0.6)] active:scale-95 flex items-center justify-center gap-2"
+              className="w-full sm:w-auto bg-orange-600 hover:bg-orange-500 text-white text-sm md:text-base font-semibold py-2.5 px-8 rounded-2xl transition-all duration-300 shadow-[0_0_20px_rgba(79,70,229,0.4)] hover:shadow-[0_0_30px_rgba(79,70,229,0.6)] active:scale-95 flex items-center justify-center gap-2"
             >
               Connect Wallet
             </button>
@@ -77,8 +77,8 @@ export default function Home() {
               onClick={() => setActiveTab(tab)}
               className={`capitalize px-4 md:px-8 py-3 rounded-xl text-sm md:text-base font-semibold transition-all duration-300 w-full sm:w-auto flex-1 md:flex-none ${
                 activeTab === tab 
-                  ? 'bg-rose-600/90 text-white shadow-[0_4px_20px_rgba(79,70,229,0.4)] border border-rose-400/30' 
-                  : 'text-rose-200/60 hover:text-white hover:bg-white/5 border border-transparent'
+                  ? 'bg-orange-600/90 text-white shadow-[0_4px_20px_rgba(79,70,229,0.4)] border border-orange-400/30' 
+                  : 'text-orange-200/60 hover:text-white hover:bg-white/5 border border-transparent'
               }`}
             >
               {tab} View
@@ -89,7 +89,7 @@ export default function Home() {
         {/* Tab Content */}
         <div className="bg-[#0a0a0e]/80 border border-white/10 rounded-3xl p-5 md:p-10 backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] relative overflow-hidden">
           {/* Subtle glow effect */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[80%] h-[1px] bg-gradient-to-r from-transparent via-rose-500/50 to-transparent"></div>
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[80%] h-[1px] bg-gradient-to-r from-transparent via-orange-500/50 to-transparent"></div>
           {activeTab === "supplier" && <SupplierView />}
           {activeTab === "buyer" && <BuyerView />}
           {activeTab === "dispute" && <DisputeView />}
