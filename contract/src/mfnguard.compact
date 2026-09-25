@@ -42,7 +42,7 @@ export circuit commit_price(class_id: Bytes<32>, price: Uint<64>, salt: Bytes<32
     
     // Read current state
     if (!is_member) {
-        classes.insert(disclose(class_id), initial_class);
+        classes.insert(disclose(class_id), disclose(initial_class));
     }
     const current_class = classes.lookup(disclose(class_id));
     
@@ -106,7 +106,7 @@ export circuit set_buyer_reference(class_id: Bytes<32>, price: Uint<64>, salt: B
     };
     
     if (!is_member) {
-        classes.insert(disclose(class_id), initial_class);
+        classes.insert(disclose(class_id), disclose(initial_class));
     }
     const current_class = classes.lookup(disclose(class_id));
     
