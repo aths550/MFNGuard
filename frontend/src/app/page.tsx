@@ -45,7 +45,7 @@ export default function Home() {
           ) : (
             <button 
               onClick={connect}
-              className="w-full sm:w-auto bg-orange-600 hover:bg-orange-500 text-white text-sm md:text-base font-semibold py-2.5 px-8 rounded-2xl transition-all duration-300 shadow-[0_0_20px_rgba(79,70,229,0.4)] hover:shadow-[0_0_30px_rgba(79,70,229,0.6)] active:scale-95 flex items-center justify-center gap-2"
+              className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 text-white text-sm md:text-base font-semibold py-2.5 px-8 rounded-2xl transition-all duration-300 shadow-[0_0_20px_rgba(79,70,229,0.4)] hover:shadow-[0_0_30px_rgba(79,70,229,0.6)] active:scale-95 flex items-center justify-center gap-2"
             >
               Connect Wallet
             </button>
@@ -71,19 +71,39 @@ export default function Home() {
 
         {/* Tabs */}
         <div className="flex flex-col sm:flex-row gap-2 mb-6 md:mb-10 bg-white/5 p-1.5 md:p-2 rounded-[20px] border border-white/10 backdrop-blur-xl md:inline-flex w-full md:w-auto shadow-2xl">
-          {(['supplier', 'buyer', 'dispute'] as const).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`capitalize px-4 md:px-8 py-3 rounded-xl text-sm md:text-base font-semibold transition-all duration-300 w-full sm:w-auto flex-1 md:flex-none ${
-                activeTab === tab 
-                  ? 'bg-orange-600/90 text-white shadow-[0_4px_20px_rgba(79,70,229,0.4)] border border-orange-400/30' 
-                  : 'text-orange-200/60 hover:text-white hover:bg-white/5 border border-transparent'
-              }`}
-            >
-              {tab} View
-            </button>
-          ))}
+          {(['supplier', 'buyer', 'dispute'] as const).map((tab) => {
+            let activeColors = '';
+            let inactiveColors = '';
+            let shadowColor = '';
+            
+            if (tab === 'supplier') {
+              activeColors = 'bg-emerald-600/90 border-emerald-400/30';
+              inactiveColors = 'text-emerald-200/60';
+              shadowColor = 'rgba(16,185,129,0.4)';
+            } else if (tab === 'buyer') {
+              activeColors = 'bg-amber-600/90 border-amber-400/30';
+              inactiveColors = 'text-amber-200/60';
+              shadowColor = 'rgba(245,158,11,0.4)';
+            } else if (tab === 'dispute') {
+              activeColors = 'bg-blue-600/90 border-blue-400/30';
+              inactiveColors = 'text-blue-200/60';
+              shadowColor = 'rgba(59,130,246,0.4)';
+            }
+            
+            return (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`capitalize px-4 md:px-8 py-3 rounded-xl text-sm md:text-base font-semibold transition-all duration-300 w-full sm:w-auto flex-1 md:flex-none ${
+                  activeTab === tab 
+                    ? `${activeColors} text-white shadow-[0_4px_20px_${shadowColor}] border` 
+                    : `${inactiveColors} hover:text-white hover:bg-white/5 border border-transparent`
+                }`}
+              >
+                {tab} View
+              </button>
+            );
+          })}
         </div>
 
         {/* Tab Content */}
