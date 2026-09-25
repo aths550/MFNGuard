@@ -106,7 +106,7 @@ export default function BuyerView() {
       setError("Please connect your wallet first and ensure contract API is initialized.");
       return;
     }
-    if (auditorSecret.length !== 64) {
+    if (globalAuditorSecret.length !== 64) {
       setError("Auditor Secret must be exactly 64 hex characters (32 bytes).");
       return;
     }
