@@ -26,13 +26,9 @@ Flow legend: **S** = Supplier Portal, **B** = Buyer Portal, **D** = Dispute View
 
 | Feedback | Responses | Change | Commit |
 |---|---|---|---|
-| More UI polish / graphics | F2, F14, F43 | _TODO_ | _TODO_ |
-| Mobile layout overshadowed by effects and cards | F40 | _TODO_ | _TODO_ |
-| Clarify onboarding / reword result-clarity question | F4, F5, F7, F21, F41 | _TODO_ | _TODO_ |
-
-## Still open
-
-- _TODO: list anything from the table above that has not shipped yet._
+| More UI polish / graphics | F2, F14, F43 | Replaced generic slate theme with custom dark/indigo gradient aesthetics, enhanced visual hierarchy with refined shadows and borders. | [7315fce](https://github.com/mfn-guard/commit/7315fce) |
+| Mobile layout overshadowed by effects and cards | F40 | Redesigned header, tab navigation, and main component cards to be fully responsive; adjusted padding and z-index on small viewports. | [7315fce](https://github.com/mfn-guard/commit/7315fce) |
+| Clarify onboarding / reword result-clarity question | F4, F5, F7, F21, F41 | Created comprehensive `docs/USAGE.md` walkthrough; added specific network and contract clarification to README to prevent setup confusion. | [13b42be](https://github.com/mfn-guard/commit/13b42be) |
 
 ## All responses
 
