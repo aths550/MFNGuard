@@ -14,6 +14,11 @@ MFNGuard is a privacy-preserving Most-Favored-Nation (MFN) pricing compliance ve
 - **Tester Wallets (Preview)**: [docs/USERS.md](docs/USERS.md)
 - **Tester Feedback**: [docs/FEEDBACK.md](docs/FEEDBACK.md)
 
+## Network & Contract
+Network: Midnight Preview
+Contract Address: 6a00832f3eac9d9d49dad3f6715d5d8faa6fbab2517c77a015f9173814b4806a
+Explorer: https://explorer.preview.midnight.network
+
 
 ## Project Overview
 
@@ -127,3 +132,9 @@ All responses and the changes made in response are tracked in [docs/FEEDBACK.md]
 > 1. Deploy a FRESH instance of the updated contract to Preview and capture its new contract address.
 > 2. Update `NEXT_PUBLIC_CONTRACT_ADDRESS` consistently everywhere (Vercel environment variables, `.github/workflows/ci.yml`, and local `.env.local`).
 > 3. Redeploy the frontend on Vercel so it picks up the new environment variables.
+
+## Privacy Model
+MFNGuard ensures that suppliers never reveal their raw prices to the public or to buyers on-chain. Buyers verify that their target price is compliant through a Zero-Knowledge proof locally, preventing the supplier from discovering the buyer's target price directly unless a violation occurs. In the event of a dispute, only the designated Auditor can decrypt the violating deal using their private key. The Proof Server acts as a trust boundary (as detailed above) and currently has visibility into private data during proof generation.
+
+## Level 6 Users
+For the list of 20 distinct Level 6 user wallet addresses, please see [LAUNCH_USERS.md](LAUNCH_USERS.md).
