@@ -269,15 +269,15 @@ export default function BuyerView() {
     <div className="space-y-8 animate-in fade-in duration-500">
       <div>
         <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-white mb-2">Buyer Portal</h2>
-        <p className="text-orange-200/70 text-sm md:text-base max-w-2xl">Verify that your price is as good as the supplier's best price without seeing their data.</p>
+        <p className="text-amber-200/70 text-sm md:text-base max-w-2xl">Verify that your price is as good as the supplier's best price without seeing their data.</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 relative z-10">
         {/* Set Reference Form */}
         <div className="bg-[#12121a]/90 p-5 md:p-8 rounded-3xl border border-white/5 shadow-2xl backdrop-blur-md">
           <h3 className="text-lg md:text-xl font-semibold mb-6 flex items-center gap-3 text-white">
-            <div className="p-2 bg-orange-500/10 rounded-xl border border-orange-500/20">
-              <svg className="w-5 h-5 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="p-2 bg-amber-500/10 rounded-xl border border-amber-500/20">
+              <svg className="w-5 h-5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
               </svg>
             </div>
@@ -286,64 +286,64 @@ export default function BuyerView() {
           
           <form onSubmit={handleSetReference} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-orange-100/80 mb-2">Comparability Class ID</label>
+              <label className="block text-sm font-medium text-amber-100/80 mb-2">Comparability Class ID</label>
               <input 
                 type="text" 
                 value={classId}
                 onChange={e => setClassId(e.target.value)}
                 required
-                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/50 transition-all shadow-inner"
+                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all shadow-inner"
                 placeholder="e.g., class-a-q3"
               />
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-orange-100/80 mb-2">Your Price</label>
+              <label className="block text-sm font-medium text-amber-100/80 mb-2">Your Price</label>
               <input 
                 type="number" 
                 value={price}
                 onChange={e => setPrice(e.target.value)}
                 required
-                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/50 transition-all shadow-inner"
+                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all shadow-inner"
                 placeholder="e.g., 900"
               />
             </div>
 
             <div>
-              <label className="flex justify-between items-center text-sm font-medium text-orange-100/80 mb-2">
+              <label className="flex justify-between items-center text-sm font-medium text-amber-100/80 mb-2">
                 <span>Cryptographic Salt</span>
-                <button type="button" onClick={() => setSalt(generateHex32())} className="text-orange-400 hover:text-orange-300 text-xs font-semibold tracking-wide uppercase transition-colors">Regenerate</button>
+                <button type="button" onClick={() => setSalt(generateHex32())} className="text-amber-400 hover:text-amber-300 text-xs font-semibold tracking-wide uppercase transition-colors">Regenerate</button>
               </label>
               <input 
                 type="text" 
                 value={salt}
                 onChange={e => setSalt(e.target.value)}
                 required
-                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-orange-200/60 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/50 transition-all shadow-inner"
+                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-amber-200/60 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all shadow-inner"
               />
             </div>
             
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-orange-100/80">Auditor Secret Key (32-byte hex)</label>
+              <label className="block text-sm font-medium text-amber-100/80">Auditor Secret Key (32-byte hex)</label>
               <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
                 <input 
                   type="text" 
                   value={auditorSecret}
                   onChange={e => setAuditorSecret(e.target.value)}
-                  className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/50 font-mono text-sm shadow-inner transition-all"
+                  className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 font-mono text-sm shadow-inner transition-all"
                   placeholder="e.g. 1a2b3c..."
                   required
                 />
                 <button 
                   type="button"
                   onClick={() => setAuditorSecret(generateHex32())}
-                  className="px-4 py-3 bg-orange-500/10 border border-orange-500/20 rounded-xl hover:bg-orange-500/20 transition-colors text-sm font-medium text-orange-300"
+                  className="px-4 py-3 bg-amber-500/10 border border-amber-500/20 rounded-xl hover:bg-amber-500/20 transition-colors text-sm font-medium text-amber-300"
                   title="Auto-generate secure secret"
                 >
                   🎲 Gen
                 </button>
               </div>
-              <p className="text-xs text-orange-200/50 pt-1">Save this secret to give to the Auditor. The app hashes this securely before submitting.</p>
+              <p className="text-xs text-amber-200/50 pt-1">Save this secret to give to the Auditor. The app hashes this securely before submitting.</p>
             </div>
             
             {commitStatus && (
@@ -355,7 +355,7 @@ export default function BuyerView() {
             <button 
               type="submit" 
               disabled={isCommitting || isSyncing || !connectedAddress || !mfnguardAPI}
-              className="w-full bg-orange-600 hover:bg-orange-500 text-white font-semibold py-3.5 px-4 rounded-xl transition-all duration-300 shadow-[0_0_20px_rgba(79,70,229,0.3)] hover:shadow-[0_0_30px_rgba(79,70,229,0.5)] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed mt-4"
+              className="w-full bg-amber-600 hover:bg-amber-500 text-white font-semibold py-3.5 px-4 rounded-xl transition-all duration-300 shadow-[0_0_20px_rgba(79,70,229,0.3)] hover:shadow-[0_0_30px_rgba(79,70,229,0.5)] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed mt-4"
             >
               {isSyncing ? "Syncing wallet, one moment..." : isCommitting ? "Setting Reference..." : "Set Reference Price"}
             </button>
@@ -376,7 +376,7 @@ export default function BuyerView() {
                   </svg>
                 </div>
                 <h3 className="text-xl md:text-2xl font-bold mb-3 text-white">Ready to Verify?</h3>
-                <p className="text-sm md:text-base text-orange-200/60 mb-8 max-w-sm mx-auto">Ensure you have imported the supplier's witness bundle before running this check.</p>
+                <p className="text-sm md:text-base text-amber-200/60 mb-8 max-w-sm mx-auto">Ensure you have imported the supplier's witness bundle before running this check.</p>
                 
                 {error && (
                   <div className="w-full text-red-400 text-sm p-4 mb-8 bg-red-500/10 rounded-xl border border-red-500/20 text-left backdrop-blur-md">
@@ -398,7 +398,7 @@ export default function BuyerView() {
               <div className="flex flex-col items-center relative z-10 py-8">
                 <div className="w-16 h-16 border-4 border-cyan-500/20 border-t-cyan-500 rounded-full animate-spin mb-6"></div>
                 <p className="text-cyan-400 font-semibold text-lg">Generating Zero-Knowledge Proof...</p>
-                <p className="text-sm text-orange-200/60 mt-2">Checking against supplier's private state</p>
+                <p className="text-sm text-amber-200/60 mt-2">Checking against supplier's private state</p>
               </div>
             )}
 
@@ -421,7 +421,7 @@ export default function BuyerView() {
                     {checkResult.compliant ? 'MFN Compliant' : 'MFN Violation Detected'}
                   </h3>
                   
-                  <p className="text-orange-100/80 text-sm md:text-base mb-8 max-w-md mx-auto leading-relaxed">
+                  <p className="text-amber-100/80 text-sm md:text-base mb-8 max-w-md mx-auto leading-relaxed">
                     {checkResult.compliant 
                       ? "Cryptographic proof generated successfully. Your price is verified to be the lowest or equal to the lowest in the class." 
                       : `A violation was cryptographically proven. Discrepancy amount: ${checkResult.discrepancy}`}
@@ -429,7 +429,7 @@ export default function BuyerView() {
                   
                   <button 
                     onClick={() => setCheckResult(null)}
-                    className="text-sm font-medium text-orange-300 hover:text-white px-6 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all active:scale-[0.98]"
+                    className="text-sm font-medium text-amber-300 hover:text-white px-6 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all active:scale-[0.98]"
                   >
                     Run Another Check
                   </button>
@@ -441,8 +441,8 @@ export default function BuyerView() {
           {/* Import Witness Bundle Section */}
           <div className="bg-[#12121a]/90 p-5 md:p-8 rounded-3xl border border-white/5 shadow-xl backdrop-blur-md">
             <h3 className="text-lg md:text-xl font-semibold mb-6 flex items-center gap-3 text-white">
-              <div className="p-2 bg-orange-500/10 rounded-xl border border-orange-500/20">
-                <svg className="w-5 h-5 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="p-2 bg-amber-500/10 rounded-xl border border-amber-500/20">
+                <svg className="w-5 h-5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                 </svg>
               </div>
@@ -451,24 +451,24 @@ export default function BuyerView() {
             
             <form onSubmit={handleImportBundle} className="space-y-5">
               <div>
-                <label className="block text-sm font-medium text-orange-100/80 mb-2">Encrypted Bundle (.json)</label>
+                <label className="block text-sm font-medium text-amber-100/80 mb-2">Encrypted Bundle (.json)</label>
                 <div className="relative">
                   <input 
                     type="file" 
                     accept=".json"
                     onChange={e => setImportFile(e.target.files?.[0] || null)}
-                    className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-orange-200/60 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-orange-500/20 file:text-orange-300 hover:file:bg-orange-500/30 transition-all cursor-pointer shadow-inner"
+                    className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-amber-200/60 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-amber-500/20 file:text-amber-300 hover:file:bg-amber-500/30 transition-all cursor-pointer shadow-inner"
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-orange-100/80 mb-2">Shared Passphrase</label>
+                <label className="block text-sm font-medium text-amber-100/80 mb-2">Shared Passphrase</label>
                 <input 
                   type="password"
                   value={importPassphrase}
                   onChange={e => setImportPassphrase(e.target.value)}
                   placeholder="Enter decryption passphrase"
-                  className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500/50 shadow-inner transition-all"
+                  className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 shadow-inner transition-all"
                 />
               </div>
               
