@@ -184,7 +184,7 @@ export default function BuyerView() {
 
   const handleRunComplianceCheck = async () => {
     if (isChecking || isSyncing || isCheckingRef.current) return;
-    if (!classId || !price || !salt || !auditorSecret || !mfnguardAPI) {
+    if (!classId || !price || !salt || !globalAuditorSecret || !mfnguardAPI) {
       setError("Please set the reference price details first.");
       return;
     }
