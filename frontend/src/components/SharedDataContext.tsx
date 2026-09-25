@@ -32,6 +32,8 @@ export interface SharedDataContextType {
   addSupplierData: (classId: string, prices: bigint[], salts: Uint8Array[]) => void;
   addBuyerData: (classId: string, price: bigint, salt: Uint8Array) => void;
   importSupplierData: (classId: string, prices: bigint[], salts: Uint8Array[]) => void;
+  globalAuditorSecret: string;
+  setGlobalAuditorSecret: (secret: string) => void;
 }
 
 const SharedDataContext = createContext<SharedDataContextType | undefined>(undefined);
@@ -41,6 +43,7 @@ export function SharedDataProvider({ children }: { children: ReactNode }) {
   const [supplierSalts, setSupplierSalts] = useState<Record<string, Uint8Array[]>>({});
   const [buyerPrice, setBuyerPrice] = useState<Record<string, bigint>>({});
   const [buyerSalt, setBuyerSalt] = useState<Record<string, Uint8Array>>({});
+  const [globalAuditorSecret, setGlobalAuditorSecret] = useState<string>('');
   const [isLoaded, setIsLoaded] = useState(false);
 
   // Load from localStorage on mount
@@ -83,6 +86,10 @@ export function SharedDataProvider({ children }: { children: ReactNode }) {
             }
             setBuyerSalt(parsedBuyerSalt);
           }
+          
+          if (data.globalAuditorSecret) {
+            setGlobalAuditorSecret(data.globalAuditorSecret);
+          }
         }
       } catch (e) {
         if (process.env.NODE_ENV === 'development') console.error('Failed to load witnesses from storage:', e);
@@ -124,7 +131,8 @@ export function SharedDataProvider({ children }: { children: ReactNode }) {
           supplierPrices: serializedPrices,
           supplierSalts: serializedSalts,
           buyerPrice: serializedBuyerPrice,
-          buyerSalt: serializedBuyerSalt
+          buyerSalt: serializedBuyerSalt,
+          globalAuditorSecret
         };
 
         const json = JSON.stringify(data);
@@ -135,7 +143,7 @@ export function SharedDataProvider({ children }: { children: ReactNode }) {
       }
     };
     saveToStorage();
-  }, [supplierPrices, supplierSalts, buyerPrice, buyerSalt, isLoaded]);
+  }, [supplierPrices, supplierSalts, buyerPrice, buyerSalt, globalAuditorSecret, isLoaded]);
 
   const addSupplierData = (classId: string, prices: bigint[], salts: Uint8Array[]) => {
     if (process.env.NODE_ENV === 'development') {
@@ -158,7 +166,7 @@ export function SharedDataProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <SharedDataContext.Provider value={{ supplierPrices, supplierSalts, buyerPrice, buyerSalt, addSupplierData, addBuyerData, importSupplierData }}>
+    <SharedDataContext.Provider value={{ supplierPrices, supplierSalts, buyerPrice, buyerSalt, addSupplierData, addBuyerData, importSupplierData, globalAuditorSecret, setGlobalAuditorSecret }}>
       {children}
     </SharedDataContext.Provider>
   );

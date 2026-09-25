@@ -34,10 +34,10 @@ const stringToUint8Array = (str: string) => {
 
 export default function SupplierView() {
   const { connectedAddress, mfnguardAPI, disconnect, isSyncing } = useWallet();
-  const { addSupplierData, supplierPrices: existingSupplierPrices, supplierSalts: existingSupplierSalts } = useSharedData();
+  const { addSupplierData, supplierPrices: existingSupplierPrices, supplierSalts: existingSupplierSalts, globalAuditorSecret, setGlobalAuditorSecret } = useSharedData();
   const [classId, setClassId] = useState("");
   const [price, setPrice] = useState("");
-  const [auditorSecret, setAuditorSecret] = useState("");
+
   
   // Auto-generate 32-byte salt as hex
   const generateHex32 = () => Array.from({ length: 32 }, () => Math.floor(Math.random() * 256).toString(16).padStart(2, '0')).join('');
@@ -83,7 +83,7 @@ export default function SupplierView() {
       const saltBytes = hexToUint8Array(capturedSalt);
 
       // Compute the public hash client-side
-      const secretBytes = hexToUint8Array(auditorSecret);
+      const secretBytes = hexToUint8Array(globalAuditorSecret);
       const auditorHashBytes = await mfnguardAPI.compute_auditor_hash(secretBytes);
 
       // Read current on-chain state to find the next available slot
@@ -245,15 +245,15 @@ export default function SupplierView() {
               <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
                 <input 
                   type="text" 
-                  value={auditorSecret}
-                  onChange={e => setAuditorSecret(e.target.value)}
+                  value={globalAuditorSecret}
+                  onChange={e => setGlobalAuditorSecret(e.target.value)}
                   className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 font-mono text-sm shadow-inner transition-all"
                   placeholder="e.g. 1a2b3c..."
                   required
                 />
                 <button 
                   type="button"
-                  onClick={() => setAuditorSecret(generateHex32())}
+                  onClick={() => setGlobalAuditorSecret(generateHex32())}
                   className="px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg hover:bg-slate-700 transition-colors text-sm text-white"
                   title="Auto-generate secure secret"
                 >

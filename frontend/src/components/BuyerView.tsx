@@ -26,10 +26,10 @@ const stringToUint8Array = (str: string) => {
 
 export default function BuyerView() {
   const { connectedAddress, mfnguardAPI, disconnect, isSyncing } = useWallet();
-  const { addBuyerData, supplierPrices, supplierSalts, importSupplierData, buyerPrice, buyerSalt } = useSharedData();
+  const { addBuyerData, supplierPrices, supplierSalts, importSupplierData, buyerPrice, buyerSalt, globalAuditorSecret, setGlobalAuditorSecret } = useSharedData();
   const [classId, setClassId] = useState("");
   const [price, setPrice] = useState("");
-  const [auditorSecret, setAuditorSecret] = useState("");
+
   
   // Transaction locks to prevent double-click race conditions
   const isCommittingRef = useRef(false);
@@ -128,7 +128,7 @@ export default function BuyerView() {
       const classIdBytes = stringToUint8Array(classId);
       const saltBytes = hexToUint8Array(salt);
       
-      const secretBytes = hexToUint8Array(auditorSecret);
+      const secretBytes = hexToUint8Array(globalAuditorSecret);
       const auditorHashBytes = await mfnguardAPI.compute_auditor_hash(secretBytes);
 
       await mfnguardAPI.set_buyer_reference(classIdBytes, priceBigInt, saltBytes, auditorHashBytes);
@@ -328,15 +328,15 @@ export default function BuyerView() {
               <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
                 <input 
                   type="text" 
-                  value={auditorSecret}
-                  onChange={e => setAuditorSecret(e.target.value)}
+                  value={globalAuditorSecret}
+                  onChange={e => setGlobalAuditorSecret(e.target.value)}
                   className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 font-mono text-sm shadow-inner transition-all"
                   placeholder="e.g. 1a2b3c..."
                   required
                 />
                 <button 
                   type="button"
-                  onClick={() => setAuditorSecret(generateHex32())}
+                  onClick={() => setGlobalAuditorSecret(generateHex32())}
                   className="px-4 py-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl hover:bg-emerald-500/20 transition-colors text-sm font-medium text-emerald-300"
                   title="Auto-generate secure secret"
                 >

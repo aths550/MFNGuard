@@ -15,9 +15,8 @@ const stringToUint8Array = (str: string) => {
 
 export default function DisputeView() {
   const { connectedAddress, mfnguardAPI } = useWallet();
-  const { supplierPrices, supplierSalts, buyerPrice, buyerSalt } = useSharedData();
+  const { supplierPrices, supplierSalts, buyerPrice, buyerSalt, globalAuditorSecret, setGlobalAuditorSecret } = useSharedData();
   const [classId, setClassId] = useState("");
-  const [auditorKey, setAuditorKey] = useState("");
   
   const [isChecking, setIsChecking] = useState(false);
   const [disputeResult, setDisputeResult] = useState<{violator_found: boolean, violator_price: number, violator_index: number} | null>(null);
@@ -25,7 +24,7 @@ export default function DisputeView() {
 
   const handleRunDispute = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!classId || !auditorKey || !mfnguardAPI) {
+    if (!classId || !globalAuditorSecret || !mfnguardAPI) {
       setError("Please fill out all details and ensure API is ready.");
       return;
     }
@@ -46,7 +45,7 @@ export default function DisputeView() {
 
       const classIdBytes = stringToUint8Array(classId);
 
-      const auditorSecretBytes = stringToUint8Array(auditorKey);
+      const auditorSecretBytes = stringToUint8Array(globalAuditorSecret);
 
       const result = await mfnguardAPI.reveal_violation(
         classIdBytes,
@@ -106,8 +105,8 @@ export default function DisputeView() {
               <label className="block text-sm font-medium text-emerald-100/80 mb-2">Auditor Secret Key (Hex/String)</label>
               <input 
                 type="password" 
-                value={auditorKey}
-                onChange={e => setAuditorKey(e.target.value)}
+                value={globalAuditorSecret}
+                onChange={e => setGlobalAuditorSecret(e.target.value)}
                 required
                 className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white font-mono text-sm focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500/50 transition-all shadow-inner"
                 placeholder="Enter 32-byte secret..."
