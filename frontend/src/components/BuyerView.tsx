@@ -312,7 +312,7 @@ export default function BuyerView() {
             <div>
               <label className="flex justify-between items-center text-sm font-medium text-amber-100/80 mb-2">
                 <span>Cryptographic Salt</span>
-                <button type="button" onClick={() => setSalt(generateHex32())} className="text-amber-400 hover:text-amber-300 text-xs font-semibold tracking-wide uppercase transition-colors">Regenerate</button>
+                <button type="button" onClick={() => setSalt(generateHex32())} className="text-amber-400 hover:text-amber-300 text-xs font-semibold tracking-wide uppercase transition-colors">♻️ Regenerate</button>
               </label>
               <input 
                 type="text" 
@@ -340,7 +340,7 @@ export default function BuyerView() {
                   className="px-4 py-3 bg-amber-500/10 border border-amber-500/20 rounded-xl hover:bg-amber-500/20 transition-colors text-sm font-medium text-amber-300"
                   title="Auto-generate secure secret"
                 >
-                  🎲 Gen
+                  🔑 Gen
                 </button>
               </div>
               <p className="text-xs text-amber-200/50 pt-1">Save this secret to give to the Auditor. The app hashes this securely before submitting.</p>

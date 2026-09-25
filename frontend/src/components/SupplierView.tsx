@@ -257,7 +257,7 @@ export default function SupplierView() {
                   className="px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg hover:bg-slate-700 transition-colors text-sm text-white"
                   title="Auto-generate secure secret"
                 >
-                  🎲 Gen
+                  🔑 Gen
                 </button>
               </div>
               <p className="text-xs text-slate-400">Save this secret to give to the Auditor. The app hashes this securely before submitting.</p>
@@ -278,7 +278,7 @@ export default function SupplierView() {
             <div>
               <label className="flex justify-between items-center text-sm font-medium text-emerald-100/80 mb-2">
                 <span>Cryptographic Salt</span>
-                <button type="button" onClick={() => setSalt(generateHex32())} className="text-emerald-400 hover:text-emerald-300 text-xs font-semibold tracking-wide uppercase transition-colors">Regenerate</button>
+                <button type="button" onClick={() => setSalt(generateHex32())} className="text-emerald-400 hover:text-emerald-300 text-xs font-semibold tracking-wide uppercase transition-colors">♻️ Regenerate</button>
               </label>
               <input 
                 type="text" 
