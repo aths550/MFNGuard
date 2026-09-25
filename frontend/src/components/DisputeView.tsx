@@ -13,6 +13,15 @@ const stringToUint8Array = (str: string) => {
   return bytes;
 };
 
+// Helper to convert hex string to Uint8Array
+const hexToUint8Array = (hex: string) => {
+  const bytes = new Uint8Array(32);
+  for (let i = 0; i < Math.min(hex.length / 2, 32); i++) {
+    bytes[i] = parseInt(hex.substring(i * 2, i * 2 + 2), 16);
+  }
+  return bytes;
+};
+
 export default function DisputeView() {
   const { connectedAddress, mfnguardAPI } = useWallet();
   const { supplierPrices, supplierSalts, buyerPrice, buyerSalt, globalAuditorSecret, setGlobalAuditorSecret } = useSharedData();
@@ -45,7 +54,7 @@ export default function DisputeView() {
 
       const classIdBytes = stringToUint8Array(classId);
 
-      const auditorSecretBytes = stringToUint8Array(globalAuditorSecret);
+      const auditorSecretBytes = hexToUint8Array(globalAuditorSecret);
 
       const result = await mfnguardAPI.reveal_violation(
         classIdBytes,
