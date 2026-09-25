@@ -1,5 +1,6 @@
 # Tester Wallets
 Network: Midnight Preview (not Preprod) — see README Network & Contract section for status.
+
 Wallet addresses of testers who tried MFNGuard on the **Midnight Preview** network. Addresses were self-reported through the [feedback form](./FEEDBACK.md) and are listed here separately from their feedback.
 
 - **Network:** Midnight Preview (not Preprod)
