@@ -14,6 +14,7 @@ MFNGuard is a privacy-preserving Most-Favored-Nation (MFN) pricing compliance ve
 - **Tester Wallets (Preview)**: [docs/USERS.md](docs/USERS.md)
 - **Level 6 Tester Wallets (Preview)**: [LAUNCH_USERS.md](LAUNCH_USERS.md)
 - **Tester Feedback**: [docs/FEEDBACK.md](docs/FEEDBACK.md)
+- **Security & Threat Model**: [docs/SECURITY.md](docs/SECURITY.md)
 
 ## Network & Contract
 Network: Midnight Preview
