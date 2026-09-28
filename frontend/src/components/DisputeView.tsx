@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useWallet } from "./WalletContext";
 import { useSharedData } from "./SharedDataContext";
+import { deriveClassId } from "../lib/crypto";
 
 // Helper to convert string to Uint8Array 32-bytes
 const stringToUint8Array = (str: string) => {
@@ -52,7 +53,8 @@ export default function DisputeView() {
         throw new Error(`Data for class '${classId}' is incomplete in local session. Ensure both Supplier and Buyer have shared their data locally first.`);
       }
 
-      const classIdBytes = stringToUint8Array(classId);
+      const classIdHex = await deriveClassId(classId);
+      const classIdBytes = hexToUint8Array(classIdHex);
 
       const auditorSecretBytes = hexToUint8Array(globalAuditorSecret);
 

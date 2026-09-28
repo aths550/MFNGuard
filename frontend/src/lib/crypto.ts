@@ -152,3 +152,16 @@ export async function deobfuscateFromStorage(obfuscated: string): Promise<string
   const decrypted = await window.crypto.subtle.decrypt({ name: "AES-GCM", iv: iv as any }, key, base64ToBytes(obfuscated) as any);
   return new TextDecoder().decode(decrypted);
 }
+
+// Derive a fixed 32-byte class ID from a human-readable label
+export const deriveClassId = async (label: string): Promise<string> => {
+  if (!/^[a-zA-Z0-9_-]+$/.test(label)) {
+    throw new Error("Class ID label must contain only alphanumeric characters, underscores, and dashes.");
+  }
+  const encoder = new TextEncoder();
+  // Domain tag prefix
+  const data = encoder.encode(`mfnguard_class:${label.toLowerCase()}`);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+};

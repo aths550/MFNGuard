@@ -3,7 +3,7 @@
 import { useState, useRef } from "react";
 import { useWallet } from "./WalletContext";
 import { useSharedData } from "./SharedDataContext";
-import { encryptPayload } from "../lib/crypto";
+import { encryptPayload, deriveClassId } from "../lib/crypto";
 import { ledger } from "../../../contract/src/index";
 
 interface Slot {
@@ -69,7 +69,7 @@ export default function SupplierView() {
     setIsCommitting(true);
     
     try {
-      if (process.env.NODE_ENV === 'development') console.log(`[Local Action] Committing price ${price} to class ${classId} with salt ${salt}`);
+
       
       const capturedPrice = price;
       const capturedSalt = salt;
@@ -79,7 +79,8 @@ export default function SupplierView() {
         throw new Error("Contract Error: Invalid witness. Price must be positive.");
       }
 
-      const classIdBytes = stringToUint8Array(classId);
+      const classIdHex = await deriveClassId(classId);
+      const classIdBytes = hexToUint8Array(classIdHex);
       const saltBytes = hexToUint8Array(capturedSalt);
 
       // Compute the public hash client-side
@@ -97,7 +98,7 @@ export default function SupplierView() {
         }
       }
 
-      if (process.env.NODE_ENV === 'development') console.log(`[SupplierView] EXACT BEFORE commit_price - price: ${priceBigInt.toString()}, saltBytes:`, saltBytes, `computed slot index: ${nextSlotIndex}`);
+
       await mfnguardAPI.commit_price(classIdBytes, priceBigInt, saltBytes, auditorHashBytes);
 
       // Poll for on-chain confirmation to hold the lock
@@ -127,8 +128,7 @@ export default function SupplierView() {
       currentSalts[nextSlotIndex] = saltBytes;
       
       if (process.env.NODE_ENV === 'development') {
-        console.log(`[SupplierView] EXACT BEFORE addSupplierData - appended price at index ${nextSlotIndex}: ${priceBigInt.toString()}`);
-        console.log(`[SupplierView] Value of classId exactly before addSupplierData: '${classId}'`);
+
       }
       addSupplierData(classId, currentPrices, currentSalts);
       
@@ -136,7 +136,7 @@ export default function SupplierView() {
       setPrice("");
       setSalt(generateHex32());
     } catch (err: any) {
-      console.error("[MFNGuard] Caught error in handleCommit:", err);
+
       let errMsg = "Failed to commit price";
       if (typeof err === 'string') {
         errMsg = err;
@@ -145,7 +145,7 @@ export default function SupplierView() {
       } else if (err) {
         try { errMsg = JSON.stringify(err); } catch(e) {}
       }
-      if (process.env.NODE_ENV === 'development') console.log("[MFNGuard] Parsed errMsg:", errMsg);
+
       const lowerMsg = errMsg.toLowerCase();
       if (lowerMsg.includes("expired") || lowerMsg.includes("reconnect")) {
         disconnect();
@@ -201,7 +201,7 @@ export default function SupplierView() {
       setServerStatus("Success: Witness bundle encrypted and exported.");
       setPassphrase(""); // Clear passphrase after use
     } catch (err: any) {
-      if (process.env.NODE_ENV === 'development') console.error(err);
+      }
       setError(`Encryption Error: ${err.message}`);
     } finally {
       setIsExporting(false);
@@ -360,7 +360,7 @@ export default function SupplierView() {
           </div>
           
           <div className="mt-4 text-xs text-emerald-200/50 bg-[#12121a]/40 p-5 rounded-2xl border border-white/5">
-            <span className="font-semibold text-emerald-300/80">Persistence Note:</span> Your witnesses are persisted securely in localStorage. Export them as an encrypted bundle to share with the Buyer out-of-band.
+            <span className="font-semibold text-emerald-300/80">Persistence Note:</span> Data is kept in-memory only and will be lost on page reload. Export witnesses to share out-of-band.
           </div>
         </div>
       </div>

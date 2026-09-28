@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useWallet } from "./WalletContext";
 import { useSharedData } from "./SharedDataContext";
-import { decryptPayload } from "../lib/crypto";
+import { decryptPayload, deriveClassId } from "../lib/crypto";
 import { ledger } from "../../../contract/src/index";
 
 // Helper to convert hex string to Uint8Array
@@ -92,7 +92,7 @@ export default function BuyerView() {
       setClassId(data.classId); // Conveniently prefill the class ID
       setImportSuccess(`Successfully imported witnesses for ${data.classId}`);
     } catch (err: any) {
-      if (process.env.NODE_ENV === 'development') console.error(err);
+      }
       setError(`Import Error: Failed to decrypt or parse bundle. Check passphrase.`);
     } finally {
       setIsImporting(false);
@@ -118,14 +118,15 @@ export default function BuyerView() {
     setIsCommitting(true);
     
     try {
-      if (process.env.NODE_ENV === 'development') console.log(`[Local Action] Setting buyer reference price ${price} to class ${classId} with salt ${salt}`);
+
       
       const priceBigInt = BigInt(price);
       if (priceBigInt < 0n) {
         throw new Error("Contract Error: Invalid witness. Price must be positive.");
       }
 
-      const classIdBytes = stringToUint8Array(classId);
+      const classIdHex = await deriveClassId(classId);
+      const classIdBytes = hexToUint8Array(classIdHex);
       const saltBytes = hexToUint8Array(salt);
       
       const secretBytes = hexToUint8Array(globalAuditorSecret);
@@ -155,7 +156,7 @@ export default function BuyerView() {
         throw new Error("Transaction broadcasted but taking too long to confirm. Please verify in 1AM Wallet.");
       }
     } catch (err: any) {
-      console.error("[MFNGuard] Caught error in handleSetReference:", err);
+
       let errMsg = "Failed to set reference price";
       if (typeof err === 'string') {
         errMsg = err;
@@ -164,7 +165,7 @@ export default function BuyerView() {
       } else if (err) {
         try { errMsg = JSON.stringify(err); } catch(e) {}
       }
-      if (process.env.NODE_ENV === 'development') console.log("[MFNGuard] Parsed errMsg:", errMsg);
+
       const lowerMsg = errMsg.toLowerCase();
       if (lowerMsg.includes("expired") || lowerMsg.includes("reconnect")) {
         disconnect();
@@ -195,7 +196,8 @@ export default function BuyerView() {
     setError(null);
     
     try {
-      const classIdBytes = stringToUint8Array(classId);
+      const classIdHex = await deriveClassId(classId);
+      const classIdBytes = hexToUint8Array(classIdHex);
       
       // Verify that the prerequisite (Set Reference Price) has actually confirmed on-chain
       const state = await mfnguardAPI.get_class_state(classIdBytes, ledger);
@@ -207,8 +209,7 @@ export default function BuyerView() {
       }
 
       if (process.env.NODE_ENV === 'development') {
-        console.log(`[BuyerView] Looking up supplier data for classId: '${classId}'`);
-        console.log(`[BuyerView] Current full supplierPrices store:`, supplierPrices);
+
       }
       
       const sPrices = supplierPrices[classId];
@@ -236,7 +237,7 @@ export default function BuyerView() {
       
     } catch (err: any) {
       // FORCE log to console for debugging even in prod build
-      console.error("[MFNGuard] Caught error in handleRunComplianceCheck:", err);
+
       
       // Safely extract string message
       let errMsg = "Unknown error";
@@ -247,7 +248,7 @@ export default function BuyerView() {
       } else if (err) {
         try { errMsg = JSON.stringify(err); } catch(e) {}
       }
-      if (process.env.NODE_ENV === 'development') console.log("[MFNGuard] Parsed errMsg:", errMsg);
+
       const lowerMsg = errMsg.toLowerCase();
       if (lowerMsg.includes("182")) {
         setError("Zero-Knowledge Proof Error: Wallet still syncing — please wait a moment and try again.");

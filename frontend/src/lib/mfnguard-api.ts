@@ -118,11 +118,7 @@ export class MFNGuardAPI implements DeployedMFNGuardAPI {
 
     // Explicitly log the txData object to the browser console for empirical verification
     if (process.env.NODE_ENV === 'development') {
-      console.log("==================== MFNGuard txData Verification ====================");
-      console.log("Full txData object:", txData);
-      console.log("txData.public:", txData.public);
-      console.log("txData.private:", (txData as any).private);
-      console.log("======================================================================");
+
     }
 
     return (txData as any).private?.result || (txData as any).result;

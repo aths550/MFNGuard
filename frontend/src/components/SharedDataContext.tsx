@@ -14,12 +14,11 @@ import React, { createContext, useContext, useState, ReactNode, useEffect } from
  * 3. Buyer receives the payload out-of-band, imports it, and decrypts it with the shared passphrase.
  * 
  * PERSISTENCE:
- * To ensure witness data survives page refreshes, this context persists decrypted data to `localStorage`.
+ * This context keeps data IN-MEMORY ONLY for security. All data will be lost on page reload.
  * 
- * SECURITY LIMITATION:
- * The data stored in `localStorage` is only protected against casual inspection using a static obfuscation key.
- * It is NOT secure against scripts with execution access to the page, as the key material is also client-side.
- * Real at-rest protection would require re-prompting for the passphrase on every page reload.
+ * SECURITY NOTE:
+ * Keys and witness data are highly sensitive. We have removed localStorage persistence to prevent
+ * accidental data leakage to other scripts running on the same origin.
  */
 
 import { obfuscateForStorage, deobfuscateFromStorage } from '../lib/crypto';
@@ -46,110 +45,11 @@ export function SharedDataProvider({ children }: { children: ReactNode }) {
   const [globalAuditorSecret, setGlobalAuditorSecret] = useState<string>('');
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // Load from localStorage on mount
   useEffect(() => {
-    const loadFromStorage = async () => {
-      try {
-        const stored = localStorage.getItem('mfnguard_witnesses');
-        if (stored) {
-          const deobfuscated = await deobfuscateFromStorage(stored);
-          const data = JSON.parse(deobfuscated);
-          
-          if (data.supplierPrices) {
-            const parsedPrices: Record<string, bigint[]> = {};
-            for (const [key, arr] of Object.entries(data.supplierPrices)) {
-              parsedPrices[key] = (arr as string[]).map(s => BigInt(s));
-            }
-            setSupplierPrices(parsedPrices);
-          }
-          
-          if (data.supplierSalts) {
-            const parsedSalts: Record<string, Uint8Array[]> = {};
-            for (const [key, arr] of Object.entries(data.supplierSalts)) {
-              parsedSalts[key] = (arr as number[][]).map(nums => new Uint8Array(nums));
-            }
-            setSupplierSalts(parsedSalts);
-          }
-          
-          if (data.buyerPrice) {
-            const parsedBuyerPrice: Record<string, bigint> = {};
-            for (const [key, val] of Object.entries(data.buyerPrice)) {
-              parsedBuyerPrice[key] = BigInt(val as string);
-            }
-            setBuyerPrice(parsedBuyerPrice);
-          }
-          
-          if (data.buyerSalt) {
-            const parsedBuyerSalt: Record<string, Uint8Array> = {};
-            for (const [key, arr] of Object.entries(data.buyerSalt)) {
-              parsedBuyerSalt[key] = new Uint8Array(arr as number[]);
-            }
-            setBuyerSalt(parsedBuyerSalt);
-          }
-          
-          if (data.globalAuditorSecret) {
-            setGlobalAuditorSecret(data.globalAuditorSecret);
-          }
-        }
-      } catch (e) {
-        if (process.env.NODE_ENV === 'development') console.error('Failed to load witnesses from storage:', e);
-      } finally {
-        setIsLoaded(true);
-      }
-    };
-    loadFromStorage();
+    setIsLoaded(true);
   }, []);
 
-  // Save to localStorage on change
-  useEffect(() => {
-    if (!isLoaded) return;
-    
-    const saveToStorage = async () => {
-      try {
-        // Serialize BigInts to strings, and Uint8Arrays to standard arrays
-        const serializedPrices: Record<string, string[]> = {};
-        for (const [key, arr] of Object.entries(supplierPrices)) {
-          serializedPrices[key] = arr.map(b => b.toString());
-        }
-        
-        const serializedSalts: Record<string, number[][]> = {};
-        for (const [key, arr] of Object.entries(supplierSalts)) {
-          serializedSalts[key] = arr.map(ua => Array.from(ua));
-        }
-        
-        const serializedBuyerPrice: Record<string, string> = {};
-        for (const [key, val] of Object.entries(buyerPrice)) {
-          serializedBuyerPrice[key] = val.toString();
-        }
-        
-        const serializedBuyerSalt: Record<string, number[]> = {};
-        for (const [key, val] of Object.entries(buyerSalt)) {
-          serializedBuyerSalt[key] = Array.from(val);
-        }
-
-        const data = {
-          supplierPrices: serializedPrices,
-          supplierSalts: serializedSalts,
-          buyerPrice: serializedBuyerPrice,
-          buyerSalt: serializedBuyerSalt,
-          globalAuditorSecret
-        };
-
-        const json = JSON.stringify(data);
-        const obfuscated = await obfuscateForStorage(json);
-        localStorage.setItem('mfnguard_witnesses', obfuscated);
-      } catch (e) {
-        if (process.env.NODE_ENV === 'development') console.error('Failed to save witnesses to storage:', e);
-      }
-    };
-    saveToStorage();
-  }, [supplierPrices, supplierSalts, buyerPrice, buyerSalt, globalAuditorSecret, isLoaded]);
-
   const addSupplierData = (classId: string, prices: bigint[], salts: Uint8Array[]) => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`[SharedDataContext] addSupplierData called for classId: '${classId}'`);
-      console.log(`[SharedDataContext] Storing prices:`, prices);
-    }
     setSupplierPrices(prev => ({ ...prev, [classId]: prices }));
     setSupplierSalts(prev => ({ ...prev, [classId]: salts }));
   };
@@ -160,7 +60,6 @@ export function SharedDataProvider({ children }: { children: ReactNode }) {
   };
 
   const addBuyerData = (classId: string, price: bigint, salt: Uint8Array) => {
-    if (process.env.NODE_ENV === 'development') console.log(`[SharedDataContext] addBuyerData called for classId: '${classId}'`);
     setBuyerPrice(prev => ({ ...prev, [classId]: price }));
     setBuyerSalt(prev => ({ ...prev, [classId]: salt }));
   };

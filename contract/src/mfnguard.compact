@@ -18,12 +18,16 @@ export struct ComplianceResult {
 export ledger classes: Map<Bytes<32>, PriceClass>;
 
 export circuit compute_auditor_hash(secret: Bytes<32>): Bytes<32> {
-    return persistentHash<Vector<1, Bytes<32>>>([secret]);
+    const TAG_AUDITOR = 1 as Field as Bytes<32>;
+    return persistentHash<Vector<2, Bytes<32>>>([TAG_AUDITOR, secret]);
 }
 
 // Supplier commits a price. We hash the price and salt locally.
 export circuit commit_price(class_id: Bytes<32>, price: Uint<64>, salt: Bytes<32>, auditor_hash: Bytes<32>): [] {
-    const commitment = persistentHash<Vector<2, Bytes<32>>>([price as Field as Bytes<32>, salt]);
+    assert(price > 0, "Price must be strictly positive");
+    assert(price < 100000000000, "Price exceeds sanity limit");
+    const TAG_PRICE_COMMIT = 2 as Field as Bytes<32>;
+    const commitment = persistentHash<Vector<3, Bytes<32>>>([TAG_PRICE_COMMIT, price as Field as Bytes<32>, salt]);
     
     const is_member = classes.member(disclose(class_id));
     
@@ -90,7 +94,10 @@ export circuit commit_price(class_id: Bytes<32>, price: Uint<64>, salt: Bytes<32
 
 // Buyer sets their reference price commitment
 export circuit set_buyer_reference(class_id: Bytes<32>, price: Uint<64>, salt: Bytes<32>, auditor_hash: Bytes<32>): [] {
-    const commitment = persistentHash<Vector<2, Bytes<32>>>([price as Field as Bytes<32>, salt]);
+    assert(price > 0, "Price must be strictly positive");
+    assert(price < 100000000000, "Price exceeds sanity limit");
+    const TAG_BUYER_COMMIT = 3 as Field as Bytes<32>;
+    const commitment = persistentHash<Vector<3, Bytes<32>>>([TAG_BUYER_COMMIT, price as Field as Bytes<32>, salt]);
     
     const is_member = classes.member(disclose(class_id));
     const empty_bytes = 0 as Field as Bytes<32>;
@@ -131,33 +138,36 @@ export circuit compliance_check(
     supplier_prices: Vector<5, Uint<64>>,
     supplier_salts: Vector<5, Bytes<32>>
 ): ComplianceResult {
+    const TAG_PRICE_COMMIT = 2 as Field as Bytes<32>;
+    const TAG_BUYER_COMMIT = 3 as Field as Bytes<32>;
+    
     const class_state = classes.lookup(disclose(class_id));
     assert(class_state.buyer_filled == 1, "Buyer reference not set");
     
-    const expected_buyer_commit = persistentHash<Vector<2, Bytes<32>>>([buyer_price as Field as Bytes<32>, buyer_salt]);
+    const expected_buyer_commit = persistentHash<Vector<3, Bytes<32>>>([TAG_BUYER_COMMIT, buyer_price as Field as Bytes<32>, buyer_salt]);
     assert(expected_buyer_commit == class_state.buyer_ref, "Buyer witness does not match commitment");
     
     // Verify each filled slot matches the provided witness, and compute minimum
     const max_val = 18446744073709551615; // Max Uint64
     
     const p0 = (class_state.filled[0] == 1) ? supplier_prices[0] : max_val;
-    const expected_commit_0 = persistentHash<Vector<2, Bytes<32>>>([p0 as Field as Bytes<32>, supplier_salts[0]]);
+    const expected_commit_0 = persistentHash<Vector<3, Bytes<32>>>([TAG_PRICE_COMMIT, p0 as Field as Bytes<32>, supplier_salts[0]]);
     assert(class_state.filled[0] == 0 || expected_commit_0 == class_state.slots[0], "Supplier witness 0 does not match");
 
     const p1 = (class_state.filled[1] == 1) ? supplier_prices[1] : max_val;
-    const expected_commit_1 = persistentHash<Vector<2, Bytes<32>>>([p1 as Field as Bytes<32>, supplier_salts[1]]);
+    const expected_commit_1 = persistentHash<Vector<3, Bytes<32>>>([TAG_PRICE_COMMIT, p1 as Field as Bytes<32>, supplier_salts[1]]);
     assert(class_state.filled[1] == 0 || expected_commit_1 == class_state.slots[1], "Supplier witness 1 does not match");
 
     const p2 = (class_state.filled[2] == 1) ? supplier_prices[2] : max_val;
-    const expected_commit_2 = persistentHash<Vector<2, Bytes<32>>>([p2 as Field as Bytes<32>, supplier_salts[2]]);
+    const expected_commit_2 = persistentHash<Vector<3, Bytes<32>>>([TAG_PRICE_COMMIT, p2 as Field as Bytes<32>, supplier_salts[2]]);
     assert(class_state.filled[2] == 0 || expected_commit_2 == class_state.slots[2], "Supplier witness 2 does not match");
 
     const p3 = (class_state.filled[3] == 1) ? supplier_prices[3] : max_val;
-    const expected_commit_3 = persistentHash<Vector<2, Bytes<32>>>([p3 as Field as Bytes<32>, supplier_salts[3]]);
+    const expected_commit_3 = persistentHash<Vector<3, Bytes<32>>>([TAG_PRICE_COMMIT, p3 as Field as Bytes<32>, supplier_salts[3]]);
     assert(class_state.filled[3] == 0 || expected_commit_3 == class_state.slots[3], "Supplier witness 3 does not match");
 
     const p4 = (class_state.filled[4] == 1) ? supplier_prices[4] : max_val;
-    const expected_commit_4 = persistentHash<Vector<2, Bytes<32>>>([p4 as Field as Bytes<32>, supplier_salts[4]]);
+    const expected_commit_4 = persistentHash<Vector<3, Bytes<32>>>([TAG_PRICE_COMMIT, p4 as Field as Bytes<32>, supplier_salts[4]]);
     assert(class_state.filled[4] == 0 || expected_commit_4 == class_state.slots[4], "Supplier witness 4 does not match");
 
     const has_any = class_state.filled[0] == 1 || class_state.filled[1] == 1 || class_state.filled[2] == 1 || class_state.filled[3] == 1 || class_state.filled[4] == 1;
