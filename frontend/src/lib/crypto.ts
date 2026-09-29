@@ -1,4 +1,4 @@
-import { pureCircuits } from '../../../../contract/src/managed/mfnguard/contract/index.js';
+import { pureCircuits } from 'mfnguard-contract';
 
 // Convert hex string to Uint8Array (Midnight expects 32 bytes)
 export function hexToBytes(hex: string): Uint8Array {
@@ -43,9 +43,9 @@ export function computeAuditorHash(secret: Uint8Array): Uint8Array {
 
 export function computeComparabilityHash(
     product: Uint8Array,
-    volume: bigint,
+    volume: Uint8Array,
     region: Uint8Array,
-    term: bigint,
+    term: Uint8Array,
     currency: Uint8Array,
     dateWindow: Uint8Array
 ): Uint8Array {

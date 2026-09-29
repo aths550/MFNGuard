@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { useWallet } from './WalletContext';
-import { bytesToHex, computeAuditorHash, computeBuyerHash, computeSupplierHash, deriveClassId, generateSecretKey } from '../lib/crypto';
+import { bytesToHex, computeAuditorHash, computeBuyerHash, computeSupplierHash, generateSecretKey } from '../lib/crypto';
+import { deriveClassId } from '../lib/class-id';
 import { canonicalizeCurrency, canonicalizeDateWindow, canonicalizeText, stringTo32Bytes } from '../lib/canonicalize';
-import { getMFNGuardAPI } from '../lib/mfnguard-api';
 
 const DEMO_OWNER_SECRET_HEX = "67723b1a3dc4038d2784944d00ce5969ad70492c29fb37a2ea1207ee1aebd9d7";
 
 export default function OwnerView() {
-    const { connectedAddress, providers } = useWallet();
+    const { connectedAddress, mfnguardAPI: api } = useWallet();
     
     // Key Generation State
     const [useDemoKey, setUseDemoKey] = useState(false);
@@ -53,7 +53,7 @@ export default function OwnerView() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!connectedAddress || !providers) {
+        if (!connectedAddress || !api) {
             setStatus({ type: 'error', message: 'Wallet not connected.' });
             return;
         }
@@ -78,10 +78,12 @@ export default function OwnerView() {
             const canonRegion = canonicalizeText(region, 'Region');
             const canonCurrency = canonicalizeCurrency(currency);
             const canonDateWindow = canonicalizeDateWindow(startDate, endDate);
-            const parsedVolume = BigInt(volume);
-            const parsedTerm = BigInt(term);
-            if (parsedVolume <= 0n) throw new Error("Volume must be positive");
-            if (parsedTerm <= 0n) throw new Error("Term must be positive");
+            const parsedVolumeNum = BigInt(volume);
+            const parsedTermNum = BigInt(term);
+            if (parsedVolumeNum <= 0n) throw new Error("Volume must be positive");
+            if (parsedTermNum <= 0n) throw new Error("Term must be positive");
+            const parsedVolume = stringTo32Bytes(parsedVolumeNum.toString());
+            const parsedTerm = stringTo32Bytes(parsedTermNum.toString());
 
             const classIdHex = await deriveClassId(label);
             const classIdBytes = new Uint8Array(Buffer.from(classIdHex, 'hex'));
@@ -91,7 +93,6 @@ export default function OwnerView() {
             const currencyBytes = stringTo32Bytes(canonCurrency);
             const dateWindowBytes = stringTo32Bytes(canonDateWindow);
 
-            const api = await getMFNGuardAPI(providers);
             
             // Calculate comparability hash client side to pass it (or we could pass the raw values, but the API expects the hash)
             // Wait, the API `initialize_class` expects comparability_hash

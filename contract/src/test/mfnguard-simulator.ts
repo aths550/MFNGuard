@@ -14,10 +14,13 @@ import {
 } from "../managed/mfnguard/contract/index.js";
 
 export class MFNGuardSimulator {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   readonly contract: Contract<any>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   circuitContext: CircuitContext<any>;
 
   constructor() {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     this.contract = new Contract<any>({});
     const {
       currentPrivateState,
@@ -44,7 +47,7 @@ export class MFNGuardSimulator {
   public init_contract(owner_hash: Uint8Array): Ledger {
     this.circuitContext = this.contract.impureCircuits.init_contract(
       this.circuitContext,
-      owner_hash
+      owner_hash,
     ).context;
     return this.getLedger();
   }
@@ -55,7 +58,7 @@ export class MFNGuardSimulator {
     buyer_hash: Uint8Array,
     auditor_hash: Uint8Array,
     supplier_hashes: Uint8Array[],
-    comparability_hash: Uint8Array
+    comparability_hash: Uint8Array,
   ): Ledger {
     this.circuitContext = this.contract.impureCircuits.initialize_class(
       this.circuitContext,
@@ -64,7 +67,7 @@ export class MFNGuardSimulator {
       buyer_hash,
       auditor_hash,
       supplier_hashes,
-      comparability_hash
+      comparability_hash,
     ).context;
     return this.getLedger();
   }
@@ -82,7 +85,7 @@ export class MFNGuardSimulator {
       supplier_secret,
       slot_index,
       price,
-      salt
+      salt,
     ).context;
     return this.getLedger();
   }
@@ -98,7 +101,7 @@ export class MFNGuardSimulator {
       class_id,
       buyer_secret,
       price,
-      salt
+      salt,
     ).context;
     return this.getLedger();
   }
@@ -114,7 +117,7 @@ export class MFNGuardSimulator {
     region: Uint8Array,
     term: Uint8Array,
     currency: Uint8Array,
-    date_window: Uint8Array
+    date_window: Uint8Array,
   ): ComplianceResult {
     const result = this.contract.impureCircuits.compliance_check(
       this.circuitContext,
@@ -128,7 +131,7 @@ export class MFNGuardSimulator {
       region,
       term,
       currency,
-      date_window
+      date_window,
     );
     this.circuitContext = result.context;
     return result.result;
@@ -146,7 +149,7 @@ export class MFNGuardSimulator {
     region: Uint8Array,
     term: Uint8Array,
     currency: Uint8Array,
-    date_window: Uint8Array
+    date_window: Uint8Array,
   ): DisputeResult {
     const result = this.contract.impureCircuits.reveal_violation(
       this.circuitContext,
@@ -161,7 +164,7 @@ export class MFNGuardSimulator {
       region,
       term,
       currency,
-      date_window
+      date_window,
     );
     this.circuitContext = result.context;
     return result.result;

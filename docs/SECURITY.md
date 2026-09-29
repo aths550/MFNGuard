@@ -1,5 +1,8 @@
 # MFNGuard Security & Threat Model
 
+> [!NOTE]
+> **Live Demo Deployment (Preview Testnet):** The currently deployed contract on the Midnight Preview network is a public demo. In demo mode the owner secret is public, so the owner check is nominal and anyone can create and initialize their own comparability classes. In a production deployment, the Owner Secret must be kept strictly private so only the authorized owner can create classes.
+
 This document outlines the security architecture, threat model, and known limitations of the MFNGuard v2 contract.
 
 ## Roles & Capabilities
@@ -33,6 +36,13 @@ The comparability rule enforces that an MFN comparison is only mathematically va
 - **What it proves**: It proves that the buyer's compliance check and the supplier's commitments were strictly evaluated against the exact same set of canonical attributes (Product, Volume, Region, Term, Currency, Date Window). The `comparability_hash` is irreversibly bound into every price commitment.
 - **What it does not prove**: It does not prove the *truth* of the off-chain real-world contracts. It only proves that the cryptographic commitments align with the agreed-upon attributes on-chain.
 
+## Privacy Model
+
+MFNGuard ensures that suppliers never reveal their raw prices to the **public or the blockchain**. The zero-knowledge proof verifies compliance without leaking data on-chain.
+
+> [!WARNING]
+> **Witness Bundle Visibility:** The privacy guarantee holds against the public chain. However, to run the local compliance check, the Supplier must securely export an encrypted "Witness Bundle" to the Buyer. **This bundle contains all of the supplier's committed prices and salts for that class in plaintext.** The buyer will see the supplier's other prices. Do not assume the buyer is kept blind to the supplier's numbers.
+
 ## Proof Server Visibility
 
 > [!WARNING]
@@ -49,3 +59,6 @@ We enforce a strict policy of transparency regarding the contract's limitations:
 5. **Unfilled Slots**: Empty slots are skipped during compliance checks. To prevent a false sense of security, the `committed_count` is explicitly returned and must be displayed in the UI so the buyer knows how many prices were actually checked.
 6. **Fixed 5-Slot Limit**: Due to current compiler constraints around loops, the contract is hardcoded to support exactly 5 supplier slots per class. 
 7. **Version Migration**: This is the v2 contract. The original 90 tester wallets used the v1 contract (as documented in `USERS.md`).
+8. **Public Demo Keys**: To facilitate public testing on the Preview Testnet, several highly-privileged secrets are published in plaintext in our documentation and UI. **Anyone holding these keys can act as the Owner or Auditor.** Do not use these keys in a production environment or for any real data.
+   - **Demo Owner Secret**: `67723b1a3dc4038d2784944d00ce5969ad70492c29fb37a2ea1207ee1aebd9d7` (Hash: `537a8dab4449e56b19b31d8b8882ebd9cb22fa83273ef26d5750fc52bae5d172`)
+   - **Demo Auditor Secret**: `11223344556677889900aabbccddeeff11223344556677889900aabbccddeeff` (Hash: `0917b1301c3d31df059dd84381191d6e9d5c4474c15717837001e39bfcd3af38`)

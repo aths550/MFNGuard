@@ -1,14 +1,15 @@
 import { useState } from 'react';
 import { useWallet } from './WalletContext';
 import { useSharedData } from './SharedDataContext';
-import { bytesToHex, deriveClassId, generateSecretKey } from '../lib/crypto';
+import { bytesToHex, generateSecretKey } from '../lib/crypto';
+import { deriveClassId } from '../lib/class-id';
 import { canonicalizeCurrency, canonicalizeDateWindow, canonicalizeText, stringTo32Bytes } from '../lib/canonicalize';
-import { getMFNGuardAPI } from '../lib/mfnguard-api';
+
 
 const MAX_UINT64 = 18446744073709551615n;
 
 export default function SupplierView() {
-    const { connectedAddress, providers } = useWallet();
+    const { connectedAddress, mfnguardAPI: api } = useWallet();
     const { supplierPrices, supplierSalts, addSupplierData } = useSharedData();
 
     // Key Generation State
@@ -59,7 +60,7 @@ export default function SupplierView() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!connectedAddress || !providers) {
+        if (!connectedAddress || !api) {
             setStatus({ type: 'error', message: 'Wallet not connected.' });
             return;
         }
@@ -97,7 +98,7 @@ export default function SupplierView() {
             const currencyBytes = stringTo32Bytes(canonCurrency);
             const dateWindowBytes = stringTo32Bytes(canonDateWindow);
 
-            const api = await getMFNGuardAPI(providers);
+            
             
             setStatus({ type: 'loading', message: 'Please sign the transaction in your wallet...' });
             

@@ -1,4 +1,4 @@
-import { bytesToHex } from './crypto.js';
+import { bytesToHex } from './crypto';
 
 /**
  * Derives a fixed 32-byte class ID from a human-readable label.

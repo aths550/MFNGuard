@@ -1,16 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useWallet } from './WalletContext';
 import { useSharedData } from './SharedDataContext';
-import { bytesToHex, deriveClassId, generateSecretKey } from '../lib/crypto';
+import { bytesToHex, generateSecretKey } from '../lib/crypto';
+import { deriveClassId } from '../lib/class-id';
 import { canonicalizeCurrency, canonicalizeDateWindow, canonicalizeText, stringTo32Bytes } from '../lib/canonicalize';
-import { getMFNGuardAPI } from '../lib/mfnguard-api';
-import { ledger } from '../../../contract/src/index';
+import { ledger } from 'mfnguard-contract';
 
 const MAX_UINT64 = 18446744073709551615n;
 
 export default function BuyerView() {
-    const { connectedAddress, providers } = useWallet();
-    const { supplierPrices, supplierSalts, importSupplierData } = useSharedData();
+    const { connectedAddress, mfnguardAPI: api } = useWallet();
+    const { supplierPrices, supplierSalts, importSupplierData, addBuyerData } = useSharedData();
 
     // Key Generation State
     const [generatedKeyHex, setGeneratedKeyHex] = useState<string | null>(null);
@@ -31,7 +31,7 @@ export default function BuyerView() {
     const [endDate, setEndDate] = useState('');
 
     const [status, setStatus] = useState<{ type: 'idle' | 'loading' | 'success' | 'error', message: string }>({ type: 'idle', message: '' });
-    const [checkResult, setCheckResult] = useState<{compliant: boolean, discrepancy: number} | null>(null);
+    const [checkResult, setCheckResult] = useState<{compliant: boolean, discrepancy: bigint} | null>(null);
 
     const [importFile, setImportFile] = useState<File | null>(null);
     const [importStatus, setImportStatus] = useState<{ type: 'idle' | 'loading' | 'success' | 'error', message: string }>({ type: 'idle', message: '' });
@@ -88,12 +88,11 @@ export default function BuyerView() {
     // Check committed count when label changes
     useEffect(() => {
         const checkSlots = async () => {
-            if (!label || !providers) {
+            if (!label || !api) {
                 setCommittedCount(null);
                 return;
             }
             try {
-                const api = await getMFNGuardAPI(providers);
                 const classIdHex = await deriveClassId(label);
                 const classIdBytes = new Uint8Array(Buffer.from(classIdHex, 'hex'));
                 
@@ -111,11 +110,11 @@ export default function BuyerView() {
         
         const timeout = setTimeout(checkSlots, 500);
         return () => clearTimeout(timeout);
-    }, [label, providers]);
+    }, [label, api]);
 
     const handleSubmitCommit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!connectedAddress || !providers) {
+        if (!connectedAddress || !api) {
             setStatus({ type: 'error', message: 'Wallet not connected.' });
             return;
         }
@@ -135,11 +134,13 @@ export default function BuyerView() {
             const classIdHex = await deriveClassId(label);
             const classIdBytes = new Uint8Array(Buffer.from(classIdHex, 'hex'));
 
-            const api = await getMFNGuardAPI(providers);
             
             setStatus({ type: 'loading', message: 'Please sign the transaction in your wallet...' });
             
-            await api.set_buyer_reference(classIdBytes, priceBigInt, saltBytes);
+            await api.set_buyer_reference(classIdBytes, buyerSecretBytes, priceBigInt, saltBytes);
+            
+            // Save buyer data to in-memory context for DisputeView to use in a demo setting
+            addBuyerData(classIdHex, priceBigInt, saltBytes);
             
             setStatus({ type: 'success', message: 'Buyer reference committed successfully!' });
         } catch (err: any) {
@@ -149,7 +150,7 @@ export default function BuyerView() {
     };
 
     const handleComplianceCheck = async () => {
-        if (!connectedAddress || !providers) {
+        if (!connectedAddress || !api) {
             setStatus({ type: 'error', message: 'Wallet not connected.' });
             return;
         }
@@ -178,15 +179,14 @@ export default function BuyerView() {
             const canonRegion = canonicalizeText(region, 'Region');
             const canonCurrency = canonicalizeCurrency(currency);
             const canonDateWindow = canonicalizeDateWindow(startDate, endDate);
-            const parsedVolume = BigInt(volume);
-            const parsedTerm = BigInt(term);
+            const parsedVolume = stringTo32Bytes(BigInt(volume).toString());
+            const parsedTerm = stringTo32Bytes(BigInt(term).toString());
 
             const productBytes = stringTo32Bytes(canonProduct);
             const regionBytes = stringTo32Bytes(canonRegion);
             const currencyBytes = stringTo32Bytes(canonCurrency);
             const dateWindowBytes = stringTo32Bytes(canonDateWindow);
 
-            const api = await getMFNGuardAPI(providers);
             
             setStatus({ type: 'loading', message: 'Please sign the transaction in your wallet...' });
             
@@ -204,7 +204,10 @@ export default function BuyerView() {
                 dateWindowBytes
             );
             
-            setCheckResult(result);
+            setCheckResult({
+                compliant: result.compliant === 1n,
+                discrepancy: BigInt(result.discrepancy)
+            });
             setStatus({ type: 'success', message: 'Compliance check complete!' });
         } catch (err: any) {
             console.error(err);

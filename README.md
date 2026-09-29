@@ -24,13 +24,18 @@ Explorer: https://explorer.preview.midnight.network
 
 ## Project Overview
 
+> [!NOTE]
+> **Live Demo Deployment (Preview Testnet):** The currently deployed contract on the Midnight Preview network is a public demo. The "Owner Secret" and "Auditor Secret" are deliberately made public so that reviewers and testers can freely create and initialize their own comparability classes under unique labels, and resolve disputes. In a production deployment, these secrets would be strictly guarded. The expected Demo hashes are:
+> - **Demo Owner Hash**: `537a8dab4449e56b19b31d8b8882ebd9cb22fa83273ef26d5750fc52bae5d172`
+> - **Demo Auditor Hash**: `0917b1301c3d31df059dd84381191d6e9d5c4474c15717837001e39bfcd3af38`
+
 In traditional B2B contracts, enforcing an MFN clause requires a costly, invasive third-party audit of the supplier's private ledger. MFNGuard completely automates this using zero-knowledge proofs.
 
 1. **Suppliers** can commit their deal prices anonymously into 5 "slots" per comparability class. The raw prices never leave their device; only cryptographic commitments are stored on-chain.
 2. **Buyers** set their reference price (what they are currently paying) as a commitment on-chain.
-3. **Cross-Party Data Exchange**: The supplier securely exports an encrypted "Witness Bundle" (containing the raw prices and salts) and shares it out-of-band with the buyer.
+3. **Cross-Party Data Exchange**: The supplier securely exports a "Witness Bundle" (containing the raw prices and salts) and shares it out-of-band with the buyer.
 4. **Compliance Check**: The buyer imports the bundle locally and runs a ZK proof against the on-chain commitments. The proof verifies that *none* of the supplier's other committed prices in that class are lower than the buyer's price.
-5. **Disputes**: If a violation is found, an Auditor can use their private key to decrypt the specific violating deal and enforce the contract, keeping all compliant deals entirely private.
+5. **Disputes**: If a violation is found, an Auditor can use their private key and the supplier/buyer witness data to mathematically unmask the specific violating deal and enforce the contract, keeping all compliant deals entirely private.
 
 ## Setup Instructions
 
@@ -74,21 +79,21 @@ Open [http://localhost:3000](http://localhost:3000) in your browser. Ensure your
 
 ### Supplier Portal Flow
 1. Navigate to the **Supplier Portal**.
-2. Enter a **Comparability Class ID** (e.g., `class-a-q3`) and a **Price**. 
-3. Click **Commit Price** and sign the transaction in 1AM Wallet. 
+2. Enter a **Class Label**, select an empty **Slot Index**, and enter a **Price** alongside comparability attributes. 
+3. Click **Commit Price to Ledger** and sign the transaction in 1AM Wallet. 
 4. The app polls the blockchain to ensure your transaction is firmly committed.
-5. In the "Export Witnesses" section, enter a shared passphrase and download the encrypted witness bundle (`mfnguard-witness-...json`). Send this file and passphrase to the Buyer.
+5. In the "Export Witnesses" section, click to download the plaintext witness bundle (`mfnguard-witness-...json`). Send this file to the Buyer securely out-of-band.
 
 ### Buyer Portal Flow
 1. Navigate to the **Buyer Portal**.
-2. Enter your **Class ID**, your **Price**, and click **Set Reference Price**. Sign the transaction in 1AM Wallet. Wait for it to confirm on-chain.
-3. Once confirmed, import the witness bundle (`.json` file) sent by the Supplier and enter the shared passphrase.
-4. Click **Run Compliance Check**. The app generates a zero-knowledge proof locally verifying if the supplier gave a better price to anyone else in that class.
+2. Import the witness bundle (`.json` file) sent by the Supplier.
+3. Enter your **Class Label**, your **Price**, and click **1. Commit My Price**. Sign the transaction in 1AM Wallet. Wait for it to confirm on-chain.
+4. Click **2. Check Compliance**. The app generates a zero-knowledge proof locally verifying if the supplier gave a better price to anyone else in that class.
 
 ### Dispute View Flow
 1. Navigate to the **Dispute View**.
-2. If the compliance check reveals a violation, import the same witness bundle.
-3. Enter the Auditor's Private Key (simulated in this MVP for testing purposes).
+2. Import the supplier's witness bundle.
+3. Enter the Auditor's Private Key (or click "Use public demo auditor key"), the Class Label, and Buyer data.
 4. Click **Reveal Violation** to unmask only the specific price that violated the contract.
 
 ## Testers & Feedback
@@ -136,7 +141,12 @@ All responses and the changes made in response are tracked in [docs/FEEDBACK.md]
 > 3. Redeploy the frontend on Vercel so it picks up the new environment variables.
 
 ## Privacy Model
-MFNGuard ensures that suppliers never reveal their raw prices to the public or to buyers on-chain. Buyers verify that their target price is compliant through a Zero-Knowledge proof locally, preventing the supplier from discovering the buyer's target price directly unless a violation occurs. In the event of a dispute, only the designated Auditor can decrypt the violating deal using their private key. The Proof Server acts as a trust boundary (as detailed above) and currently has visibility into private data during proof generation.
+MFNGuard ensures that suppliers never reveal their raw prices to the public or to the blockchain. The zero-knowledge proof verifies compliance without leaking data on-chain. In the event of a dispute, only the designated Auditor can decrypt the violating deal using their private key.
+
+> [!WARNING]
+> **Witness Bundle Visibility:** The privacy guarantee holds against the public chain. However, to run the local compliance check, the Supplier must securely export a "Witness Bundle" to the Buyer. **This bundle contains all of the supplier's committed prices and salts for that class in plaintext.** The buyer will see the supplier's other prices.
+
+The Proof Server acts as a trust boundary (as detailed above) and currently has visibility into private data during proof generation.
 
 ## Level 6 Users
 For the list of 20 distinct Level 6 user wallet addresses, please see [LAUNCH_USERS.md](LAUNCH_USERS.md).

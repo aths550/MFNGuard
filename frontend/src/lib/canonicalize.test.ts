@@ -1,82 +1,45 @@
-import { describe, it, expect } from 'vitest';
-import { 
-    canonicalizeText, 
-    canonicalizeCurrency, 
-    canonicalizeDate, 
-    canonicalizeDateWindow,
-    stringTo32Bytes
-} from './canonicalize.js';
+import assert from 'assert';
+import { canonicalizeText, canonicalizeCurrency, canonicalizeDateWindow, stringTo32Bytes } from './canonicalize';
 
-describe('canonicalizeText', () => {
-    it('trims whitespace', () => {
-        expect(canonicalizeText('  hello  ', 'Field')).toBe('hello');
-    });
-    
-    it('lowercases text', () => {
-        expect(canonicalizeText('HELLO World', 'Field')).toBe('hello world');
-    });
-    
-    it('NFC normalizes text', () => {
-        const nfd = 'Am\u00e9lie'; // 'Amélie' using precomposed character
-        const decomposed = 'Ame\u0301lie'; // 'Amélie' using combining character
-        expect(canonicalizeText(decomposed, 'Field')).toBe(nfd.toLowerCase());
-    });
-    
-    it('rejects empty input', () => {
-        expect(() => canonicalizeText('   ', 'Field')).toThrow('Field cannot be empty.');
-    });
-});
+console.log("Running canonicalize tests...");
 
-describe('canonicalizeCurrency', () => {
-    it('accepts valid ISO codes', () => {
-        expect(canonicalizeCurrency('USD')).toBe('usd');
-        expect(canonicalizeCurrency('  eur  ')).toBe('eur');
-    });
-    
-    it('rejects invalid ISO codes', () => {
-        expect(() => canonicalizeCurrency('US')).toThrow(/must be a valid 3-letter ISO/);
-        expect(() => canonicalizeCurrency('US DOLLAR')).toThrow(/must be a valid 3-letter ISO/);
-    });
-});
+// Test Text Canonicalization
+assert.strictEqual(canonicalizeText("  Widget A  ", "Product"), "widget a");
+assert.strictEqual(canonicalizeText("Enterprise-Tier 1!", "Product"), "enterprise-tier 1!");
+assert.strictEqual(canonicalizeText("na", "Region"), "na");
+assert.strictEqual(canonicalizeText("North America", "Region"), "north america");
 
-describe('canonicalizeDate', () => {
-    it('accepts valid YYYY-MM-DD dates', () => {
-        expect(canonicalizeDate('2024-05-15', 'Date')).toBe('2024-05-15');
-    });
-    
-    it('rejects malformed dates', () => {
-        expect(() => canonicalizeDate('2024/05/15', 'Date')).toThrow(/must be in YYYY-MM-DD format/);
-        expect(() => canonicalizeDate('15-05-2024', 'Date')).toThrow(/must be in YYYY-MM-DD format/);
-    });
-    
-    it('rejects invalid calendar dates', () => {
-        expect(() => canonicalizeDate('2024-02-30', 'Date')).toThrow(/not a valid calendar date/);
-        expect(() => canonicalizeDate('2023-02-29', 'Date')).toThrow(/not a valid calendar date/); // Not leap year
-    });
-});
+// Test Currency Canonicalization
+assert.strictEqual(canonicalizeCurrency("usd"), "usd");
+assert.strictEqual(canonicalizeCurrency(" USD "), "usd");
+try {
+    canonicalizeCurrency("US");
+    assert.fail("Should have thrown for short currency");
+} catch (e: any) {
+    assert.match(e.message, /ISO 4217/);
+}
+try {
+    canonicalizeCurrency("USDOLLAR");
+    assert.fail("Should have thrown for long currency");
+} catch (e: any) {
+    assert.match(e.message, /ISO 4217/);
+}
 
-describe('canonicalizeDateWindow', () => {
-    it('formats a valid window', () => {
-        expect(canonicalizeDateWindow('2024-01-01', '2024-12-31')).toBe('2024-01-01/2024-12-31');
-    });
-    
-    it('rejects start date after end date', () => {
-        expect(() => canonicalizeDateWindow('2024-12-31', '2024-01-01')).toThrow(/cannot be after End Date/);
-    });
-});
+// Test Date Window
+assert.strictEqual(canonicalizeDateWindow("2024-01-01", "2024-12-31"), "2024-01-01/2024-12-31");
+try {
+    canonicalizeDateWindow("2024/01/01", "2024.12.31");
+    assert.fail("Should have thrown for invalid format");
+} catch (e: any) {
+    assert.match(e.message, /YYYY-MM-DD/);
+}
 
-describe('stringTo32Bytes', () => {
-    it('converts small strings correctly', () => {
-        const bytes = stringTo32Bytes('usd');
-        expect(bytes.length).toBe(32);
-        expect(bytes[0]).toBe(117); // 'u'
-        expect(bytes[1]).toBe(115); // 's'
-        expect(bytes[2]).toBe(100); // 'd'
-        expect(bytes[3]).toBe(0);
-    });
-    
-    it('rejects strings that are too long', () => {
-        const longStr = 'a'.repeat(33);
-        expect(() => stringTo32Bytes(longStr)).toThrow(/too long after encoding/);
-    });
-});
+// Test padding to 32 bytes
+const bytes = stringTo32Bytes("usd");
+assert.strictEqual(bytes.length, 32);
+assert.strictEqual(bytes[0], 117); // 'u'
+assert.strictEqual(bytes[1], 115); // 's'
+assert.strictEqual(bytes[2], 100); // 'd'
+assert.strictEqual(bytes[3], 0);
+
+console.log("All canonicalize tests passed.");

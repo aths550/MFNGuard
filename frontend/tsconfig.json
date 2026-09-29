@@ -27,7 +27,7 @@
         "./src/*"
       ],
       "mfnguard-contract": [
-        "../contract/src/managed/mfnguard/contract/index.d.ts"
+        "../contract/src/index.ts"
       ]
     }
   },

@@ -64,3 +64,6 @@ fund_and_deploy.ts
 fund_new.ts
 fund_preview.ts
 scratch/
+
+# Compiled contract artifacts
+contract/src/managed/

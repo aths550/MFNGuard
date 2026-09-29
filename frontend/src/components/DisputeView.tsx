@@ -1,14 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useWallet } from './WalletContext';
 import { useSharedData } from './SharedDataContext';
-import { bytesToHex, deriveClassId, generateSecretKey } from '../lib/crypto';
+import { bytesToHex, generateSecretKey } from '../lib/crypto';
+import { deriveClassId } from '../lib/class-id';
 import { canonicalizeCurrency, canonicalizeDateWindow, canonicalizeText, stringTo32Bytes } from '../lib/canonicalize';
-import { getMFNGuardAPI } from '../lib/mfnguard-api';
+
 
 const DEMO_AUDITOR_SECRET_HEX = "11223344556677889900aabbccddeeff11223344556677889900aabbccddeeff";
 
 export default function DisputeView() {
-    const { connectedAddress, providers } = useWallet();
+    const { connectedAddress, mfnguardAPI: api } = useWallet();
     const { supplierPrices, supplierSalts, buyerPrice, buyerSalt, importSupplierData } = useSharedData();
 
     // Key Generation State
@@ -92,7 +93,7 @@ export default function DisputeView() {
 
     const handleRunDispute = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!connectedAddress || !providers) {
+        if (!connectedAddress || !api) {
             setStatus({ type: 'error', message: 'Wallet not connected.' });
             return;
         }
@@ -124,15 +125,14 @@ export default function DisputeView() {
             const canonRegion = canonicalizeText(region, 'Region');
             const canonCurrency = canonicalizeCurrency(currency);
             const canonDateWindow = canonicalizeDateWindow(startDate, endDate);
-            const parsedVolume = BigInt(volume);
-            const parsedTerm = BigInt(term);
+            const parsedVolume = stringTo32Bytes(BigInt(volume).toString());
+            const parsedTerm = stringTo32Bytes(BigInt(term).toString());
 
             const productBytes = stringTo32Bytes(canonProduct);
             const regionBytes = stringTo32Bytes(canonRegion);
             const currencyBytes = stringTo32Bytes(canonCurrency);
             const dateWindowBytes = stringTo32Bytes(canonDateWindow);
 
-            const api = await getMFNGuardAPI(providers);
             
             setStatus({ type: 'loading', message: 'Please sign the transaction in your wallet...' });
             

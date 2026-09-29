@@ -1,4 +1,4 @@
-import { CompiledMFNGuardContractContract } from '../../../contract/src/index';
+import { CompiledMFNGuardContractContract } from 'mfnguard-contract';
 import { Contract, pureCircuits, type ComplianceResult } from 'mfnguard-contract';
 import { type ContractAddress, fromHex, toHex } from '@midnight-ntwrk/compact-runtime';
 import { type Logger } from 'pino';
@@ -43,7 +43,7 @@ export interface DeployedMFNGuardAPI {
   ) => Promise<void>;
 
   commit_price: (class_id: Uint8Array, supplier_secret: Uint8Array, slot_index: bigint, price: bigint, salt: Uint8Array) => Promise<void>;
-  set_buyer_reference: (class_id: Uint8Array, price: bigint, salt: Uint8Array) => Promise<void>;
+  set_buyer_reference: (class_id: Uint8Array, buyer_secret: Uint8Array, price: bigint, salt: Uint8Array) => Promise<void>;
   compliance_check: (
     class_id: Uint8Array,
     buyer_price: bigint,
@@ -121,9 +121,9 @@ export class MFNGuardAPI implements DeployedMFNGuardAPI {
     this.logger?.trace({ transactionAdded: { circuit: 'commit_price', txHash: txData.public.txHash } });
   }
 
-  async set_buyer_reference(class_id: Uint8Array, price: bigint, salt: Uint8Array): Promise<void> {
+  async set_buyer_reference(class_id: Uint8Array, buyer_secret: Uint8Array, price: bigint, salt: Uint8Array): Promise<void> {
     this.logger?.info('set_buyer_reference');
-    const txData = await this.deployedContract.callTx.set_buyer_reference(class_id, price, salt);
+    const txData = await this.deployedContract.callTx.set_buyer_reference(class_id, buyer_secret, price, salt);
     this.logger?.trace({ transactionAdded: { circuit: 'set_buyer_reference', txHash: txData.public.txHash } });
   }
 
@@ -333,4 +333,9 @@ export const initializeProviders = async (connectedAPI: ConnectedAPI, logger?: L
       },
     },
   };
+};
+
+export const getMFNGuardAPI = async (providers: MFNGuardProviders, logger?: Logger): Promise<MFNGuardAPI> => {
+  const contractAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || "08841fbeb992574bbc5444d0d6056e11a5c348e515238588a956eec858df75ec";
+  return MFNGuardAPI.join(providers, contractAddress, logger);
 };
