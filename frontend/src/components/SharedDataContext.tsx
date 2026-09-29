@@ -6,12 +6,12 @@ import React, { createContext, useContext, useState, ReactNode, useEffect } from
  * 
  * Provides a React context for managing witness data (prices and salts) across the application.
  * 
- * CROSS-PARTY EXCHANGE (Option A):
+ * CROSS-PARTY EXCHANGE:
  * In a real-world scenario, the Supplier and Buyer are different entities on different machines.
- * This context is supported by an encrypted export/import flow:
+ * This context is supported by an export/import flow:
  * 1. Supplier commits prices, which are saved in this context.
- * 2. Supplier exports the data as an AES-256-GCM encrypted JSON payload.
- * 3. Buyer receives the payload out-of-band, imports it, and decrypts it with the shared passphrase.
+ * 2. Supplier exports the data as a plaintext JSON payload.
+ * 3. Buyer receives the payload out-of-band and imports it.
  * 
  * PERSISTENCE:
  * This context keeps data IN-MEMORY ONLY for security. All data will be lost on page reload.
@@ -21,8 +21,6 @@ import React, { createContext, useContext, useState, ReactNode, useEffect } from
  * accidental data leakage to other scripts running on the same origin.
  */
 
-import { obfuscateForStorage, deobfuscateFromStorage } from '../lib/crypto';
-
 export interface SharedDataContextType {
   supplierPrices: Record<string, bigint[]>; // mapping class_id -> prices
   supplierSalts: Record<string, Uint8Array[]>;
@@ -31,8 +29,6 @@ export interface SharedDataContextType {
   addSupplierData: (classId: string, prices: bigint[], salts: Uint8Array[]) => void;
   addBuyerData: (classId: string, price: bigint, salt: Uint8Array) => void;
   importSupplierData: (classId: string, prices: bigint[], salts: Uint8Array[]) => void;
-  globalAuditorSecret: string;
-  setGlobalAuditorSecret: (secret: string) => void;
 }
 
 const SharedDataContext = createContext<SharedDataContextType | undefined>(undefined);
@@ -42,12 +38,6 @@ export function SharedDataProvider({ children }: { children: ReactNode }) {
   const [supplierSalts, setSupplierSalts] = useState<Record<string, Uint8Array[]>>({});
   const [buyerPrice, setBuyerPrice] = useState<Record<string, bigint>>({});
   const [buyerSalt, setBuyerSalt] = useState<Record<string, Uint8Array>>({});
-  const [globalAuditorSecret, setGlobalAuditorSecret] = useState<string>('');
-  const [isLoaded, setIsLoaded] = useState(false);
-
-  useEffect(() => {
-    setIsLoaded(true);
-  }, []);
 
   const addSupplierData = (classId: string, prices: bigint[], salts: Uint8Array[]) => {
     setSupplierPrices(prev => ({ ...prev, [classId]: prices }));
@@ -65,7 +55,7 @@ export function SharedDataProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <SharedDataContext.Provider value={{ supplierPrices, supplierSalts, buyerPrice, buyerSalt, addSupplierData, addBuyerData, importSupplierData, globalAuditorSecret, setGlobalAuditorSecret }}>
+    <SharedDataContext.Provider value={{ supplierPrices, supplierSalts, buyerPrice, buyerSalt, addSupplierData, addBuyerData, importSupplierData }}>
       {children}
     </SharedDataContext.Provider>
   );
