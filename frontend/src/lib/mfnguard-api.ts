@@ -1,5 +1,5 @@
 import { CompiledMFNGuardContractContract } from '../../../contract/src/index';
-import { Contract, pureCircuits, type ComplianceResult, type DisputeResult } from 'mfnguard-contract';
+import { Contract, pureCircuits, type ComplianceResult } from 'mfnguard-contract';
 import { type ContractAddress, fromHex, toHex } from '@midnight-ntwrk/compact-runtime';
 import { type Logger } from 'pino';
 import { findDeployedContract, type FoundContract } from '@midnight-ntwrk/midnight-js-contracts';
@@ -33,14 +33,29 @@ export type DeployedMFNGuardContract = FoundContract<Contract<any, any>>;
 export interface DeployedMFNGuardAPI {
   readonly deployedContractAddress: ContractAddress;
 
-  commit_price: (class_id: Uint8Array, price: bigint, salt: Uint8Array, auditor_hash: Uint8Array) => Promise<void>;
-  set_buyer_reference: (class_id: Uint8Array, price: bigint, salt: Uint8Array, auditor_hash: Uint8Array) => Promise<void>;
+  initialize_class: (
+    owner_secret: Uint8Array,
+    class_id: Uint8Array,
+    buyer_hash: Uint8Array,
+    auditor_hash: Uint8Array,
+    supplier_hashes: Uint8Array[],
+    comparability_hash: Uint8Array
+  ) => Promise<void>;
+
+  commit_price: (class_id: Uint8Array, supplier_secret: Uint8Array, slot_index: bigint, price: bigint, salt: Uint8Array) => Promise<void>;
+  set_buyer_reference: (class_id: Uint8Array, price: bigint, salt: Uint8Array) => Promise<void>;
   compliance_check: (
     class_id: Uint8Array,
     buyer_price: bigint,
     buyer_salt: Uint8Array,
     supplier_prices: bigint[],
-    supplier_salts: Uint8Array[]
+    supplier_salts: Uint8Array[],
+    product: Uint8Array,
+    volume: Uint8Array,
+    region: Uint8Array,
+    term: Uint8Array,
+    currency: Uint8Array,
+    date_window: Uint8Array
   ) => Promise<ComplianceResult>;
   reveal_violation: (
     class_id: Uint8Array,
@@ -48,10 +63,26 @@ export interface DeployedMFNGuardAPI {
     buyer_salt: Uint8Array,
     supplier_prices: bigint[],
     supplier_salts: Uint8Array[],
-    auditor_secret: Uint8Array
-  ) => Promise<DisputeResult>;
+    auditor_secret: Uint8Array,
+    product: Uint8Array,
+    volume: Uint8Array,
+    region: Uint8Array,
+    term: Uint8Array,
+    currency: Uint8Array,
+    date_window: Uint8Array
+  ) => Promise<void>;
   
   compute_auditor_hash: (secret: Uint8Array) => Promise<Uint8Array>;
+  compute_owner_hash: (secret: Uint8Array) => Promise<Uint8Array>;
+  compute_supplier_hash: (secret: Uint8Array) => Promise<Uint8Array>;
+  compute_comparability_hash: (
+    product: Uint8Array,
+    volume: Uint8Array,
+    region: Uint8Array,
+    term: Uint8Array,
+    currency: Uint8Array,
+    date_window: Uint8Array
+  ) => Promise<Uint8Array>;
 }
 
 const mfnguardPrivateStateKey = 'mfnguard-private-state';
@@ -71,15 +102,28 @@ export class MFNGuardAPI implements DeployedMFNGuardAPI {
 
   readonly deployedContractAddress: ContractAddress;
 
-  async commit_price(class_id: Uint8Array, price: bigint, salt: Uint8Array, auditor_hash: Uint8Array): Promise<void> {
+  async initialize_class(
+    owner_secret: Uint8Array,
+    class_id: Uint8Array,
+    buyer_hash: Uint8Array,
+    auditor_hash: Uint8Array,
+    supplier_hashes: Uint8Array[],
+    comparability_hash: Uint8Array
+  ): Promise<void> {
+    this.logger?.info('initialize_class');
+    const txData = await this.deployedContract.callTx.initialize_class(owner_secret, class_id, buyer_hash, auditor_hash, supplier_hashes, comparability_hash);
+    this.logger?.trace({ transactionAdded: { circuit: 'initialize_class', txHash: txData.public.txHash } });
+  }
+
+  async commit_price(class_id: Uint8Array, supplier_secret: Uint8Array, slot_index: bigint, price: bigint, salt: Uint8Array): Promise<void> {
     this.logger?.info('commit_price');
-    const txData = await this.deployedContract.callTx.commit_price(class_id, price, salt, auditor_hash);
+    const txData = await this.deployedContract.callTx.commit_price(class_id, supplier_secret, slot_index, price, salt);
     this.logger?.trace({ transactionAdded: { circuit: 'commit_price', txHash: txData.public.txHash } });
   }
 
-  async set_buyer_reference(class_id: Uint8Array, price: bigint, salt: Uint8Array, auditor_hash: Uint8Array): Promise<void> {
+  async set_buyer_reference(class_id: Uint8Array, price: bigint, salt: Uint8Array): Promise<void> {
     this.logger?.info('set_buyer_reference');
-    const txData = await this.deployedContract.callTx.set_buyer_reference(class_id, price, salt, auditor_hash);
+    const txData = await this.deployedContract.callTx.set_buyer_reference(class_id, price, salt);
     this.logger?.trace({ transactionAdded: { circuit: 'set_buyer_reference', txHash: txData.public.txHash } });
   }
 
@@ -104,7 +148,13 @@ export class MFNGuardAPI implements DeployedMFNGuardAPI {
     buyer_price: bigint,
     buyer_salt: Uint8Array,
     supplier_prices: bigint[],
-    supplier_salts: Uint8Array[]
+    supplier_salts: Uint8Array[],
+    product: Uint8Array,
+    volume: Uint8Array,
+    region: Uint8Array,
+    term: Uint8Array,
+    currency: Uint8Array,
+    date_window: Uint8Array
   ): Promise<ComplianceResult> {
     this.logger?.info('compliance_check');
     const txData = await this.deployedContract.callTx.compliance_check(
@@ -112,7 +162,13 @@ export class MFNGuardAPI implements DeployedMFNGuardAPI {
       buyer_price,
       buyer_salt,
       supplier_prices,
-      supplier_salts
+      supplier_salts,
+      product,
+      volume,
+      region,
+      term,
+      currency,
+      date_window
     );
     this.logger?.trace({ transactionAdded: { circuit: 'compliance_check', txHash: txData.public.txHash } });
 
@@ -130,8 +186,14 @@ export class MFNGuardAPI implements DeployedMFNGuardAPI {
     buyer_salt: Uint8Array,
     supplier_prices: bigint[],
     supplier_salts: Uint8Array[],
-    auditor_secret: Uint8Array
-  ): Promise<DisputeResult> {
+    auditor_secret: Uint8Array,
+    product: Uint8Array,
+    volume: Uint8Array,
+    region: Uint8Array,
+    term: Uint8Array,
+    currency: Uint8Array,
+    date_window: Uint8Array
+  ): Promise<void> {
     this.logger?.info('reveal_violation');
     const txData = await this.deployedContract.callTx.reveal_violation(
       class_id,
@@ -139,15 +201,46 @@ export class MFNGuardAPI implements DeployedMFNGuardAPI {
       buyer_salt,
       supplier_prices,
       supplier_salts,
-      auditor_secret
+      auditor_secret,
+      product,
+      volume,
+      region,
+      term,
+      currency,
+      date_window
     );
     this.logger?.trace({ transactionAdded: { circuit: 'reveal_violation', txHash: txData.public.txHash } });
     return (txData as any).private?.result || (txData as any).result;
   }
 
   async compute_auditor_hash(secret: Uint8Array): Promise<Uint8Array> {
-    // Pure circuit evaluation locally (does not mutate state, no wallet prompt, no proof provider needed)
     return pureCircuits.compute_auditor_hash(secret);
+  }
+
+  async compute_owner_hash(secret: Uint8Array): Promise<Uint8Array> {
+    return pureCircuits.compute_owner_hash(secret);
+  }
+
+  async compute_supplier_hash(secret: Uint8Array): Promise<Uint8Array> {
+    return pureCircuits.compute_supplier_hash(secret);
+  }
+
+  async compute_comparability_hash(
+    product: Uint8Array,
+    volume: Uint8Array,
+    region: Uint8Array,
+    term: Uint8Array,
+    currency: Uint8Array,
+    date_window: Uint8Array
+  ): Promise<Uint8Array> {
+    return pureCircuits.compute_comparability_hash(
+      product,
+      volume,
+      region,
+      term,
+      currency,
+      date_window
+    );
   }
 
   static async join(providers: MFNGuardProviders, contractAddress: ContractAddress, logger?: Logger): Promise<MFNGuardAPI> {

@@ -5,10 +5,11 @@ import { useWallet } from "@/components/WalletContext";
 import SupplierView from "@/components/SupplierView";
 import BuyerView from "@/components/BuyerView";
 import DisputeView from "@/components/DisputeView";
+import OwnerView from "@/components/OwnerView";
 
 export default function Home() {
   const { connectedAddress, network, isPreview, error, connect } = useWallet();
-  const [activeTab, setActiveTab] = useState<"supplier" | "buyer" | "dispute">("supplier");
+  const [activeTab, setActiveTab] = useState<"owner" | "supplier" | "buyer" | "dispute">("owner");
 
   return (
     <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-orange-900 via-[#0a0a0e] to-black text-gray-100 font-sans p-4 md:p-8 selection:bg-orange-500/30">
@@ -70,8 +71,8 @@ export default function Home() {
         )}
 
         {/* Tabs */}
-        <div className="flex flex-col sm:flex-row gap-2 mb-6 md:mb-10 bg-white/5 p-1.5 md:p-2 rounded-[20px] border border-white/10 backdrop-blur-xl md:inline-flex w-full md:w-auto shadow-2xl">
-          {(['supplier', 'buyer', 'dispute'] as const).map((tab) => {
+        <div className="flex flex-col sm:flex-row gap-2 mb-6 md:mb-10 bg-white/5 p-1.5 md:p-2 rounded-[20px] border border-white/10 backdrop-blur-xl md:inline-flex w-full md:w-auto shadow-2xl overflow-x-auto">
+          {(['owner', 'supplier', 'buyer', 'dispute'] as const).map((tab) => {
             let activeColors = 'bg-emerald-600/90 border-emerald-400/30';
             let inactiveColors = 'text-emerald-200/60';
             let shadowColor = 'rgba(16,185,129,0.4)';
@@ -96,6 +97,7 @@ export default function Home() {
         <div className="bg-[#0a0a0e]/80 border border-white/10 rounded-3xl p-5 md:p-10 backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] relative overflow-hidden">
           {/* Subtle glow effect */}
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[80%] h-[1px] bg-gradient-to-r from-transparent via-orange-500/50 to-transparent"></div>
+          {activeTab === "owner" && <OwnerView />}
           {activeTab === "supplier" && <SupplierView />}
           {activeTab === "buyer" && <BuyerView />}
           {activeTab === "dispute" && <DisputeView />}
