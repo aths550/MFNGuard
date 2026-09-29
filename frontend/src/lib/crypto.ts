@@ -1,167 +1,56 @@
-// Web Crypto API implementations for AES-256-GCM + PBKDF2
+import { pureCircuits } from '../../../../contract/src/managed/mfnguard/contract/index.js';
 
-export interface EncryptedPayload {
-  iv: string; // base64
-  salt: string; // base64
-  ciphertext: string; // base64
-}
-
-// Convert base64 string to Uint8Array
-export function base64ToBytes(base64: string): Uint8Array {
-  const binary_string = window.atob(base64);
-  const len = binary_string.length;
-  const bytes = new Uint8Array(len);
-  for (let i = 0; i < len; i++) {
-    bytes[i] = binary_string.charCodeAt(i);
+// Convert hex string to Uint8Array (Midnight expects 32 bytes)
+export function hexToBytes(hex: string): Uint8Array {
+  if (hex.length !== 64) {
+    throw new Error('Hex string must be exactly 64 characters (32 bytes).');
+  }
+  const bytes = new Uint8Array(32);
+  for (let i = 0; i < 32; i++) {
+    bytes[i] = parseInt(hex.substring(i * 2, i * 2 + 2), 16);
   }
   return bytes;
 }
 
-// Convert Uint8Array to base64 string
-export function bytesToBase64(bytes: Uint8Array): string {
-  let binary = '';
-  const len = bytes.byteLength;
-  for (let i = 0; i < len; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-  return window.btoa(binary);
+// Convert Uint8Array to hex string
+export function bytesToHex(bytes: Uint8Array): string {
+  return Array.from(bytes)
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
 }
 
-// Derive an AES-GCM key from a passphrase using PBKDF2
-async function deriveKey(passphrase: string, saltBytes: Uint8Array): Promise<CryptoKey> {
-  const enc = new TextEncoder();
-  const keyMaterial = await window.crypto.subtle.importKey(
-    "raw",
-    enc.encode(passphrase),
-    { name: "PBKDF2" },
-    false,
-    ["deriveBits", "deriveKey"]
-  );
-  
-  return window.crypto.subtle.deriveKey(
-    {
-      name: "PBKDF2",
-      salt: saltBytes as any,
-      iterations: 100000,
-      hash: "SHA-256"
-    },
-    keyMaterial,
-    { name: "AES-GCM", length: 256 },
-    false,
-    ["encrypt", "decrypt"]
-  );
+// Generate a high-entropy 32-byte secret key
+export function generateSecretKey(): Uint8Array {
+  return window.crypto.getRandomValues(new Uint8Array(32));
 }
 
-// Encrypt plaintext JSON into the payload format
-export async function encryptPayload(plaintext: string, passphrase: string): Promise<EncryptedPayload> {
-  const enc = new TextEncoder();
-  const iv = window.crypto.getRandomValues(new Uint8Array(12));
-  const salt = window.crypto.getRandomValues(new Uint8Array(16));
-  
-  const key = await deriveKey(passphrase, salt);
-  
-  const encrypted = await window.crypto.subtle.encrypt(
-    {
-      name: "AES-GCM",
-      iv: iv as any
-    },
-    key,
-    enc.encode(plaintext)
-  );
-  
-  return {
-    iv: bytesToBase64(iv),
-    salt: bytesToBase64(salt),
-    ciphertext: bytesToBase64(new Uint8Array(encrypted))
-  };
+// Thin wrappers around contract pure hash circuits
+export function computeOwnerHash(secret: Uint8Array): Uint8Array {
+  return new Uint8Array(pureCircuits.compute_owner_hash(secret));
 }
 
-// Decrypt a payload back to plaintext JSON
-export async function decryptPayload(payload: EncryptedPayload, passphrase: string): Promise<string> {
-  if (!payload || typeof payload !== 'object' || !payload.iv || !payload.salt || !payload.ciphertext) {
-    throw new Error("This doesn't look like a valid witness bundle file (missing required fields).");
-  }
-
-  let ivBytes, saltBytes, ciphertextBytes;
-  try {
-    ivBytes = base64ToBytes(payload.iv);
-    saltBytes = base64ToBytes(payload.salt);
-    ciphertextBytes = base64ToBytes(payload.ciphertext);
-  } catch (err: any) {
-    throw new Error("This doesn't look like a valid witness bundle file (invalid base64 encoding).");
-  }
-  
-  const key = await deriveKey(passphrase, saltBytes);
-  
-  const decrypted = await window.crypto.subtle.decrypt(
-    {
-      name: "AES-GCM",
-      iv: ivBytes as any
-    },
-    key,
-    ciphertextBytes as any
-  );
-  
-  const dec = new TextDecoder();
-  return dec.decode(decrypted);
+export function computeSupplierHash(secret: Uint8Array): Uint8Array {
+  return new Uint8Array(pureCircuits.compute_supplier_hash(secret));
 }
 
-// A simple static key obfuscator for localStorage (protects against casual inspection only)
-const STATIC_LOCAL_KEY_MATERIAL = "mfnguard-casual-inspection-only";
-
-export async function obfuscateForStorage(plaintext: string): Promise<string> {
-  const enc = new TextEncoder();
-  const keyMaterial = await window.crypto.subtle.importKey(
-    "raw",
-    enc.encode(STATIC_LOCAL_KEY_MATERIAL),
-    { name: "PBKDF2" },
-    false,
-    ["deriveBits", "deriveKey"]
-  );
-  const salt = enc.encode("static-salt-for-demo");
-  const key = await window.crypto.subtle.deriveKey(
-    { name: "PBKDF2", salt: salt as any, iterations: 1000, hash: "SHA-256" },
-    keyMaterial,
-    { name: "AES-GCM", length: 256 },
-    false,
-    ["encrypt", "decrypt"]
-  );
-  const iv = new Uint8Array(12); // all zeros for predictable obfuscation
-  const encrypted = await window.crypto.subtle.encrypt({ name: "AES-GCM", iv: iv as any }, key, enc.encode(plaintext));
-  return bytesToBase64(new Uint8Array(encrypted));
+export function computeBuyerHash(secret: Uint8Array): Uint8Array {
+  return new Uint8Array(pureCircuits.compute_buyer_hash(secret));
 }
 
-export async function deobfuscateFromStorage(obfuscated: string): Promise<string> {
-  const enc = new TextEncoder();
-  const keyMaterial = await window.crypto.subtle.importKey(
-    "raw",
-    enc.encode(STATIC_LOCAL_KEY_MATERIAL),
-    { name: "PBKDF2" },
-    false,
-    ["deriveBits", "deriveKey"]
-  );
-  const salt = enc.encode("static-salt-for-demo");
-  const key = await window.crypto.subtle.deriveKey(
-    { name: "PBKDF2", salt: salt as any, iterations: 1000, hash: "SHA-256" },
-    keyMaterial,
-    { name: "AES-GCM", length: 256 },
-    false,
-    ["encrypt", "decrypt"]
-  );
-  const iv = new Uint8Array(12);
-  const decrypted = await window.crypto.subtle.decrypt({ name: "AES-GCM", iv: iv as any }, key, base64ToBytes(obfuscated) as any);
-  return new TextDecoder().decode(decrypted);
+export function computeAuditorHash(secret: Uint8Array): Uint8Array {
+  return new Uint8Array(pureCircuits.compute_auditor_hash(secret));
 }
 
-// Derive a fixed 32-byte class ID from a human-readable label
-export const deriveClassId = async (label: string): Promise<string> => {
-  if (!/^[a-zA-Z0-9_-]+$/.test(label)) {
-    throw new Error("Class ID label must contain only alphanumeric characters, underscores, and dashes.");
-  }
-  const encoder = new TextEncoder();
-  // Domain tag prefix
-  const data = encoder.encode(`mfnguard_class:${label.toLowerCase()}`);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-};
+export function computeComparabilityHash(
+    product: Uint8Array,
+    volume: bigint,
+    region: Uint8Array,
+    term: bigint,
+    currency: Uint8Array,
+    dateWindow: Uint8Array
+): Uint8Array {
+  return new Uint8Array(pureCircuits.compute_comparability_hash(
+      product, volume, region, term, currency, dateWindow
+  ));
+}
+
