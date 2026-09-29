@@ -1,210 +1,323 @@
-"use client";
+import { useState, useEffect } from 'react';
+import { useWallet } from './WalletContext';
+import { useSharedData } from './SharedDataContext';
+import { bytesToHex, deriveClassId, generateSecretKey } from '../lib/crypto';
+import { canonicalizeCurrency, canonicalizeDateWindow, canonicalizeText, stringTo32Bytes } from '../lib/canonicalize';
+import { getMFNGuardAPI } from '../lib/mfnguard-api';
 
-import { useState } from "react";
-import { useWallet } from "./WalletContext";
-import { useSharedData } from "./SharedDataContext";
-import { deriveClassId } from "../lib/crypto";
-
-// Helper to convert string to Uint8Array 32-bytes
-const stringToUint8Array = (str: string) => {
-  const encoder = new TextEncoder();
-  const encoded = encoder.encode(str);
-  const bytes = new Uint8Array(32);
-  bytes.set(encoded.slice(0, 32));
-  return bytes;
-};
-
-// Helper to convert hex string to Uint8Array
-const hexToUint8Array = (hex: string) => {
-  const bytes = new Uint8Array(32);
-  for (let i = 0; i < Math.min(hex.length / 2, 32); i++) {
-    bytes[i] = parseInt(hex.substring(i * 2, i * 2 + 2), 16);
-  }
-  return bytes;
-};
+const DEMO_AUDITOR_SECRET_HEX = "11223344556677889900aabbccddeeff11223344556677889900aabbccddeeff";
 
 export default function DisputeView() {
-  const { connectedAddress, mfnguardAPI } = useWallet();
-  const { supplierPrices, supplierSalts, buyerPrice, buyerSalt, globalAuditorSecret, setGlobalAuditorSecret } = useSharedData();
-  const [classId, setClassId] = useState("");
-  
-  const [isChecking, setIsChecking] = useState(false);
-  const [disputeResult, setDisputeResult] = useState<{violator_found: boolean, violator_price: number, violator_index: number} | null>(null);
-  const [error, setError] = useState<string | null>(null);
+    const { connectedAddress, providers } = useWallet();
+    const { supplierPrices, supplierSalts, buyerPrice, buyerSalt, importSupplierData } = useSharedData();
 
-  const handleRunDispute = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!classId || !globalAuditorSecret || !mfnguardAPI) {
-      setError("Please fill out all details and ensure API is ready.");
-      return;
-    }
+    // Key Generation State
+    const [useDemoKey, setUseDemoKey] = useState(false);
+    const [generatedKeyHex, setGeneratedKeyHex] = useState<string | null>(null);
+    const [auditorSecretInput, setAuditorSecretInput] = useState<string>('');
 
-    setIsChecking(true);
-    setDisputeResult(null);
-    setError(null);
+    // Form State
+    const [label, setLabel] = useState('');
     
-    try {
-      const sPrices = supplierPrices[classId];
-      const sSalts = supplierSalts[classId];
-      const bPrice = buyerPrice[classId];
-      const bSalt = buyerSalt[classId];
+    // Buyer Data Inputs
+    const [bPriceInput, setBPriceInput] = useState('');
+    const [bSaltInput, setBSaltInput] = useState('');
 
-      if (!sPrices || !sSalts || bPrice === undefined || !bSalt) {
-        throw new Error(`Data for class '${classId}' is incomplete in local session. Ensure both Supplier and Buyer have shared their data locally first.`);
-      }
+    // Comparability Fields
+    const [product, setProduct] = useState('');
+    const [volume, setVolume] = useState('');
+    const [region, setRegion] = useState('');
+    const [term, setTerm] = useState('');
+    const [currency, setCurrency] = useState('');
+    const [startDate, setStartDate] = useState('');
+    const [endDate, setEndDate] = useState('');
 
-      const classIdHex = await deriveClassId(classId);
-      const classIdBytes = hexToUint8Array(classIdHex);
+    const [status, setStatus] = useState<{ type: 'idle' | 'loading' | 'success' | 'error', message: string }>({ type: 'idle', message: '' });
+    const [disputeResult, setDisputeResult] = useState<{violator_found: boolean, violator_price: number, violator_index: number} | null>(null);
 
-      const auditorSecretBytes = hexToUint8Array(globalAuditorSecret);
+    const [importFile, setImportFile] = useState<File | null>(null);
+    const [importStatus, setImportStatus] = useState<{ type: 'idle' | 'loading' | 'success' | 'error', message: string }>({ type: 'idle', message: '' });
 
-      const result = await mfnguardAPI.reveal_violation(
-        classIdBytes,
-        bPrice,
-        bSalt,
-        sPrices,
-        sSalts,
-        auditorSecretBytes
-      );
-      
-      setDisputeResult({
-        violator_found: result.violator_found === 1n,
-        violator_price: Number(result.violator_price),
-        violator_index: Number(result.violator_index)
-      });
-      
-    } catch (err: any) {
-      setError(`Dispute Error: ${err.message}`);
-    } finally {
-      setIsChecking(false);
-    }
-  };
+    // Auto-fill buyer data if available in context
+    useEffect(() => {
+        const fillBuyerData = async () => {
+            if (!label) return;
+            try {
+                const classIdHex = await deriveClassId(label);
+                if (buyerPrice[classIdHex] !== undefined) {
+                    setBPriceInput(buyerPrice[classIdHex].toString());
+                }
+                if (buyerSalt[classIdHex]) {
+                    setBSaltInput(bytesToHex(buyerSalt[classIdHex]));
+                }
+            } catch (e) {}
+        };
+        fillBuyerData();
+    }, [label, buyerPrice, buyerSalt]);
 
-  return (
-    <div className="space-y-8 animate-in fade-in duration-500">
-      <div>
-        <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-white mb-2">Auditor Dispute Portal</h2>
-        <p className="text-emerald-200/70 text-sm md:text-base max-w-2xl">Investigate proven violations by revealing the violator's specific price to an authorized auditor.</p>
-      </div>
+    const handleGenerateKey = () => {
+        const key = generateSecretKey();
+        const hex = bytesToHex(key);
+        setGeneratedKeyHex(hex);
+        setAuditorSecretInput(hex);
+        setUseDemoKey(false);
+    };
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 relative z-10">
-        {/* Form */}
-        <div className="bg-[#12121a]/90 p-5 md:p-8 rounded-3xl border border-red-500/10 shadow-[0_10px_40px_rgba(245,158,11,0.05)] backdrop-blur-md">
-          <h3 className="text-lg md:text-xl font-semibold mb-6 flex items-center gap-3 text-white">
-            <div className="p-2 bg-red-500/10 rounded-xl border border-red-500/20 shadow-[0_0_15px_rgba(245,158,11,0.2)]">
-              <svg className="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-            </div>
-            Trigger Dispute Revelation
-          </h3>
-          
-          <form onSubmit={handleRunDispute} className="space-y-5">
-            <div>
-              <label className="block text-sm font-medium text-emerald-100/80 mb-2">Comparability Class ID</label>
-              <input 
-                type="text" 
-                value={classId}
-                onChange={e => setClassId(e.target.value)}
-                required
-                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500/50 transition-all shadow-inner"
-                placeholder="e.g., class-a-q3"
-              />
-            </div>
+    const handleUseDemoKey = () => {
+        setUseDemoKey(true);
+        setAuditorSecretInput(DEMO_AUDITOR_SECRET_HEX);
+        setGeneratedKeyHex(null);
+    };
+
+    const handleImportBundle = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!importFile) return;
+        setImportStatus({ type: 'loading', message: 'Importing...' });
+        
+        try {
+            const text = await importFile.text();
+            const data = JSON.parse(text);
             
-            <div>
-              <label className="block text-sm font-medium text-emerald-100/80 mb-2">Auditor Secret Key (Hex/String)</label>
-              <input 
-                type="password" 
-                value={globalAuditorSecret}
-                onChange={e => setGlobalAuditorSecret(e.target.value)}
-                required
-                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white font-mono text-sm focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500/50 transition-all shadow-inner"
-                placeholder="Enter 32-byte secret..."
-              />
+            const parsedPrices = data.prices.map((p: string) => BigInt(p));
+            const parsedSalts = data.salts.map((s: string) => new Uint8Array(Buffer.from(s, 'hex')));
+            
+            importSupplierData(data.classId, parsedPrices, parsedSalts);
+            setImportFile(null);
+            
+            setImportStatus({ type: 'success', message: `Witnesses imported for class ID: ${data.classId.substring(0, 8)}...` });
+        } catch (err: any) {
+            setImportStatus({ type: 'error', message: 'Failed to parse bundle.' });
+        }
+    };
+
+    const handleRunDispute = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!connectedAddress || !providers) {
+            setStatus({ type: 'error', message: 'Wallet not connected.' });
+            return;
+        }
+
+        try {
+            setStatus({ type: 'loading', message: 'Canonicalizing and preparing transaction...' });
+            
+            if (auditorSecretInput.length !== 64) throw new Error("Auditor secret must be a 64-character hex string.");
+            const auditorSecretBytes = new Uint8Array(Buffer.from(auditorSecretInput, 'hex'));
+
+            const classIdHex = await deriveClassId(label);
+            const classIdBytes = new Uint8Array(Buffer.from(classIdHex, 'hex'));
+            
+            const importedPrices = supplierPrices[classIdHex];
+            const importedSalts = supplierSalts[classIdHex];
+
+            if (!importedPrices || !importedSalts) {
+                throw new Error("Missing supplier witness data. Please import the witness bundle first.");
+            }
+
+            if (bSaltInput.length !== 64) throw new Error("Buyer salt must be a 64-character hex string.");
+            const bSaltBytes = new Uint8Array(Buffer.from(bSaltInput, 'hex'));
+
+            const priceBigInt = BigInt(bPriceInput);
+            if (priceBigInt < 0n) throw new Error("Buyer price must be positive");
+
+            // Canonicalize
+            const canonProduct = canonicalizeText(product, 'Product');
+            const canonRegion = canonicalizeText(region, 'Region');
+            const canonCurrency = canonicalizeCurrency(currency);
+            const canonDateWindow = canonicalizeDateWindow(startDate, endDate);
+            const parsedVolume = BigInt(volume);
+            const parsedTerm = BigInt(term);
+
+            const productBytes = stringTo32Bytes(canonProduct);
+            const regionBytes = stringTo32Bytes(canonRegion);
+            const currencyBytes = stringTo32Bytes(canonCurrency);
+            const dateWindowBytes = stringTo32Bytes(canonDateWindow);
+
+            const api = await getMFNGuardAPI(providers);
+            
+            setStatus({ type: 'loading', message: 'Please sign the transaction in your wallet...' });
+            
+            const result = await (api as any).reveal_violation(
+                classIdBytes,
+                priceBigInt,
+                bSaltBytes,
+                importedPrices,
+                importedSalts,
+                auditorSecretBytes,
+                productBytes,
+                parsedVolume,
+                regionBytes,
+                parsedTerm,
+                currencyBytes,
+                dateWindowBytes
+            );
+            
+            setDisputeResult({
+                violator_found: result.violator_found === 1n,
+                violator_price: Number(result.violator_price),
+                violator_index: Number(result.violator_index)
+            });
+            
+            setStatus({ type: 'success', message: 'Dispute revelation complete!' });
+        } catch (err: any) {
+            console.error(err);
+            setStatus({ type: 'error', message: err.message || 'Check failed.' });
+        }
+    };
+
+    return (
+        <div className="space-y-8 animate-in fade-in duration-500">
+            <div className="bg-red-500/10 border border-red-500/30 p-6 rounded-2xl">
+                <h2 className="text-xl font-bold text-red-400 mb-2">Auditor Portal</h2>
+                <p className="text-red-200/80 text-sm">
+                    Investigate proven violations by revealing the violator's specific price to an authorized auditor.
+                </p>
             </div>
-            
-            {error && (
-              <div className="text-red-400 text-sm p-4 bg-red-500/10 rounded-xl border border-red-500/20 backdrop-blur-md">
-                {error}
-              </div>
-            )}
 
-            <button 
-              type="submit" 
-              disabled={isChecking || !connectedAddress || !mfnguardAPI}
-              className="w-full bg-red-500 hover:bg-red-400 text-black font-bold py-3.5 px-4 rounded-xl transition-all duration-300 shadow-[0_0_20px_rgba(245,158,11,0.3)] hover:shadow-[0_0_30px_rgba(245,158,11,0.5)] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed mt-4"
-            >
-              {isChecking ? "Generating Proof..." : "Reveal Violation Data"}
-            </button>
-          </form>
-        </div>
-
-        {/* Verification Check */}
-        <div className="flex flex-col">
-          <div className="bg-[#12121a]/50 border border-white/5 rounded-3xl p-6 md:p-8 flex-grow flex flex-col items-center justify-center text-center backdrop-blur-sm relative overflow-hidden">
-            {/* Ambient background glow */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 h-3/4 bg-red-500/5 rounded-full blur-3xl pointer-events-none"></div>
-            
-            {!disputeResult && !isChecking && (
-              <div className="relative z-10">
-                <div className="w-16 h-16 md:w-20 md:h-20 bg-red-500/5 rounded-2xl flex items-center justify-center mb-6 border border-red-500/10 mx-auto shadow-[0_0_30px_rgba(245,158,11,0.05)]">
-                  <svg className="w-8 h-8 md:w-10 md:h-10 text-emerald-300/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                  </svg>
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+                <h3 className="text-lg font-semibold text-white mb-4">Auditor Authentication</h3>
+                <div className="flex gap-4 mb-4">
+                    <button type="button" onClick={handleGenerateKey} className="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                        Generate my key
+                    </button>
+                    <button type="button" onClick={handleUseDemoKey} className="bg-amber-600 hover:bg-amber-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                        Use public demo auditor key
+                    </button>
                 </div>
-                <h3 className="text-xl md:text-2xl font-bold mb-3 text-emerald-200/80">Awaiting Dispute</h3>
-                <p className="text-sm md:text-base text-emerald-200/50 max-w-sm mx-auto">Enter a class ID where a violation has been proven to reveal the offending supplier slot.</p>
-              </div>
-            )}
-
-            {isChecking && (
-              <div className="flex flex-col items-center relative z-10 py-8">
-                <div className="w-16 h-16 border-4 border-red-500/20 border-t-red-500 rounded-full animate-spin mb-6"></div>
-                <p className="text-red-500 font-semibold text-lg">Generating Dispute Proof...</p>
-                <p className="text-sm text-emerald-200/60 mt-2">Checking against local private state</p>
-              </div>
-            )}
-
-            {disputeResult && (
-              <div className="w-full animate-in zoom-in duration-500 relative z-10">
-                <div className="p-8 rounded-3xl border bg-red-500/10 border-red-500/30 backdrop-blur-xl shadow-[0_10px_40px_rgba(245,158,11,0.15)]">
-                  <h3 className="text-2xl md:text-3xl font-bold mb-6 text-red-500 tracking-tight">
-                    {disputeResult.violator_found ? 'Violation Found & Revealed' : 'No Violation Found'}
-                  </h3>
-                  
-                  {disputeResult.violator_found ? (
-                    <div className="space-y-4 text-left">
-                      <div className="bg-black/50 rounded-2xl p-4 border border-red-500/20 shadow-inner">
-                        <span className="text-red-500/60 text-xs font-semibold uppercase tracking-wider block mb-1">Offending Slot Index</span>
-                        <span className="font-mono text-xl text-red-400">{disputeResult.violator_index}</span>
-                      </div>
-                      <div className="bg-black/50 rounded-2xl p-4 border border-red-500/20 shadow-inner">
-                        <span className="text-red-500/60 text-xs font-semibold uppercase tracking-wider block mb-1">Revealed Price</span>
-                        <span className="font-mono text-xl text-red-400">{disputeResult.violator_price}</span>
-                      </div>
-                      <p className="text-sm text-red-200/70 mt-6 flex items-start gap-2 bg-red-500/10 p-4 rounded-xl border border-red-500/20">
-                        <span className="text-red-400">✅</span> The auditor key was verified on-chain via ZK hash commitment.
-                      </p>
+                
+                {useDemoKey && (
+                    <div className="mb-4 p-3 bg-red-500/20 border border-red-500/50 rounded-lg">
+                        <p className="text-red-400 font-bold uppercase tracking-wider text-sm flex items-center gap-2">
+                            <span>⚠️</span> DEMO MODE: this key is public
+                        </p>
+                        <p className="text-red-300/80 text-xs mt-1">Anyone can use this key to act as an auditor on the testnet.</p>
                     </div>
-                  ) : (
-                    <p className="text-emerald-100/80 text-sm md:text-base leading-relaxed bg-black/30 p-6 rounded-2xl border border-white/5">
-                      No violation was found in this class. The dispute cannot proceed.
-                    </p>
-                  )}
-                  
-                  <button 
-                    onClick={() => setDisputeResult(null)}
-                    className="mt-8 text-sm font-medium text-red-500/80 hover:text-red-400 px-6 py-2.5 rounded-xl bg-red-500/5 hover:bg-red-500/10 border border-red-500/10 transition-all active:scale-[0.98]"
-                  >
-                    Reset View
-                  </button>
+                )}
+                
+                {generatedKeyHex && (
+                    <div className="mb-4 p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
+                        <p className="text-red-400 font-bold text-sm mb-2">Key generated! SAVE THIS NOW. It will not be shown again.</p>
+                        <code className="block w-full bg-black/50 p-3 rounded font-mono text-red-300 text-xs break-all select-all">
+                            {generatedKeyHex}
+                        </code>
+                    </div>
+                )}
+
+                <div className="space-y-1">
+                    <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Auditor Secret (Hex)</label>
+                    <input type="password" value={auditorSecretInput} onChange={e => setAuditorSecretInput(e.target.value)} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-sm text-white font-mono placeholder-gray-600 focus:outline-none focus:border-red-500 transition-colors" placeholder="Enter 64-character hex secret..." />
                 </div>
-              </div>
-            )}
-          </div>
+            </div>
+
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+                <h3 className="text-lg font-semibold text-white mb-4">Import Witness Bundle</h3>
+                <form onSubmit={handleImportBundle} className="space-y-4">
+                    <div className="flex items-center gap-4">
+                        <input type="file" accept=".json" onChange={e => setImportFile(e.target.files?.[0] || null)} className="text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-red-500/10 file:text-red-400 hover:file:bg-red-500/20" />
+                        <button type="submit" disabled={!importFile} className="bg-gray-700 hover:bg-gray-600 disabled:opacity-50 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors">
+                            Import
+                        </button>
+                    </div>
+                    {importStatus.type !== 'idle' && (
+                        <div className={`p-3 rounded-lg text-sm ${importStatus.type === 'error' ? 'bg-red-500/10 text-red-400 border border-red-500/20' : importStatus.type === 'success' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'text-gray-400'}`}>
+                            {importStatus.message}
+                        </div>
+                    )}
+                </form>
+            </div>
+
+            <form onSubmit={handleRunDispute} className="space-y-6">
+                <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+                    <h3 className="text-lg font-semibold text-white mb-4">Class Identification & Buyer Data</h3>
+                    <div className="space-y-4">
+                        <div className="space-y-1">
+                            <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Class Label</label>
+                            <input type="text" required value={label} onChange={e => setLabel(e.target.value)} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-red-500 transition-colors" placeholder="e.g., JD-Enterprise-Tier" />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-1">
+                                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Buyer Price</label>
+                                <input type="number" required value={bPriceInput} onChange={e => setBPriceInput(e.target.value)} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-red-500" placeholder="e.g., 9900" />
+                            </div>
+                            <div className="space-y-1">
+                                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Buyer Salt (Hex)</label>
+                                <input type="text" required value={bSaltInput} onChange={e => setBSaltInput(e.target.value)} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-sm text-white font-mono focus:outline-none focus:border-red-500" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+                    <h3 className="text-lg font-semibold text-white mb-4">Comparability Rule</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                            <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Product</label>
+                            <input type="text" required value={product} onChange={e => setProduct(e.target.value)} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2 text-sm text-white" placeholder="e.g., Widget A" />
+                        </div>
+                        <div className="space-y-1">
+                            <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Volume</label>
+                            <input type="number" required value={volume} onChange={e => setVolume(e.target.value)} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2 text-sm text-white" placeholder="e.g., 1000" />
+                        </div>
+                        <div className="space-y-1">
+                            <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Region</label>
+                            <input type="text" required value={region} onChange={e => setRegion(e.target.value)} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2 text-sm text-white" placeholder="e.g., NA" />
+                        </div>
+                        <div className="space-y-1">
+                            <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Term (Months)</label>
+                            <input type="number" required value={term} onChange={e => setTerm(e.target.value)} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2 text-sm text-white" placeholder="e.g., 12" />
+                        </div>
+                        <div className="space-y-1">
+                            <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Currency (ISO 4217)</label>
+                            <input type="text" required value={currency} onChange={e => setCurrency(e.target.value)} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2 text-sm text-white uppercase" placeholder="USD" maxLength={3} />
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                        <div className="space-y-1">
+                            <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Start Date (YYYY-MM-DD)</label>
+                            <input type="text" required value={startDate} onChange={e => setStartDate(e.target.value)} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2 text-sm text-white" placeholder="2024-01-01" />
+                        </div>
+                        <div className="space-y-1">
+                            <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">End Date (YYYY-MM-DD)</label>
+                            <input type="text" required value={endDate} onChange={e => setEndDate(e.target.value)} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2 text-sm text-white" placeholder="2024-12-31" />
+                        </div>
+                    </div>
+                </div>
+
+                {status.type !== 'idle' && (
+                    <div className={`p-4 rounded-xl text-sm ${status.type === 'error' ? 'bg-red-500/10 text-red-400 border border-red-500/20' : status.type === 'success' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}`}>
+                        {status.message}
+                    </div>
+                )}
+
+                {disputeResult && (
+                    <div className="p-6 rounded-2xl border bg-black/30 border-red-500/30">
+                        {disputeResult.violator_found ? (
+                            <>
+                                <h3 className="text-xl font-bold text-red-400 mb-4 flex items-center gap-2">
+                                    <span>⚠️</span> Violation Confirmed & Revealed
+                                </h3>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="bg-white/5 p-4 rounded-xl border border-white/10">
+                                        <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">Violator Slot Index</p>
+                                        <p className="text-2xl font-mono text-white">{disputeResult.violator_index}</p>
+                                    </div>
+                                    <div className="bg-white/5 p-4 rounded-xl border border-white/10">
+                                        <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">Revealed Price</p>
+                                        <p className="text-2xl font-mono text-red-400">{disputeResult.violator_price}</p>
+                                    </div>
+                                </div>
+                            </>
+                        ) : (
+                            <h3 className="text-xl font-bold text-emerald-400 flex items-center gap-2">
+                                <span>✅</span> No Violation Found
+                            </h3>
+                        )}
+                    </div>
+                )}
+
+                <button type="submit" disabled={status.type === 'loading'} className="w-full bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white font-semibold py-3 px-6 rounded-xl transition-colors shadow-[0_0_20px_rgba(220,38,38,0.3)] hover:shadow-[0_0_30px_rgba(220,38,38,0.5)]">
+                    Reveal Violation
+                </button>
+            </form>
         </div>
-      </div>
-    </div>
-  );
+    );
 }
