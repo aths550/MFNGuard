@@ -1,369 +1,289 @@
-"use client";
+import { useState } from 'react';
+import { useWallet } from './WalletContext';
+import { useSharedData } from './SharedDataContext';
+import { bytesToHex, deriveClassId, generateSecretKey } from '../lib/crypto';
+import { canonicalizeCurrency, canonicalizeDateWindow, canonicalizeText, stringTo32Bytes } from '../lib/canonicalize';
+import { getMFNGuardAPI } from '../lib/mfnguard-api';
 
-import { useState, useRef } from "react";
-import { useWallet } from "./WalletContext";
-import { useSharedData } from "./SharedDataContext";
-import { encryptPayload, deriveClassId } from "../lib/crypto";
-import { ledger } from "../../../contract/src/index";
-
-interface Slot {
-  classId: string;
-  price: string;
-  salt: string;
-  status: "pending" | "confirmed" | "failed";
-  slotIndex?: number;
-}
-
-// Helper to convert hex string to Uint8Array
-const hexToUint8Array = (hex: string) => {
-  const bytes = new Uint8Array(32);
-  for (let i = 0; i < Math.min(hex.length / 2, 32); i++) {
-    bytes[i] = parseInt(hex.substring(i * 2, i * 2 + 2), 16);
-  }
-  return bytes;
-};
-
-// Helper to convert string to Uint8Array 32-bytes
-const stringToUint8Array = (str: string) => {
-  const encoder = new TextEncoder();
-  const encoded = encoder.encode(str);
-  const bytes = new Uint8Array(32);
-  bytes.set(encoded.slice(0, 32));
-  return bytes;
-};
+const MAX_UINT64 = 18446744073709551615n;
 
 export default function SupplierView() {
-  const { connectedAddress, mfnguardAPI, disconnect, isSyncing } = useWallet();
-  const { addSupplierData, supplierPrices: existingSupplierPrices, supplierSalts: existingSupplierSalts, globalAuditorSecret, setGlobalAuditorSecret } = useSharedData();
-  const [classId, setClassId] = useState("");
-  const [price, setPrice] = useState("");
+    const { connectedAddress, providers } = useWallet();
+    const { supplierPrices, supplierSalts, addSupplierData } = useSharedData();
 
-  
-  // Auto-generate 32-byte salt as hex
-  const generateHex32 = () => Array.from({ length: 32 }, () => Math.floor(Math.random() * 256).toString(16).padStart(2, '0')).join('');
-  const [salt, setSalt] = useState(generateHex32());
-  
-  const [slots, setSlots] = useState<Slot[]>([]);
-  const [isCommitting, setIsCommitting] = useState(false);
-  const isCommittingRef = useRef(false);
-  const [error, setError] = useState<string | null>(null);
-  
-  const [passphrase, setPassphrase] = useState<string>("");
-  const [isExporting, setIsExporting] = useState<boolean>(false);
-  const [serverStatus, setServerStatus] = useState<string | null>(null);
+    // Key Generation State
+    const [generatedKeyHex, setGeneratedKeyHex] = useState<string | null>(null);
+    const [supplierSecretInput, setSupplierSecretInput] = useState<string>('');
 
-  const handleCommit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (isCommitting || isSyncing || isCommittingRef.current) return;
-    if (!connectedAddress || !mfnguardAPI) {
-      setError("Please connect your wallet first and ensure contract API is initialized.");
-      return;
-    }
-    if (globalAuditorSecret.length !== 64) {
-      setError("Auditor Secret must be exactly 64 hex characters (32 bytes).");
-      return;
-    }
+    // Form State
+    const [label, setLabel] = useState('');
+    const [slotIndex, setSlotIndex] = useState<string>('0');
+    const [price, setPrice] = useState('');
     
-    setError(null);
-    isCommittingRef.current = true;
-    setIsCommitting(true);
+    const [salt, setSalt] = useState(() => bytesToHex(window.crypto.getRandomValues(new Uint8Array(32))));
     
-    try {
+    // Comparability Fields
+    const [product, setProduct] = useState('');
+    const [volume, setVolume] = useState('');
+    const [region, setRegion] = useState('');
+    const [term, setTerm] = useState('');
+    const [currency, setCurrency] = useState('');
+    const [startDate, setStartDate] = useState('');
+    const [endDate, setEndDate] = useState('');
 
-      
-      const capturedPrice = price;
-      const capturedSalt = salt;
-      
-      const priceBigInt = BigInt(capturedPrice);
-      if (priceBigInt < 0n) {
-        throw new Error("Contract Error: Invalid witness. Price must be positive.");
-      }
+    const [status, setStatus] = useState<{ type: 'idle' | 'loading' | 'success' | 'error', message: string }>({ type: 'idle', message: '' });
 
-      const classIdHex = await deriveClassId(classId);
-      const classIdBytes = hexToUint8Array(classIdHex);
-      const saltBytes = hexToUint8Array(capturedSalt);
+    const handleGenerateKey = () => {
+        const key = generateSecretKey();
+        const hex = bytesToHex(key);
+        setGeneratedKeyHex(hex);
+        setSupplierSecretInput(hex);
+    };
 
-      // Compute the public hash client-side
-      const secretBytes = hexToUint8Array(globalAuditorSecret);
-      const auditorHashBytes = await mfnguardAPI.compute_auditor_hash(secretBytes);
+    const handleExportKey = () => {
+        if (!generatedKeyHex) return;
+        const blob = new Blob([generatedKeyHex], { type: "text/plain" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "mfnguard-supplier-secret.txt";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    };
 
-      // Read current on-chain state to find the next available slot
-      const classState = await mfnguardAPI.get_class_state(classIdBytes, ledger);
-      let nextSlotIndex = 0;
-      if (classState && classState.filled) {
-        // filled is a bigint array, we look for the first 0n
-        nextSlotIndex = classState.filled.findIndex((f: bigint) => f === 0n);
-        if (nextSlotIndex === -1) {
-          throw new Error("This comparability class is full (5/5 suppliers).");
+    const handleGenerateSalt = () => {
+        setSalt(bytesToHex(window.crypto.getRandomValues(new Uint8Array(32))));
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!connectedAddress || !providers) {
+            setStatus({ type: 'error', message: 'Wallet not connected.' });
+            return;
         }
-      }
 
+        try {
+            setStatus({ type: 'loading', message: 'Canonicalizing and preparing transaction...' });
+            
+            if (supplierSecretInput.length !== 64) throw new Error("Supplier secret must be a 64-character hex string.");
+            const supplierSecretBytes = new Uint8Array(Buffer.from(supplierSecretInput, 'hex'));
+            
+            if (salt.length !== 64) throw new Error("Salt must be a 64-character hex string.");
+            const saltBytes = new Uint8Array(Buffer.from(salt, 'hex'));
 
-      await mfnguardAPI.commit_price(classIdBytes, priceBigInt, saltBytes, auditorHashBytes);
+            const priceBigInt = BigInt(price);
+            if (priceBigInt < 0n) throw new Error("Price must be positive");
 
-      // Poll for on-chain confirmation to hold the lock
-      let confirmed = false;
-      let attempts = 0;
-      while (!confirmed && attempts < 60) {
-        await new Promise(resolve => setTimeout(resolve, 5000));
-        const state = await mfnguardAPI.get_class_state(classIdBytes, ledger);
-        if (state && state.filled && state.filled[nextSlotIndex] === 1n) {
-          confirmed = true;
-          break;
+            const slot = BigInt(slotIndex);
+            if (slot < 0n || slot > 4n) throw new Error("Slot index must be between 0 and 4");
+
+            // Canonicalize
+            const canonProduct = canonicalizeText(product, 'Product');
+            const canonRegion = canonicalizeText(region, 'Region');
+            const canonCurrency = canonicalizeCurrency(currency);
+            const canonDateWindow = canonicalizeDateWindow(startDate, endDate);
+            const parsedVolume = BigInt(volume);
+            const parsedTerm = BigInt(term);
+            if (parsedVolume <= 0n) throw new Error("Volume must be positive");
+            if (parsedTerm <= 0n) throw new Error("Term must be positive");
+
+            const classIdHex = await deriveClassId(label);
+            const classIdBytes = new Uint8Array(Buffer.from(classIdHex, 'hex'));
+
+            const productBytes = stringTo32Bytes(canonProduct);
+            const regionBytes = stringTo32Bytes(canonRegion);
+            const currencyBytes = stringTo32Bytes(canonCurrency);
+            const dateWindowBytes = stringTo32Bytes(canonDateWindow);
+
+            const api = await getMFNGuardAPI(providers);
+            
+            setStatus({ type: 'loading', message: 'Please sign the transaction in your wallet...' });
+            
+            await api.commit_price(classIdBytes, supplierSecretBytes, slot, priceBigInt, saltBytes);
+            
+            // Save to in-memory context for witness bundle export later
+            let currentPrices = supplierPrices[classIdHex] ? [...supplierPrices[classIdHex]] : Array(5).fill(MAX_UINT64);
+            let currentSalts = supplierSalts[classIdHex] ? [...supplierSalts[classIdHex]] : Array(5).fill(null).map(() => new Uint8Array(32));
+            
+            currentPrices[Number(slot)] = priceBigInt;
+            currentSalts[Number(slot)] = saltBytes;
+            
+            addSupplierData(classIdHex, currentPrices, currentSalts);
+
+            setStatus({ type: 'success', message: `Price committed successfully for slot ${slotIndex}!` });
+            
+            // Generate a new salt for the next potential commit to prevent reuse
+            handleGenerateSalt();
+        } catch (err: any) {
+            console.error(err);
+            setStatus({ type: 'error', message: err.message || 'Transaction failed.' });
         }
-        attempts++;
-      }
+    };
 
-      if (!confirmed) {
-        throw new Error("Transaction broadcasted but taking too long to confirm on-chain. Check wallet.");
-      }
-
-      setSlots([...slots, { classId, price: capturedPrice, salt: capturedSalt, status: "confirmed", slotIndex: nextSlotIndex }]);
-      
-      const MAX_UINT64 = BigInt("18446744073709551615");
-      let currentPrices = existingSupplierPrices[classId] ? [...existingSupplierPrices[classId]] : Array(5).fill(MAX_UINT64);
-      let currentSalts = existingSupplierSalts[classId] ? [...existingSupplierSalts[classId]] : Array(5).fill(null).map(() => new Uint8Array(32));
-      
-      currentPrices[nextSlotIndex] = priceBigInt;
-      currentSalts[nextSlotIndex] = saltBytes;
-      
-      if (process.env.NODE_ENV === 'development') {
-
-      }
-      addSupplierData(classId, currentPrices, currentSalts);
-      
-      // Reset form
-      setPrice("");
-      setSalt(generateHex32());
-    } catch (err: any) {
-
-      let errMsg = "Failed to commit price";
-      if (typeof err === 'string') {
-        errMsg = err;
-      } else if (err && typeof err.message === 'string') {
-        errMsg = err.message;
-      } else if (err) {
-        try { errMsg = JSON.stringify(err); } catch(e) {}
-      }
-
-      const lowerMsg = errMsg.toLowerCase();
-      if (lowerMsg.includes("expired") || lowerMsg.includes("reconnect")) {
-        disconnect();
-        setError("Wallet session expired. Please click 'Connect 1AM Wallet' at the top right to reconnect, then try again.");
-      } else if (lowerMsg.includes("182")) {
-        setError("Wallet still syncing — please wait a moment and try again.");
-      } else if (lowerMsg.includes("already pending")) {
-        setError("Blockchain Confirmation Pending: Your previous transaction is still being mined on the testnet. Please wait ~15-30 seconds for it to confirm before requesting another check.");
-      } else {
-        setError(errMsg);
-      }
-    } finally {
-      setIsCommitting(false);
-      isCommittingRef.current = false;
-    }
-  };
-
-  const handleExportBundle = async () => {
-    if (slots.length === 0 || !passphrase) return;
-    setIsExporting(true);
-    setServerStatus(null);
-    setError(null);
-    
-    try {
-      const targetClass = slots[0].classId; // Assuming we export for the first class we worked on
-      
-      // We export the entire array of prices and salts for the target class from the SharedDataContext
-      // since the context now handles local persistence and updates correctly.
-      const pricesToExport = existingSupplierPrices[targetClass] || [];
-      const saltsToExport = existingSupplierSalts[targetClass] || [];
-
-      // Serialize data for export
-      const exportData = {
-        classId: targetClass,
-        prices: pricesToExport.map(p => p.toString()),
-        salts: saltsToExport.map(s => Array.from(s))
-      };
-
-      const plaintext = JSON.stringify(exportData);
-      const encryptedPayload = await encryptPayload(plaintext, passphrase);
-
-      // Trigger file download
-      const blob = new Blob([JSON.stringify(encryptedPayload, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `mfnguard-witness-${targetClass.substring(0, 8)}.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-
-      setServerStatus("Success: Witness bundle encrypted and exported.");
-      setPassphrase(""); // Clear passphrase after use
-    } catch (err: any) {
-      }
-      setError(`Encryption Error: ${err.message}`);
-    } finally {
-      setIsExporting(false);
-    }
-  };
-
-  return (
-    <div className="space-y-8 animate-in fade-in duration-500">
-      <div>
-        <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-white mb-2">Supplier Portal</h2>
-        <p className="text-emerald-200/70 text-sm md:text-base max-w-2xl">Commit prices privately to the blockchain. Your raw prices never leave your device.</p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 relative z-10">
-        {/* Commit Form */}
-        <div className="bg-[#12121a]/90 p-5 md:p-8 rounded-3xl border border-white/5 shadow-2xl backdrop-blur-md">
-          <h3 className="text-lg md:text-xl font-semibold mb-6 flex items-center gap-3 text-white">
-            <div className="p-2 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
-              <svg className="w-5 h-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-              </svg>
-            </div>
-            Commit Deal
-          </h3>
-          
-          <form onSubmit={handleCommit} className="space-y-5">
-            <div>
-              <label className="block text-sm font-medium text-emerald-100/80 mb-2">Comparability Class ID</label>
-              <input 
-                type="text" 
-                value={classId}
-                onChange={e => setClassId(e.target.value)}
-                required
-                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all shadow-inner"
-                placeholder="e.g., class-a-q3"
-              />
-            </div>
+    const handleExportBundle = async () => {
+        try {
+            const classIdHex = await deriveClassId(label);
+            const prices = supplierPrices[classIdHex];
+            const salts = supplierSalts[classIdHex];
             
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-emerald-100/80">Auditor Secret Key (32-byte hex)</label>
-              <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
-                <input 
-                  type="text" 
-                  value={globalAuditorSecret}
-                  onChange={e => setGlobalAuditorSecret(e.target.value)}
-                  className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 font-mono text-sm shadow-inner transition-all"
-                  placeholder="e.g. 1a2b3c..."
-                  required
-                />
-                <button 
-                  type="button"
-                  onClick={() => setGlobalAuditorSecret(generateHex32())}
-                  className="px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg hover:bg-slate-700 transition-colors text-sm text-white"
-                  title="Auto-generate secure secret"
-                >
-                  🔑 Gen
-                </button>
-              </div>
-              <p className="text-xs text-slate-400">Save this secret to give to the Auditor. The app hashes this securely before submitting.</p>
-            </div>
+            if (!prices || !salts) {
+                setStatus({ type: 'error', message: 'No prices committed in memory for this class label.' });
+                return;
+            }
+
+            const exportData = {
+                classId: classIdHex,
+                prices: prices.map(p => p.toString()),
+                salts: salts.map(s => bytesToHex(s))
+            };
+
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `mfnguard-witness-${classIdHex.substring(0, 8)}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
             
-            <div>
-              <label className="block text-sm font-medium text-emerald-100/80 mb-2">Price</label>
-              <input 
-                type="number" 
-                value={price}
-                onChange={e => setPrice(e.target.value)}
-                required
-                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all shadow-inner"
-                placeholder="e.g., 1000"
-              />
+            setStatus({ type: 'success', message: 'Witness bundle exported successfully.' });
+        } catch (err: any) {
+            setStatus({ type: 'error', message: err.message || 'Failed to export witness bundle.' });
+        }
+    };
+
+    return (
+        <div className="space-y-8 animate-in fade-in duration-500">
+            <div className="bg-emerald-500/10 border border-emerald-500/30 p-6 rounded-2xl">
+                <h2 className="text-xl font-bold text-emerald-400 mb-2">Supplier Portal</h2>
+                <p className="text-emerald-200/80 text-sm">
+                    Commit your private price to the blockchain. Your price remains secret unless the auditor reveals a violation.
+                </p>
             </div>
 
-            <div>
-              <label className="flex justify-between items-center text-sm font-medium text-emerald-100/80 mb-2">
-                <span>Cryptographic Salt</span>
-                <button type="button" onClick={() => setSalt(generateHex32())} className="text-emerald-400 hover:text-emerald-300 text-xs font-semibold tracking-wide uppercase transition-colors">♻️ Regenerate</button>
-              </label>
-              <input 
-                type="text" 
-                value={salt}
-                onChange={e => setSalt(e.target.value)}
-                required
-                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-emerald-200/60 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all shadow-inner"
-              />
-            </div>
-            
-            {error && (
-              <div className="text-red-400 text-sm p-3 bg-red-400/10 rounded-xl border border-red-400/20">
-                {error}
-              </div>
-            )}
-
-            <button 
-              type="submit" 
-              disabled={isCommitting || isSyncing || !connectedAddress || !mfnguardAPI}
-              className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-3.5 px-4 rounded-xl transition-all duration-300 shadow-[0_0_20px_rgba(79,70,229,0.3)] hover:shadow-[0_0_30px_rgba(79,70,229,0.5)] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed mt-4"
-            >
-              {isSyncing ? "Syncing wallet, one moment..." : isCommitting ? "Committing to Chain..." : "Commit Price"}
-            </button>
-          </form>
-        </div>
-
-        {/* Local Session Data */}
-        <div className="flex flex-col gap-6">
-          <div>
-            <h3 className="text-lg md:text-xl font-semibold mb-2 text-white">Export Witnesses</h3>
-            <p className="text-emerald-200/60 text-sm mb-4">Export encrypted bundle to share with buyer.</p>
-          </div>
-          
-          {slots.length > 0 && (
-            <div className="bg-[#12121a]/90 p-5 md:p-6 rounded-3xl border border-white/5 shadow-xl backdrop-blur-md space-y-4">
-              <label className="block text-sm font-medium text-emerald-100/80">Shared Passphrase (for Export)</label>
-              <input 
-                type="password"
-                value={passphrase}
-                onChange={e => setPassphrase(e.target.value)}
-                placeholder="Enter passphrase to encrypt"
-                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 shadow-inner transition-all"
-              />
-              <button 
-                onClick={handleExportBundle}
-                disabled={isExporting || !passphrase}
-                className="w-full text-sm font-semibold bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/20 py-3 px-4 rounded-xl transition-all duration-300 disabled:opacity-50 hover:shadow-[0_0_15px_rgba(99,102,241,0.2)] active:scale-[0.98]"
-              >
-                {isExporting ? "Encrypting..." : "Export Witness Bundle"}
-              </button>
-            </div>
-          )}
-          
-          {serverStatus && (
-            <div className="mb-4 text-emerald-400 text-sm p-3 bg-emerald-400/10 rounded-xl border border-emerald-400/20">
-              {serverStatus}
-            </div>
-          )}
-
-          <div className="space-y-3">
-            {slots.length === 0 ? (
-              <div className="bg-[#12121a]/50 border border-white/5 border-dashed rounded-3xl p-10 text-center text-emerald-200/40 text-sm">
-                No prices committed in this session yet.
-              </div>
-            ) : (
-              slots.map((slot, idx) => (
-                <div key={idx} className="bg-[#12121a]/90 border border-white/5 rounded-2xl p-4 md:p-5 flex justify-between items-center shadow-lg">
-                  <div>
-                    <div className="font-semibold text-white">{slot.classId}</div>
-                    <div className="text-xs text-emerald-200/60 font-mono mt-1">Slot {slot.slotIndex !== undefined ? slot.slotIndex : idx}</div>
-                  </div>
-                  <div className="flex items-center gap-2 px-3 py-1 bg-emerald-500/10 rounded-full border border-emerald-500/20">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_5px_rgba(52,211,153,0.8)]"></span>
-                    <span className="text-xs font-semibold text-emerald-400 tracking-wide uppercase">Confirmed</span>
-                  </div>
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+                <h3 className="text-lg font-semibold text-white mb-4">Supplier Authentication</h3>
+                <div className="flex gap-4 mb-4">
+                    <button type="button" onClick={handleGenerateKey} className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                        Generate my key
+                    </button>
                 </div>
-              ))
-            )}
-          </div>
-          
-          <div className="mt-4 text-xs text-emerald-200/50 bg-[#12121a]/40 p-5 rounded-2xl border border-white/5">
-            <span className="font-semibold text-emerald-300/80">Persistence Note:</span> Data is kept in-memory only and will be lost on page reload. Export witnesses to share out-of-band.
-          </div>
+                
+                {generatedKeyHex && (
+                    <div className="mb-4 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
+                        <p className="text-emerald-400 font-bold text-sm mb-2">Key generated! SAVE THIS NOW. It will not be shown again.</p>
+                        <code className="block w-full bg-black/50 p-3 rounded font-mono text-emerald-300 text-xs break-all select-all mb-3">
+                            {generatedKeyHex}
+                        </code>
+                        <button type="button" onClick={handleExportKey} className="text-xs bg-emerald-600/30 hover:bg-emerald-500/50 text-emerald-200 px-3 py-1.5 rounded transition-colors border border-emerald-500/30">
+                            Download Key File
+                        </button>
+                    </div>
+                )}
+
+                <div className="space-y-1">
+                    <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Supplier Secret (Hex)</label>
+                    <input type="password" value={supplierSecretInput} onChange={e => setSupplierSecretInput(e.target.value)} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-sm text-white font-mono placeholder-gray-600 focus:outline-none focus:border-emerald-500 transition-colors" placeholder="Enter 64-character hex secret..." />
+                </div>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+                    <h3 className="text-lg font-semibold text-white mb-4">Class & Slot</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                            <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Class Label</label>
+                            <input type="text" required value={label} onChange={e => setLabel(e.target.value)} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500 transition-colors" placeholder="e.g., JD-Enterprise-Tier" />
+                        </div>
+                        <div className="space-y-1">
+                            <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Slot Index</label>
+                            <select value={slotIndex} onChange={e => setSlotIndex(e.target.value)} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-emerald-500 transition-colors">
+                                <option value="0">Slot 0</option>
+                                <option value="1">Slot 1</option>
+                                <option value="2">Slot 2</option>
+                                <option value="3">Slot 3</option>
+                                <option value="4">Slot 4</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+                    <h3 className="text-lg font-semibold text-white mb-4">Comparability Rule</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                            <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Product</label>
+                            <input type="text" required value={product} onChange={e => setProduct(e.target.value)} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2 text-sm text-white" placeholder="e.g., Widget A" />
+                        </div>
+                        <div className="space-y-1">
+                            <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Volume</label>
+                            <input type="number" required value={volume} onChange={e => setVolume(e.target.value)} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2 text-sm text-white" placeholder="e.g., 1000" />
+                        </div>
+                        <div className="space-y-1">
+                            <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Region</label>
+                            <input type="text" required value={region} onChange={e => setRegion(e.target.value)} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2 text-sm text-white" placeholder="e.g., NA" />
+                        </div>
+                        <div className="space-y-1">
+                            <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Term (Months)</label>
+                            <input type="number" required value={term} onChange={e => setTerm(e.target.value)} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2 text-sm text-white" placeholder="e.g., 12" />
+                        </div>
+                        <div className="space-y-1">
+                            <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Currency (ISO 4217)</label>
+                            <input type="text" required value={currency} onChange={e => setCurrency(e.target.value)} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2 text-sm text-white uppercase" placeholder="USD" maxLength={3} />
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                        <div className="space-y-1">
+                            <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Start Date (YYYY-MM-DD)</label>
+                            <input type="text" required value={startDate} onChange={e => setStartDate(e.target.value)} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2 text-sm text-white" placeholder="2024-01-01" />
+                        </div>
+                        <div className="space-y-1">
+                            <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">End Date (YYYY-MM-DD)</label>
+                            <input type="text" required value={endDate} onChange={e => setEndDate(e.target.value)} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2 text-sm text-white" placeholder="2024-12-31" />
+                        </div>
+                    </div>
+                </div>
+
+                <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+                    <h3 className="text-lg font-semibold text-white mb-4">Price Commitment</h3>
+                    <div className="space-y-4">
+                        <div className="space-y-1">
+                            <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Price (integer representation)</label>
+                            <input type="number" required value={price} onChange={e => setPrice(e.target.value)} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-emerald-500" placeholder="e.g., 9900 for $99.00" />
+                        </div>
+                        <div className="space-y-1">
+                            <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider flex justify-between">
+                                <span>Cryptographic Salt (Hex)</span>
+                                <button type="button" onClick={handleGenerateSalt} className="text-emerald-400 hover:text-emerald-300 transition-colors">Regenerate</button>
+                            </label>
+                            <input type="text" required value={salt} onChange={e => setSalt(e.target.value)} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-sm text-white font-mono focus:outline-none focus:border-emerald-500" />
+                            <p className="text-xs text-gray-500 mt-1">A random 32-byte value ensures your price cannot be guessed via dictionary attacks.</p>
+                        </div>
+                    </div>
+                </div>
+
+                {status.type !== 'idle' && (
+                    <div className={`p-4 rounded-xl text-sm ${status.type === 'error' ? 'bg-red-500/10 text-red-400 border border-red-500/20' : status.type === 'success' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20'}`}>
+                        {status.message}
+                    </div>
+                )}
+
+                <div className="flex gap-4">
+                    <button type="submit" disabled={status.type === 'loading'} className="flex-1 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-semibold py-3 px-6 rounded-xl transition-colors shadow-lg">
+                        Commit Price to Ledger
+                    </button>
+                    <button type="button" onClick={handleExportBundle} className="bg-gray-700 hover:bg-gray-600 text-white font-semibold py-3 px-6 rounded-xl transition-colors shadow-lg border border-gray-600">
+                        Export Witness Bundle
+                    </button>
+                </div>
+                
+                <p className="text-xs text-center text-gray-500">
+                    <strong className="text-amber-500/80">Privacy Warning:</strong> The witness bundle contains your raw prices and salts in plaintext. Anyone with this file can see your data.
+                </p>
+            </form>
         </div>
-      </div>
-    </div>
-  );
+    );
 }
