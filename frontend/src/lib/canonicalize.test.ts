@@ -1,45 +1,44 @@
-import assert from 'assert';
+import { describe, it, expect } from 'vitest';
 import { canonicalizeText, canonicalizeCurrency, canonicalizeDateWindow, stringTo32Bytes } from './canonicalize';
 
-console.log("Running canonicalize tests...");
+describe('canonicalizeText', () => {
+    it('lowercases and trims text', () => {
+        expect(canonicalizeText('  Widget A  ', 'Product')).toBe('widget a');
+        expect(canonicalizeText('Enterprise-Tier 1!', 'Product')).toBe('enterprise-tier 1!');
+        expect(canonicalizeText('na', 'Region')).toBe('na');
+        expect(canonicalizeText('North America', 'Region')).toBe('north america');
+    });
+});
 
-// Test Text Canonicalization
-assert.strictEqual(canonicalizeText("  Widget A  ", "Product"), "widget a");
-assert.strictEqual(canonicalizeText("Enterprise-Tier 1!", "Product"), "enterprise-tier 1!");
-assert.strictEqual(canonicalizeText("na", "Region"), "na");
-assert.strictEqual(canonicalizeText("North America", "Region"), "north america");
+describe('canonicalizeCurrency', () => {
+    it('accepts valid 3-letter currency', () => {
+        expect(canonicalizeCurrency('usd')).toBe('usd');
+        expect(canonicalizeCurrency(' USD ')).toBe('usd');
+    });
 
-// Test Currency Canonicalization
-assert.strictEqual(canonicalizeCurrency("usd"), "usd");
-assert.strictEqual(canonicalizeCurrency(" USD "), "usd");
-try {
-    canonicalizeCurrency("US");
-    assert.fail("Should have thrown for short currency");
-} catch (e: any) {
-    assert.match(e.message, /ISO 4217/);
-}
-try {
-    canonicalizeCurrency("USDOLLAR");
-    assert.fail("Should have thrown for long currency");
-} catch (e: any) {
-    assert.match(e.message, /ISO 4217/);
-}
+    it('throws for short or long currencies', () => {
+        expect(() => canonicalizeCurrency('US')).toThrow(/ISO 4217/);
+        expect(() => canonicalizeCurrency('USDOLLAR')).toThrow(/ISO 4217/);
+    });
+});
 
-// Test Date Window
-assert.strictEqual(canonicalizeDateWindow("2024-01-01", "2024-12-31"), "2024-01-01/2024-12-31");
-try {
-    canonicalizeDateWindow("2024/01/01", "2024.12.31");
-    assert.fail("Should have thrown for invalid format");
-} catch (e: any) {
-    assert.match(e.message, /YYYY-MM-DD/);
-}
+describe('canonicalizeDateWindow', () => {
+    it('accepts correct format', () => {
+        expect(canonicalizeDateWindow('2024-01-01', '2024-12-31')).toBe('2024-01-01/2024-12-31');
+    });
 
-// Test padding to 32 bytes
-const bytes = stringTo32Bytes("usd");
-assert.strictEqual(bytes.length, 32);
-assert.strictEqual(bytes[0], 117); // 'u'
-assert.strictEqual(bytes[1], 115); // 's'
-assert.strictEqual(bytes[2], 100); // 'd'
-assert.strictEqual(bytes[3], 0);
+    it('throws for invalid format', () => {
+        expect(() => canonicalizeDateWindow('2024/01/01', '2024.12.31')).toThrow(/YYYY-MM-DD/);
+    });
+});
 
-console.log("All canonicalize tests passed.");
+describe('stringTo32Bytes', () => {
+    it('pads to 32 bytes correctly', () => {
+        const bytes = stringTo32Bytes('usd');
+        expect(bytes.length).toBe(32);
+        expect(bytes[0]).toBe(117); // 'u'
+        expect(bytes[1]).toBe(115); // 's'
+        expect(bytes[2]).toBe(100); // 'd'
+        expect(bytes[3]).toBe(0);
+    });
+});

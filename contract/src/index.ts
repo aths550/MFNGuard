@@ -20,10 +20,8 @@ export * from "./managed/mfnguard/contract/index.js";
 import * as CompiledMFNGuardContract from "./managed/mfnguard/contract/index.js";
 
 export const CompiledMFNGuardContractContract = CompiledContract.make<
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  CompiledMFNGuardContract.Contract<any>
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
->("mfnguard", CompiledMFNGuardContract.Contract<any>).pipe(
+  CompiledMFNGuardContract.Contract<unknown>
+>("mfnguard", CompiledMFNGuardContract.Contract<unknown>).pipe(
   CompiledContract.withCompiledFileAssets("./managed/mfnguard"),
   CompiledContract.withVacantWitnesses,
 );

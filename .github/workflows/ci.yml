@@ -64,7 +64,7 @@ jobs:
         if grep -q "❌ FAILURE" e2e_output.txt || grep -q "Fatal E2E error" e2e_output.txt; then exit 1; fi
       working-directory: .
       env:
-        NEXT_PUBLIC_CONTRACT_ADDRESS: 08841fbeb992574bbc5444d0d6056e11a5c348e515238588a956eec858df75ec
+        NEXT_PUBLIC_CONTRACT_ADDRESS: 510c34676f00ac52e39168f888a6b5a0eab965d7d0781a7bf9836a84e237dd71
         PREVIEW_TEST_WALLET_KEY: ${{ secrets.PREVIEW_TEST_WALLET_KEY }}
 
     - name: Run Contract Unit Tests

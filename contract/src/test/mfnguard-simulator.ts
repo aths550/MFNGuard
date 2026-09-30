@@ -14,14 +14,11 @@ import {
 } from "../managed/mfnguard/contract/index.js";
 
 export class MFNGuardSimulator {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  readonly contract: Contract<any>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  circuitContext: CircuitContext<any>;
+  readonly contract: Contract<unknown>;
+  circuitContext: CircuitContext<unknown>;
 
   constructor() {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    this.contract = new Contract<any>({});
+    this.contract = new Contract<unknown>({});
     const {
       currentPrivateState,
       currentContractState,

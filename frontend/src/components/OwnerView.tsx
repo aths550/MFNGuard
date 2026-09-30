@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useWallet } from './WalletContext';
-import { bytesToHex, computeAuditorHash, computeBuyerHash, computeSupplierHash, generateSecretKey } from '../lib/crypto';
+import { bytesToHex, generateSecretKey } from '../lib/crypto';
 import { deriveClassId } from '../lib/class-id';
 import { canonicalizeCurrency, canonicalizeDateWindow, canonicalizeText, stringTo32Bytes } from '../lib/canonicalize';
 
@@ -102,9 +102,9 @@ export default function OwnerView() {
             await api.initialize_class(ownerSecretBytes, classIdBytes, buyerHashBytes, auditorHashBytes, supplierHashBytes, compHashBytes);
             
             setStatus({ type: 'success', message: `Class successfully initialized! Derived Class ID: ${classIdHex}` });
-        } catch (err: any) {
-            console.error(err);
-            setStatus({ type: 'error', message: err.message || 'Transaction failed.' });
+        } catch (_err: unknown) {
+            console.error(_err instanceof Error ? _err.message : "An error occurred");
+            setStatus({ type: 'error', message: 'Failed to initialize class — check your inputs and try again.' });
         }
     };
 

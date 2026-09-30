@@ -73,9 +73,9 @@ export default function Home() {
         {/* Tabs */}
         <div className="flex flex-col sm:flex-row gap-2 mb-6 md:mb-10 bg-white/5 p-1.5 md:p-2 rounded-[20px] border border-white/10 backdrop-blur-xl md:inline-flex w-full md:w-auto shadow-2xl overflow-x-auto">
           {(['owner', 'supplier', 'buyer', 'dispute'] as const).map((tab) => {
-            let activeColors = 'bg-emerald-600/90 border-emerald-400/30';
-            let inactiveColors = 'text-emerald-200/60';
-            let shadowColor = 'rgba(16,185,129,0.4)';
+            const activeColors = 'bg-emerald-600/90 border-emerald-400/30';
+            const inactiveColors = 'text-emerald-200/60';
+            const shadowColor = 'rgba(16,185,129,0.4)';
             
             return (
               <button

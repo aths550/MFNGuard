@@ -8,6 +8,8 @@ import { setNetworkId } from '@midnight-ntwrk/midnight-js-network-id';
 // Call setNetworkId once globally during app bootstrap
 setNetworkId(process.env.NEXT_PUBLIC_NETWORK_ID || 'preview');
 
+
+
 interface WalletContextType {
     connectedAddress: string | null;
     network: string | null;
@@ -16,7 +18,7 @@ interface WalletContextType {
     error: string | null;
     connect: () => Promise<void>;
     disconnect: () => void;
-    api: any | null; // The initial Lace API
+    api: unknown | null; // The initial Lace API
     mfnguardAPI: MFNGuardAPI | null;
 }
 
@@ -27,7 +29,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     const [network, setNetwork] = useState<string | null>(null);
     const [isSyncing, setIsSyncing] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
-    const [api, setApi] = useState<any | null>(null);
+    const [api, setApi] = useState<unknown | null>(null);
     const [mfnguardAPI, setMfnguardAPI] = useState<MFNGuardAPI | null>(null);
 
     const isPreview = network?.toLowerCase() === 'preview';
@@ -35,7 +37,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     const connect = async () => {
         try {
             setError(null);
-            const midnight = (window as any).midnight;
+            const midnight = window.midnight;
             if (!midnight) {
                 setError("No Midnight wallet extensions found. Please install a compatible wallet.");
                 return;
@@ -81,12 +83,12 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
                 setIsSyncing(true);
                 setTimeout(() => setIsSyncing(false), 7000);
 
-            } catch (innerError: any) {
+            } catch (innerError: unknown) {
                 console.warn("Wallet connect error:", innerError);
-                setError("Failed to connect or initialize API: " + (innerError.message || innerError));
+                setError("Failed to connect or initialize API: " + ((innerError instanceof Error ? innerError.message : String(innerError)) || innerError));
             }
-        } catch (e: any) {
-            setError(e.message || "Failed to connect to wallet.");
+        } catch (_e: unknown) {
+            setError((_e instanceof Error ? _e.message : String(_e)) || "Failed to connect to wallet.");
         }
     };
 

@@ -6,7 +6,7 @@ import { deriveClassId } from '../lib/class-id';
 import { canonicalizeCurrency, canonicalizeDateWindow, canonicalizeText, stringTo32Bytes } from '../lib/canonicalize';
 import { ledger } from 'mfnguard-contract';
 
-const MAX_UINT64 = 18446744073709551615n;
+
 
 export default function BuyerView() {
     const { connectedAddress, mfnguardAPI: api } = useWallet();
@@ -80,7 +80,7 @@ export default function BuyerView() {
             // Try to find the label from classId? Impossible directly, user has to enter it.
             // But we can store it in the state.
             setImportStatus({ type: 'success', message: `Witnesses imported for class ID: ${data.classId.substring(0, 8)}...` });
-        } catch (err: any) {
+        } catch (_err: unknown) {
             setImportStatus({ type: 'error', message: 'Failed to parse bundle.' });
         }
     };
@@ -143,9 +143,9 @@ export default function BuyerView() {
             addBuyerData(classIdHex, priceBigInt, saltBytes);
             
             setStatus({ type: 'success', message: 'Buyer reference committed successfully!' });
-        } catch (err: any) {
-            console.error(err);
-            setStatus({ type: 'error', message: err.message || 'Transaction failed.' });
+        } catch (_err: unknown) {
+            console.error(_err instanceof Error ? _err.message : "An error occurred");
+            setStatus({ type: 'error', message: 'Failed to commit buyer reference — check your inputs and try again.' });
         }
     };
 
@@ -209,9 +209,9 @@ export default function BuyerView() {
                 discrepancy: BigInt(result.discrepancy)
             });
             setStatus({ type: 'success', message: 'Compliance check complete!' });
-        } catch (err: any) {
-            console.error(err);
-            setStatus({ type: 'error', message: err.message || 'Check failed.' });
+        } catch (_err: unknown) {
+            console.error(_err instanceof Error ? _err.message : "An error occurred");
+            setStatus({ type: 'error', message: 'Failed to complete compliance check — check your inputs and try again.' });
         }
     };
 

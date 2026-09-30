@@ -93,10 +93,7 @@ export default function SupplierView() {
             const classIdHex = await deriveClassId(label);
             const classIdBytes = new Uint8Array(Buffer.from(classIdHex, 'hex'));
 
-            const productBytes = stringTo32Bytes(canonProduct);
-            const regionBytes = stringTo32Bytes(canonRegion);
-            const currencyBytes = stringTo32Bytes(canonCurrency);
-            const dateWindowBytes = stringTo32Bytes(canonDateWindow);
+
 
             
             
@@ -105,8 +102,8 @@ export default function SupplierView() {
             await api.commit_price(classIdBytes, supplierSecretBytes, slot, priceBigInt, saltBytes);
             
             // Save to in-memory context for witness bundle export later
-            let currentPrices = supplierPrices[classIdHex] ? [...supplierPrices[classIdHex]] : Array(5).fill(MAX_UINT64);
-            let currentSalts = supplierSalts[classIdHex] ? [...supplierSalts[classIdHex]] : Array(5).fill(null).map(() => new Uint8Array(32));
+            const currentPrices = supplierPrices[classIdHex] ? [...supplierPrices[classIdHex]] : Array(5).fill(MAX_UINT64);
+            const currentSalts = supplierSalts[classIdHex] ? [...supplierSalts[classIdHex]] : Array(5).fill(null).map(() => new Uint8Array(32));
             
             currentPrices[Number(slot)] = priceBigInt;
             currentSalts[Number(slot)] = saltBytes;
@@ -117,9 +114,9 @@ export default function SupplierView() {
             
             // Generate a new salt for the next potential commit to prevent reuse
             handleGenerateSalt();
-        } catch (err: any) {
-            console.error(err);
-            setStatus({ type: 'error', message: err.message || 'Transaction failed.' });
+        } catch (_err: unknown) {
+            console.error(_err instanceof Error ? _err.message : "An error occurred");
+            setStatus({ type: 'error', message: 'Failed to commit price — check your inputs and try again.' });
         }
     };
 
@@ -151,8 +148,8 @@ export default function SupplierView() {
             URL.revokeObjectURL(url);
             
             setStatus({ type: 'success', message: 'Witness bundle exported successfully.' });
-        } catch (err: any) {
-            setStatus({ type: 'error', message: err.message || 'Failed to export witness bundle.' });
+        } catch (_err: unknown) {
+            setStatus({ type: 'error', message: 'Failed to export witness bundle.' });
         }
     };
 
