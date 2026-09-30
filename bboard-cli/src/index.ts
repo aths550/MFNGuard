@@ -12,8 +12,8 @@ import { NodeZkConfigProvider } from '@midnight-ntwrk/midnight-js-node-zk-config
 import { indexerPublicDataProvider } from '@midnight-ntwrk/midnight-js-indexer-public-data-provider';
 import { httpClientProofProvider } from '@midnight-ntwrk/midnight-js-http-client-proof-provider';
 import { toHex } from '@midnight-ntwrk/midnight-js-utils';
-import { deployContract } from '@midnight-ntwrk/midnight-js-contracts';
-import { CompiledMFNGuardContractContract } from '../../contract/src/index.js';
+import { deployContract, findDeployedContract } from '@midnight-ntwrk/midnight-js-contracts';
+import { CompiledMFNGuardContractContract, pureCircuits, ledger } from '../../contract/src/index.js';
 import { type WalletFacade } from '@midnight-ntwrk/wallet-sdk-facade';
 
 // @ts-expect-error: It's needed to enable WebSocket usage through apollo
@@ -122,22 +122,83 @@ export const run = async (config: Config, testEnv: TestEnvironment, logger: Logg
       midnightProvider: walletProvider,
     };
 
-    logger.info('Deploying MFNGuard contract...');
-    const deployOptions = {
-      compiledContract: CompiledMFNGuardContractContract,
-      privateStateId: 'mfnguard-state',
-      initialPrivateState: {} as any,
-    } as any;
+    const mode = process.argv[2] || 'deploy';
 
-    logger.info(`Deploy Options (excluding compiledContract): ${JSON.stringify({ ...deployOptions, compiledContract: '[Omitted for brevity]' }, null, 2)}`);
+    if (mode === 'init') {
+      const rawInput = await rli.question('Enter contract address (default: 510c34676f00ac52e39168f888a6b5a0eab965d7d0781a7bf9836a84e237dd71): ');
+      const contractAddress = (rawInput.trim() || '510c34676f00ac52e39168f888a6b5a0eab965d7d0781a7bf9836a84e237dd71').replace(/[^0-9a-fA-F]/g, '');
 
-    const deployedContract = await deployContract(providers as any, deployOptions);
+      if (contractAddress.length !== 64) {
+        throw new Error(`Invalid contract address length after sanitization: ${contractAddress.length} chars, expected 64. Raw input was: "${rawInput}"`);
+      }
 
-    logger.info(`\n========================================`);
-    logger.info(`Successfully deployed MFNGuard contract to Preview!`);
-    logger.info(`Contract Address: ${deployedContract.deployTxData.public.contractAddress}`);
-    logger.info(`========================================\n`);
+      logger.info(`Sanitized contract address: ${contractAddress}`);
+      logger.info(`Joining contract at ${contractAddress}...`);
+      
+      const deployedContract = await findDeployedContract(providers as any, {
+        contractAddress,
+        compiledContract: CompiledMFNGuardContractContract,
+        privateStateId: 'mfnguard-state'
+      });
+      
+      const currentState = await providers.publicDataProvider.queryContractState(contractAddress);
+      if (currentState && currentState.data) {
+        const ledgerState = ledger(currentState.data);
+        if (ledgerState.state.member(0n)) {
+          const existingHash = ledgerState.state.lookup(0n);
+          logger.info(`Contract already has an owner hash: ${Buffer.from(existingHash).toString('hex')} — did not attempt to overwrite`);
+          return;
+        }
+      }
 
+      const newOwnerSecret = randomBytes(32);
+      const newOwnerHash = pureCircuits.compute_owner_hash(newOwnerSecret);
+
+      logger.info(`\n========================================`);
+      logger.info(`NEW OWNER SECRET (Hex): ${Buffer.from(newOwnerSecret).toString('hex')}`);
+      logger.info(`NEW OWNER HASH (Hex): ${Buffer.from(newOwnerHash).toString('hex')}`);
+      logger.info(`========================================\n`);
+
+      logger.info('Sending init_contract transaction (may take 20-40 seconds)...');
+      const tx = await deployedContract.callTx.init_contract(newOwnerHash);
+      logger.info(`Transaction Confirmed! Hash: ${(tx as any).public?.txHash}`);
+
+      logger.info('Verifying on-chain state...');
+      await new Promise(r => setTimeout(r, 4000));
+      
+      const updatedState = await providers.publicDataProvider.queryContractState(contractAddress);
+      if (!updatedState || !updatedState.data) {
+        throw new Error("FATAL: Could not read state from indexer.");
+      }
+      
+      const updatedLedgerState = ledger(updatedState.data);
+      if (!updatedLedgerState.state.member(0n)) {
+        throw new Error(`\nFATAL: Read-back failed! state[0] is not set in the ledger!`);
+      }
+      
+      const onChainHash = updatedLedgerState.state.lookup(0n);
+      if (Buffer.from(onChainHash).equals(Buffer.from(newOwnerHash))) {
+        logger.info(`\nSUCCESS: Read-back matches! Contract securely initialized with expected owner hash!`);
+      } else {
+        throw new Error(`\nFATAL: Read-back failed! Expected hash ${Buffer.from(newOwnerHash).toString('hex')} but found ${Buffer.from(onChainHash).toString('hex')} in the live ledger state!`);
+      }
+    } else {
+      logger.info('Deploying MFNGuard contract...');
+      const deployOptions = {
+        compiledContract: CompiledMFNGuardContractContract,
+        privateStateId: 'mfnguard-state',
+        initialPrivateState: {} as any,
+      } as any;
+
+      logger.info(`Deploy Options (excluding compiledContract): ${JSON.stringify({ ...deployOptions, compiledContract: '[Omitted for brevity]' }, null, 2)}`);
+
+      const deployedContract = await deployContract(providers as any, deployOptions);
+
+      logger.info(`\n========================================`);
+      logger.info(`Successfully deployed MFNGuard contract to Preview!`);
+      logger.info(`Contract Address: ${deployedContract.deployTxData.public.contractAddress}`);
+      logger.info(`========================================\n`);
+    }
   } catch (e) {
     if (e instanceof Error) {
       logger.error(`Found error '${e.message}'`);

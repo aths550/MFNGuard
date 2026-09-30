@@ -86,7 +86,7 @@ export default function DisputeView() {
             setImportFile(null);
             
             setImportStatus({ type: 'success', message: `Witnesses imported for class ID: ${data.classId.substring(0, 8)}...` });
-        } catch (err: any) {
+        } catch (_err: unknown) {
             setImportStatus({ type: 'error', message: 'Failed to parse bundle.' });
         }
     };
@@ -136,7 +136,7 @@ export default function DisputeView() {
             
             setStatus({ type: 'loading', message: 'Please sign the transaction in your wallet...' });
             
-            const result = await (api as any).reveal_violation(
+            const result = await api.reveal_violation(
                 classIdBytes,
                 priceBigInt,
                 bSaltBytes,
@@ -158,9 +158,9 @@ export default function DisputeView() {
             });
             
             setStatus({ type: 'success', message: 'Dispute revelation complete!' });
-        } catch (err: any) {
-            console.error(err);
-            setStatus({ type: 'error', message: err.message || 'Check failed.' });
+        } catch (_err: unknown) {
+            console.error(_err instanceof Error ? _err.message : "An error occurred");
+            setStatus({ type: 'error', message: 'Failed to reveal violation — check your inputs and try again.' });
         }
     };
 
@@ -169,7 +169,7 @@ export default function DisputeView() {
             <div className="bg-red-500/10 border border-red-500/30 p-6 rounded-2xl">
                 <h2 className="text-xl font-bold text-red-400 mb-2">Auditor Portal</h2>
                 <p className="text-red-200/80 text-sm">
-                    Investigate proven violations by revealing the violator's specific price to an authorized auditor.
+                    Investigate proven violations by revealing the violator&apos;s specific price to an authorized auditor.
                 </p>
             </div>
 
