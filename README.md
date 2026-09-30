@@ -18,15 +18,16 @@ MFNGuard is a privacy-preserving Most-Favored-Nation (MFN) pricing compliance ve
 
 ## Network & Contract
 Network: Midnight Preview
-Contract Address: 08841fbeb992574bbc5444d0d6056e11a5c348e515238588a956eec858df75ec
+Contract Address: 510c34676f00ac52e39168f888a6b5a0eab965d7d0781a7bf9836a84e237dd71
 Explorer: https://explorer.preview.midnight.network
+Contract owner-initialized on 2026-09-30 (tx 1dbbfab3088eb83b4395807619544d765b8bb8e7101a24799f99faa4be58a32d).
 
 
 ## Project Overview
 
 > [!NOTE]
 > **Live Demo Deployment (Preview Testnet):** The currently deployed contract on the Midnight Preview network is a public demo. The "Owner Secret" and "Auditor Secret" are deliberately made public so that reviewers and testers can freely create and initialize their own comparability classes under unique labels, and resolve disputes. In a production deployment, these secrets would be strictly guarded. The expected Demo hashes are:
-> - **Demo Owner Hash**: `537a8dab4449e56b19b31d8b8882ebd9cb22fa83273ef26d5750fc52bae5d172`
+> - **Demo Owner Hash**: `760ed3fbc5180dfc89feffe4807da373e90a3ca028962fbdfdf498d78bf2eda5`
 > - **Demo Auditor Hash**: `0917b1301c3d31df059dd84381191d6e9d5c4474c15717837001e39bfcd3af38`
 
 In traditional B2B contracts, enforcing an MFN clause requires a costly, invasive third-party audit of the supplier's private ledger. MFNGuard completely automates this using zero-knowledge proofs.
