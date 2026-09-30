@@ -1,5 +1,7 @@
 # Level 6 Users
 
+> **Note:** These wallets tested the prior contract deployment (6a00832f3eac9d9d49dad3f6715d5d8faa6fbab2517c77a015f9173814b4806a, referred to as v1). The current submission contract is 510c34676f00ac52e39168f888a6b5a0eab965d7d0781a7bf9836a84e237dd71 (v2), which adds owner-gated class initialization, per-role authorization, and the comparability rule.
+
 20 distinct tester wallet addresses on the **Midnight Preview** network, collected for Level 6 (Supermoon). These are separate from and do not overlap with the 70 wallets already listed in [docs/USERS.md](docs/USERS.md) for Level 5.
 
 - **Network:** Midnight Preview (not Preprod) — see the [Network & Contract](README.md#network--contract) section in the README.

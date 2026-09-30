@@ -1,4 +1,7 @@
 # Tester Wallets
+
+> **Note:** These wallets tested the prior contract deployment (6a00832f3eac9d9d49dad3f6715d5d8faa6fbab2517c77a015f9173814b4806a, referred to as v1). The current submission contract is 510c34676f00ac52e39168f888a6b5a0eab965d7d0781a7bf9836a84e237dd71 (v2), which adds owner-gated class initialization, per-role authorization, and the comparability rule.
+
 Network: Midnight Preview (not Preprod) — see README Network & Contract section for status.
 
 Wallet addresses of testers who tried MFNGuard on the **Midnight Preview** network. Addresses were self-reported through the [feedback form](./FEEDBACK.md) and are listed here separately from their feedback.
@@ -6,11 +9,14 @@ Wallet addresses of testers who tried MFNGuard on the **Midnight Preview** netwo
 - **Network:** Midnight Preview (not Preprod)
 - **Repository:** [github.com/aths550/MFNGuard](https://github.com/aths550/MFNGuard)
 - **Live demo:** [mfn-guard-frontend.vercel.app](https://mfn-guard-frontend.vercel.app)
-- **Contract address (Preview):** `08841fbeb992574bbc5444d0d6056e11a5c348e515238588a956eec858df75ec`
+- **Contract address (Preview - v1):** `08841fbeb992574bbc5444d0d6056e11a5c348e515238588a956eec858df75ec`
+- **Contract address (Preview - v2):** `510c34676f00ac52e39168f888a6b5a0eab965d7d0781a7bf9836a84e237dd71`
 - **Explorer:** [explorer.preview.midnight.network](https://explorer.preview.midnight.network) (search the contract address or a wallet address)
 - **Indexer (GraphQL):** `https://indexer.preview.midnight.network/api/v4/graphql`
-- **Unique tester wallets:** **70**
-- **Collection window:** 14 Sep 2026 – 24 Sep 2026
+- **Unique tester wallets (v1 only):** **70**
+- **Collection window (v1 only):** 14 Sep 2026 – 24 Sep 2026
+
+> **IMPORTANT:** The wallets listed below participated in testing the **v1** contract (`08841fbeb...`). Their transaction history and data are bound to that v1 contract. The live environment is now running **v2** (`510c3467...`).
 
 Flow legend: **S** = Supplier Portal (Commit Price), **B** = Buyer Portal (Set Reference / Compliance Check), **D** = Dispute View, **UI** = browsed the UI only.
 
