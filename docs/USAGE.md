@@ -3,8 +3,10 @@
 > [!NOTE]
 > **Live Demo Deployment (Preview Testnet):** The currently deployed contract on the Midnight Preview network is a public demo. The "Owner Secret" and "Auditor Secret" are deliberately made public so that reviewers and testers can freely create and initialize their own comparability classes under unique labels, and run disputes. In a production deployment, these secrets would be strictly guarded.
 >
-> **Demo Owner Secret (Hex):** `67723b1a3dc4038d2784944d00ce5969ad70492c29fb37a2ea1207ee1aebd9d7`
-> **Demo Owner Hash:** `537a8dab4449e56b19b31d8b8882ebd9cb22fa83273ef26d5750fc52bae5d172`
+> **Public demo owner key — testnet only, anyone can use this to initialize comparability classes:**
+> **Demo Owner Secret (Hex):** `5d2f35066b6675d8be90b16e1d2308aa2c66b8a93d75018c2f06f97197f77cb7`
+> **Demo Owner Hash:** `760ed3fbc5180dfc89feffe4807da373e90a3ca028962fbdfdf498d78bf2eda5`
+> *(Contract initialized on-chain in tx 1dbbfab3088eb83b4395807619544d765b8bb8e7101a24799f99faa4be58a32d)*
 >
 > **Demo Auditor Secret (Hex):** `11223344556677889900aabbccddeeff11223344556677889900aabbccddeeff`
 > **Demo Auditor Hash:** `0917b1301c3d31df059dd84381191d6e9d5c4474c15717837001e39bfcd3af38`
