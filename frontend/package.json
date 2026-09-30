@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "sync-contract-assets": "mkdir -p public/keys public/zkir && cp -r ../contract/src/managed/mfnguard/keys/* public/keys/ && cp -r ../contract/src/managed/mfnguard/zkir/* public/zkir/",
+    "sync-contract-assets": "if [ -d ../contract/src/managed/mfnguard/keys ]; then mkdir -p public/keys public/zkir && cp -r ../contract/src/managed/mfnguard/keys/* public/keys/ && cp -r ../contract/src/managed/mfnguard/zkir/* public/zkir/; else echo 'Contract assets dir not found, skipping sync (assuming assets are in git)'; fi",
     "predev": "npm run sync-contract-assets",
     "prebuild": "npm run sync-contract-assets",
     "dev": "next dev --webpack",
