@@ -10,28 +10,16 @@ const DEMO_AUDITOR_SECRET_HEX = "11223344556677889900aabbccddeeff112233445566778
 
 export default function DisputeView() {
     const { connectedAddress, mfnguardAPI: api } = useWallet();
-    const { supplierPrices, supplierSalts, buyerPrice, buyerSalt, importSupplierData } = useSharedData();
+    const { supplierPrices, supplierSalts, buyerPrice, buyerSalt, importSupplierData, formData, updateFormData } = useSharedData();
 
     // Key Generation State
     const [useDemoKey, setUseDemoKey] = useState(false);
     const [generatedKeyHex, setGeneratedKeyHex] = useState<string | null>(null);
     const [auditorSecretInput, setAuditorSecretInput] = useState<string>('');
 
-    // Form State
-    const [label, setLabel] = useState('');
-    
     // Buyer Data Inputs
     const [bPriceInput, setBPriceInput] = useState('');
     const [bSaltInput, setBSaltInput] = useState('');
-
-    // Comparability Fields
-    const [product, setProduct] = useState('');
-    const [volume, setVolume] = useState('');
-    const [region, setRegion] = useState('');
-    const [term, setTerm] = useState('');
-    const [currency, setCurrency] = useState('');
-    const [startDate, setStartDate] = useState('');
-    const [endDate, setEndDate] = useState('');
 
     const [status, setStatus] = useState<{ type: 'idle' | 'loading' | 'success' | 'error', message: string }>({ type: 'idle', message: '' });
     const [disputeResult, setDisputeResult] = useState<{violator_found: boolean, violator_price: number, violator_index: number} | null>(null);
@@ -42,9 +30,9 @@ export default function DisputeView() {
     // Auto-fill buyer data if available in context
     useEffect(() => {
         const fillBuyerData = async () => {
-            if (!label) return;
+            if (!formData.label) return;
             try {
-                const classIdHex = await deriveClassId(label);
+                const classIdHex = await deriveClassId(formData.label);
                 if (buyerPrice[classIdHex] !== undefined) {
                     setBPriceInput(buyerPrice[classIdHex].toString());
                 }
@@ -54,7 +42,7 @@ export default function DisputeView() {
             } catch (e) {}
         };
         fillBuyerData();
-    }, [label, buyerPrice, buyerSalt]);
+    }, [formData.label, buyerPrice, buyerSalt]);
 
     const handleGenerateKey = () => {
         const key = generateSecretKey();
@@ -104,7 +92,7 @@ export default function DisputeView() {
             if (auditorSecretInput.length !== 64) throw new Error("Auditor secret must be a 64-character hex string.");
             const auditorSecretBytes = new Uint8Array(Buffer.from(auditorSecretInput, 'hex'));
 
-            const classIdHex = await deriveClassId(label);
+            const classIdHex = await deriveClassId(formData.label);
             const classIdBytes = new Uint8Array(Buffer.from(classIdHex, 'hex'));
             
             const importedPrices = supplierPrices[classIdHex];
@@ -121,12 +109,12 @@ export default function DisputeView() {
             if (priceBigInt < 0n) throw new Error("Buyer price must be positive");
 
             // Canonicalize
-            const canonProduct = canonicalizeText(product, 'Product');
-            const canonRegion = canonicalizeText(region, 'Region');
-            const canonCurrency = canonicalizeCurrency(currency);
-            const canonDateWindow = canonicalizeDateWindow(startDate, endDate);
-            const parsedVolume = stringTo32Bytes(BigInt(volume).toString());
-            const parsedTerm = stringTo32Bytes(BigInt(term).toString());
+            const canonProduct = canonicalizeText(formData.product, 'Product');
+            const canonRegion = canonicalizeText(formData.region, 'Region');
+            const canonCurrency = canonicalizeCurrency(formData.currency);
+            const canonDateWindow = canonicalizeDateWindow(formData.startDate, formData.endDate);
+            const parsedVolume = stringTo32Bytes(BigInt(formData.volume).toString());
+            const parsedTerm = stringTo32Bytes(BigInt(formData.term).toString());
 
             const productBytes = stringTo32Bytes(canonProduct);
             const regionBytes = stringTo32Bytes(canonRegion);
@@ -231,7 +219,7 @@ export default function DisputeView() {
                     <div className="space-y-4">
                         <div className="space-y-1">
                             <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Class Label</label>
-                            <input type="text" required value={label} onChange={e => setLabel(e.target.value)} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-red-500 transition-colors" placeholder="e.g., JD-Enterprise-Tier" />
+                            <input type="text" required value={formData.label} onChange={e => updateFormData({ label: e.target.value })} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-red-500 transition-colors" placeholder="e.g., JD-Enterprise-Tier" />
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-1">
@@ -251,33 +239,33 @@ export default function DisputeView() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-1">
                             <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Product</label>
-                            <input type="text" required value={product} onChange={e => setProduct(e.target.value)} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2 text-sm text-white" placeholder="e.g., Widget A" />
+                            <input type="text" required value={formData.product} onChange={e => updateFormData({ product: e.target.value })} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2 text-sm text-white" placeholder="e.g., Widget A" />
                         </div>
                         <div className="space-y-1">
                             <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Volume</label>
-                            <input type="number" required value={volume} onChange={e => setVolume(e.target.value)} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2 text-sm text-white" placeholder="e.g., 1000" />
+                            <input type="number" required value={formData.volume} onChange={e => updateFormData({ volume: e.target.value })} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2 text-sm text-white" placeholder="e.g., 1000" />
                         </div>
                         <div className="space-y-1">
                             <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Region</label>
-                            <input type="text" required value={region} onChange={e => setRegion(e.target.value)} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2 text-sm text-white" placeholder="e.g., NA" />
+                            <input type="text" required value={formData.region} onChange={e => updateFormData({ region: e.target.value })} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2 text-sm text-white" placeholder="e.g., NA" />
                         </div>
                         <div className="space-y-1">
                             <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Term (Months)</label>
-                            <input type="number" required value={term} onChange={e => setTerm(e.target.value)} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2 text-sm text-white" placeholder="e.g., 12" />
+                            <input type="number" required value={formData.term} onChange={e => updateFormData({ term: e.target.value })} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2 text-sm text-white" placeholder="e.g., 12" />
                         </div>
                         <div className="space-y-1">
                             <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Currency (ISO 4217)</label>
-                            <input type="text" required value={currency} onChange={e => setCurrency(e.target.value)} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2 text-sm text-white uppercase" placeholder="USD" maxLength={3} />
+                            <input type="text" required value={formData.currency} onChange={e => updateFormData({ currency: e.target.value })} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2 text-sm text-white uppercase" placeholder="USD" maxLength={3} />
                         </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                         <div className="space-y-1">
                             <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Start Date (YYYY-MM-DD)</label>
-                            <input type="text" required value={startDate} onChange={e => setStartDate(e.target.value)} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2 text-sm text-white" placeholder="2024-01-01" />
+                            <input type="text" required value={formData.startDate} onChange={e => updateFormData({ startDate: e.target.value })} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2 text-sm text-white" placeholder="2024-01-01" />
                         </div>
                         <div className="space-y-1">
                             <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">End Date (YYYY-MM-DD)</label>
-                            <input type="text" required value={endDate} onChange={e => setEndDate(e.target.value)} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2 text-sm text-white" placeholder="2024-12-31" />
+                            <input type="text" required value={formData.endDate} onChange={e => updateFormData({ endDate: e.target.value })} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2 text-sm text-white" placeholder="2024-12-31" />
                         </div>
                     </div>
                 </div>

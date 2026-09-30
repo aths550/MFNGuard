@@ -1,25 +1,38 @@
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import { 
+  generateSecretKey, 
+  bytesToHex, 
+  computeBuyerHash, 
+  computeAuditorHash, 
+  computeSupplierHash 
+} from "../lib/crypto";
+
 /**
  * SharedDataContext
  * 
- * Provides a React context for managing witness data (prices and salts) across the application.
- * 
- * CROSS-PARTY EXCHANGE:
- * In a real-world scenario, the Supplier and Buyer are different entities on different machines.
- * This context is supported by an export/import flow:
- * 1. Supplier commits prices, which are saved in this context.
- * 2. Supplier exports the data as a plaintext JSON payload.
- * 3. Buyer receives the payload out-of-band and imports it.
- * 
- * PERSISTENCE:
- * This context keeps data IN-MEMORY ONLY for security. All data will be lost on page reload.
- * 
- * SECURITY NOTE:
- * Keys and witness data are highly sensitive. We have removed localStorage persistence to prevent
- * accidental data leakage to other scripts running on the same origin.
+ * Provides a React context for managing witness data (prices and salts) across the application,
+ * as well as persisting form state across different views (Owner, Buyer, Supplier, Dispute).
  */
+
+export interface FormData {
+  label: string;
+  product: string;
+  volume: string;
+  region: string;
+  term: string;
+  currency: string;
+  startDate: string;
+  endDate: string;
+  ownerSecret: string;
+  buyerSecret: string;
+  auditorSecret: string;
+  supplierSecrets: string[];
+  buyerHash: string;
+  auditorHash: string;
+  supplierHashes: string[];
+}
 
 export interface SharedDataContextType {
   supplierPrices: Record<string, bigint[]>; // mapping class_id -> prices
@@ -29,6 +42,9 @@ export interface SharedDataContextType {
   addSupplierData: (classId: string, prices: bigint[], salts: Uint8Array[]) => void;
   addBuyerData: (classId: string, price: bigint, salt: Uint8Array) => void;
   importSupplierData: (classId: string, prices: bigint[], salts: Uint8Array[]) => void;
+  
+  formData: FormData;
+  updateFormData: (partial: Partial<FormData>) => void;
 }
 
 const SharedDataContext = createContext<SharedDataContextType | undefined>(undefined);
@@ -38,6 +54,54 @@ export function SharedDataProvider({ children }: { children: ReactNode }) {
   const [supplierSalts, setSupplierSalts] = useState<Record<string, Uint8Array[]>>({});
   const [buyerPrice, setBuyerPrice] = useState<Record<string, bigint>>({});
   const [buyerSalt, setBuyerSalt] = useState<Record<string, Uint8Array>>({});
+
+  const [formData, setFormData] = useState<FormData>({
+    label: 'class-a-12',
+    product: 'Corn',
+    volume: '100',
+    region: 'US-Midwest',
+    term: '30',
+    currency: 'USD',
+    startDate: '2026-09-01',
+    endDate: '2026-09-30',
+    ownerSecret: '',
+    buyerSecret: '',
+    auditorSecret: '',
+    supplierSecrets: ['', '', '', '', ''],
+    buyerHash: '',
+    auditorHash: '',
+    supplierHashes: ['', '', '', '', ''],
+  });
+
+  // Auto-generate distinct secrets and hashes on mount
+  useEffect(() => {
+    // We only want to generate secrets if they haven't been generated yet
+    if (!formData.buyerSecret) {
+      const bSec = generateSecretKey();
+      const aSec = generateSecretKey();
+      const sSecs = [
+        generateSecretKey(),
+        generateSecretKey(),
+        generateSecretKey(),
+        generateSecretKey(),
+        generateSecretKey(),
+      ];
+
+      setFormData(prev => ({
+        ...prev,
+        buyerSecret: bytesToHex(bSec),
+        auditorSecret: bytesToHex(aSec),
+        supplierSecrets: sSecs.map(bytesToHex),
+        buyerHash: bytesToHex(computeBuyerHash(bSec)),
+        auditorHash: bytesToHex(computeAuditorHash(aSec)),
+        supplierHashes: sSecs.map(s => bytesToHex(computeSupplierHash(s))),
+      }));
+    }
+  }, []); // Run once on mount
+
+  const updateFormData = (partial: Partial<FormData>) => {
+    setFormData(prev => ({ ...prev, ...partial }));
+  };
 
   const addSupplierData = (classId: string, prices: bigint[], salts: Uint8Array[]) => {
     setSupplierPrices(prev => ({ ...prev, [classId]: prices }));
@@ -55,7 +119,11 @@ export function SharedDataProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <SharedDataContext.Provider value={{ supplierPrices, supplierSalts, buyerPrice, buyerSalt, addSupplierData, addBuyerData, importSupplierData }}>
+    <SharedDataContext.Provider value={{ 
+      supplierPrices, supplierSalts, buyerPrice, buyerSalt, 
+      addSupplierData, addBuyerData, importSupplierData,
+      formData, updateFormData
+    }}>
       {children}
     </SharedDataContext.Provider>
   );

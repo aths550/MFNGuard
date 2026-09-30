@@ -10,35 +10,27 @@ const MAX_UINT64 = 18446744073709551615n;
 
 export default function SupplierView() {
     const { connectedAddress, mfnguardAPI: api } = useWallet();
-    const { supplierPrices, supplierSalts, addSupplierData } = useSharedData();
+    const { supplierPrices, supplierSalts, addSupplierData, formData, updateFormData } = useSharedData();
 
     // Key Generation State
     const [generatedKeyHex, setGeneratedKeyHex] = useState<string | null>(null);
-    const [supplierSecretInput, setSupplierSecretInput] = useState<string>('');
-
+    
     // Form State
-    const [label, setLabel] = useState('');
     const [slotIndex, setSlotIndex] = useState<string>('0');
     const [price, setPrice] = useState('');
     
     const [salt, setSalt] = useState(() => bytesToHex(window.crypto.getRandomValues(new Uint8Array(32))));
     
-    // Comparability Fields
-    const [product, setProduct] = useState('');
-    const [volume, setVolume] = useState('');
-    const [region, setRegion] = useState('');
-    const [term, setTerm] = useState('');
-    const [currency, setCurrency] = useState('');
-    const [startDate, setStartDate] = useState('');
-    const [endDate, setEndDate] = useState('');
-
     const [status, setStatus] = useState<{ type: 'idle' | 'loading' | 'success' | 'error', message: string }>({ type: 'idle', message: '' });
 
     const handleGenerateKey = () => {
         const key = generateSecretKey();
         const hex = bytesToHex(key);
         setGeneratedKeyHex(hex);
-        setSupplierSecretInput(hex);
+        
+        const newSecrets = [...formData.supplierSecrets];
+        newSecrets[parseInt(slotIndex)] = hex;
+        updateFormData({ supplierSecrets: newSecrets });
     };
 
     const handleExportKey = () => {
@@ -68,8 +60,9 @@ export default function SupplierView() {
         try {
             setStatus({ type: 'loading', message: 'Canonicalizing and preparing transaction...' });
             
-            if (supplierSecretInput.length !== 64) throw new Error("Supplier secret must be a 64-character hex string.");
-            const supplierSecretBytes = new Uint8Array(Buffer.from(supplierSecretInput, 'hex'));
+            const currentSupplierSecret = formData.supplierSecrets[parseInt(slotIndex)] || '';
+            if (currentSupplierSecret.length !== 64) throw new Error("Supplier secret must be a 64-character hex string.");
+            const supplierSecretBytes = new Uint8Array(Buffer.from(currentSupplierSecret, 'hex'));
             
             if (salt.length !== 64) throw new Error("Salt must be a 64-character hex string.");
             const saltBytes = new Uint8Array(Buffer.from(salt, 'hex'));
@@ -81,16 +74,16 @@ export default function SupplierView() {
             if (slot < 0n || slot > 4n) throw new Error("Slot index must be between 0 and 4");
 
             // Canonicalize
-            const canonProduct = canonicalizeText(product, 'Product');
-            const canonRegion = canonicalizeText(region, 'Region');
-            const canonCurrency = canonicalizeCurrency(currency);
-            const canonDateWindow = canonicalizeDateWindow(startDate, endDate);
-            const parsedVolume = BigInt(volume);
-            const parsedTerm = BigInt(term);
+            const canonProduct = canonicalizeText(formData.product, 'Product');
+            const canonRegion = canonicalizeText(formData.region, 'Region');
+            const canonCurrency = canonicalizeCurrency(formData.currency);
+            const canonDateWindow = canonicalizeDateWindow(formData.startDate, formData.endDate);
+            const parsedVolume = BigInt(formData.volume);
+            const parsedTerm = BigInt(formData.term);
             if (parsedVolume <= 0n) throw new Error("Volume must be positive");
             if (parsedTerm <= 0n) throw new Error("Term must be positive");
 
-            const classIdHex = await deriveClassId(label);
+            const classIdHex = await deriveClassId(formData.label);
             const classIdBytes = new Uint8Array(Buffer.from(classIdHex, 'hex'));
 
 
@@ -122,7 +115,7 @@ export default function SupplierView() {
 
     const handleExportBundle = async () => {
         try {
-            const classIdHex = await deriveClassId(label);
+            const classIdHex = await deriveClassId(formData.label);
             const prices = supplierPrices[classIdHex];
             const salts = supplierSalts[classIdHex];
             
@@ -184,7 +177,11 @@ export default function SupplierView() {
 
                 <div className="space-y-1">
                     <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Supplier Secret (Hex)</label>
-                    <input type="password" value={supplierSecretInput} onChange={e => setSupplierSecretInput(e.target.value)} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-sm text-white font-mono placeholder-gray-600 focus:outline-none focus:border-emerald-500 transition-colors" placeholder="Enter 64-character hex secret..." />
+                    <input type="password" value={formData.supplierSecrets[parseInt(slotIndex)] || ''} onChange={e => {
+                        const newSecrets = [...formData.supplierSecrets];
+                        newSecrets[parseInt(slotIndex)] = e.target.value;
+                        updateFormData({ supplierSecrets: newSecrets });
+                    }} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-sm text-white font-mono placeholder-gray-600 focus:outline-none focus:border-emerald-500 transition-colors" placeholder="Enter 64-character hex secret..." />
                 </div>
             </div>
 
@@ -194,7 +191,7 @@ export default function SupplierView() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-1">
                             <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Class Label</label>
-                            <input type="text" required value={label} onChange={e => setLabel(e.target.value)} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500 transition-colors" placeholder="e.g., JD-Enterprise-Tier" />
+                            <input type="text" required value={formData.label} onChange={e => updateFormData({ label: e.target.value })} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500 transition-colors" placeholder="e.g., JD-Enterprise-Tier" />
                         </div>
                         <div className="space-y-1">
                             <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Slot Index</label>
@@ -214,33 +211,33 @@ export default function SupplierView() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-1">
                             <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Product</label>
-                            <input type="text" required value={product} onChange={e => setProduct(e.target.value)} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2 text-sm text-white" placeholder="e.g., Widget A" />
+                            <input type="text" required value={formData.product} onChange={e => updateFormData({ product: e.target.value })} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2 text-sm text-white" placeholder="e.g., Widget A" />
                         </div>
                         <div className="space-y-1">
                             <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Volume</label>
-                            <input type="number" required value={volume} onChange={e => setVolume(e.target.value)} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2 text-sm text-white" placeholder="e.g., 1000" />
+                            <input type="number" required value={formData.volume} onChange={e => updateFormData({ volume: e.target.value })} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2 text-sm text-white" placeholder="e.g., 1000" />
                         </div>
                         <div className="space-y-1">
                             <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Region</label>
-                            <input type="text" required value={region} onChange={e => setRegion(e.target.value)} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2 text-sm text-white" placeholder="e.g., NA" />
+                            <input type="text" required value={formData.region} onChange={e => updateFormData({ region: e.target.value })} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2 text-sm text-white" placeholder="e.g., NA" />
                         </div>
                         <div className="space-y-1">
                             <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Term (Months)</label>
-                            <input type="number" required value={term} onChange={e => setTerm(e.target.value)} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2 text-sm text-white" placeholder="e.g., 12" />
+                            <input type="number" required value={formData.term} onChange={e => updateFormData({ term: e.target.value })} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2 text-sm text-white" placeholder="e.g., 12" />
                         </div>
                         <div className="space-y-1">
                             <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Currency (ISO 4217)</label>
-                            <input type="text" required value={currency} onChange={e => setCurrency(e.target.value)} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2 text-sm text-white uppercase" placeholder="USD" maxLength={3} />
+                            <input type="text" required value={formData.currency} onChange={e => updateFormData({ currency: e.target.value })} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2 text-sm text-white uppercase" placeholder="USD" maxLength={3} />
                         </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                         <div className="space-y-1">
                             <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Start Date (YYYY-MM-DD)</label>
-                            <input type="text" required value={startDate} onChange={e => setStartDate(e.target.value)} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2 text-sm text-white" placeholder="2024-01-01" />
+                            <input type="text" required value={formData.startDate} onChange={e => updateFormData({ startDate: e.target.value })} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2 text-sm text-white" placeholder="2024-01-01" />
                         </div>
                         <div className="space-y-1">
                             <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">End Date (YYYY-MM-DD)</label>
-                            <input type="text" required value={endDate} onChange={e => setEndDate(e.target.value)} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2 text-sm text-white" placeholder="2024-12-31" />
+                            <input type="text" required value={formData.endDate} onChange={e => updateFormData({ endDate: e.target.value })} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2 text-sm text-white" placeholder="2024-12-31" />
                         </div>
                     </div>
                 </div>

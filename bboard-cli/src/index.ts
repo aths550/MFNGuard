@@ -88,7 +88,7 @@ export const run = async (config: Config, testEnv: TestEnvironment, logger: Logg
   try {
     const envConfiguration = await testEnv.start();
     logger.info(`Environment started with configuration: ${JSON.stringify(envConfiguration)}`);
-    const seed = "5d01e69076ed02220bee456c7d7174322ccfe1bfed28f580418b3b168eedc201";
+    const seed = process.env.DEPLOYER_SEED || await buildWallet(config, rli, logger);
     if (seed === undefined) {
       return;
     }
