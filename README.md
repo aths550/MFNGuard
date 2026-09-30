@@ -29,7 +29,7 @@ Contract owner-initialized on 2026-09-30 (tx 1dbbfab3088eb83b4395807619544d765b8
 
 > [!NOTE]
 > **Live Demo Deployment (Preview Testnet):** The currently deployed contract on the Midnight Preview network is a public demo. The "Owner Secret" and "Auditor Secret" are deliberately made public so that reviewers and testers can freely create and initialize their own comparability classes under unique labels, and resolve disputes. In a production deployment, these secrets would be strictly guarded. The expected Demo hashes are:
-> - **Demo Owner Hash**: `760ed3fbc5180dfc89feffe4807da373e90a3ca028962fbdfdf498d78bf2eda5`
+> - **Demo Owner Hash**: `0bad71924aff1b5d88376dd518005fa09d08c85892bb3e45e49202beac618a86`
 > - **Demo Auditor Hash**: `0917b1301c3d31df059dd84381191d6e9d5c4474c15717837001e39bfcd3af38`
 
 In traditional B2B contracts, enforcing an MFN clause requires a costly, invasive third-party audit of the supplier's private ledger. MFNGuard completely automates this using zero-knowledge proofs.

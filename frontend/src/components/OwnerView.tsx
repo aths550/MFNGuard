@@ -5,7 +5,7 @@ import { bytesToHex, generateSecretKey } from '../lib/crypto';
 import { deriveClassId } from '../lib/class-id';
 import { canonicalizeCurrency, canonicalizeDateWindow, canonicalizeText, stringTo32Bytes } from '../lib/canonicalize';
 
-const DEMO_OWNER_SECRET_HEX = "67723b1a3dc4038d2784944d00ce5969ad70492c29fb37a2ea1207ee1aebd9d7";
+const DEMO_OWNER_SECRET_HEX = "96e6e423d2bee3a1c36c07714934e2679a4eb899b6e0ffcdf17e5a69593c6dc6";
 
 export default function OwnerView() {
     const { connectedAddress, mfnguardAPI: api } = useWallet();
