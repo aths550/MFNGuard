@@ -66,4 +66,5 @@ fund_preview.ts
 scratch/
 
 # Compiled contract artifacts
-contract/src/managed/
+contract/src/managed/*/keys/
+contract/src/managed/*/zkir/
