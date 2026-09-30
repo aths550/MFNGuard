@@ -10,7 +10,7 @@ MFNGuard is a privacy-preserving Most-Favored-Nation (MFN) pricing compliance ve
 - **Live Demo**: [https://mfn-guard-frontend.vercel.app](https://mfn-guard-frontend.vercel.app)
 - **Product X Profile**: [https://x.com/MFNGuard](https://x.com/MFNGuard)
 - **Demo Video**: [https://www.loom.com/share/7cbfa417d4b14824abbc301881347c2b](https://www.loom.com/share/7cbfa417d4b14824abbc301881347c2b)
-- **Deployed Contract (Preview Network)**: `510c34676f00ac52e39168f888a6b5a0eab965d7d0781a7bf9836a84e237dd71`
+- **Deployed Contract (Preview Network)**: `231587782ae8da84e3ac88234efb7d72a2ba6069466ea9414bf3e0bd527a96f1`
 - **Tester Wallets (Preview)**: [docs/USERS.md](docs/USERS.md)
 - **Level 6 Tester Wallets (Preview)**: [LAUNCH_USERS.md](LAUNCH_USERS.md)
 - **Tester Feedback**: [docs/FEEDBACK.md](docs/FEEDBACK.md)
@@ -18,9 +18,11 @@ MFNGuard is a privacy-preserving Most-Favored-Nation (MFN) pricing compliance ve
 
 ## Network & Contract
 Network: Midnight Preview
-Contract Address: 510c34676f00ac52e39168f888a6b5a0eab965d7d0781a7bf9836a84e237dd71
+Contract Address: 231587782ae8da84e3ac88234efb7d72a2ba6069466ea9414bf3e0bd527a96f1
 Explorer: https://explorer.preview.midnight.network
 Contract owner-initialized on 2026-09-30 (tx 1dbbfab3088eb83b4395807619544d765b8bb8e7101a24799f99faa4be58a32d).
+
+*Abandoned test deployments: `510c34676f00ac52e39168f888a6b5a0eab965d7d0781a7bf9836a84e237dd71`, `08841fbeb...`, `88b72d1c0d76...`*
 
 
 ## Project Overview
